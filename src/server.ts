@@ -8,10 +8,10 @@ async function main() {
   try {
     await mongoose.connect(config.database as string);
     server = app.listen(config.port, () => {
-      console.log(`mi_trading app listening on  ${config.port}`);
+      console.log(`🚀 M.I Server running on port ${config.port}`);
     });
   } catch (error) {
-    console.log(error);
+    console.error('❌ Failed to connect to database', error);
   }
 }
 main();

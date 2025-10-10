@@ -1,12 +1,19 @@
-// import { NextFunction, Request, Response } from 'express';
-// import { AnyZodObject } from 'zod';
-// import catchAsync from '../../../../../PH_University/PH_University_Backend/src/app/utils/catchAsync';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// app/middlewares/validateRequest.ts
+import { Request, Response, NextFunction } from 'express';
+import { ZodSchema } from 'zod';
 
-// const validateRequest = (schema: AnyZodObject) => {
-//   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-//     await schema.parseAsync({ body: req.body, cookies: req.cookies });
-//     next();
-//   });
-// };
-
-// export default validateRequest;
+export const validateRequest = (schema: ZodSchema<any>) => (req: Request, res: Response, next: NextFunction) => {
+    try {
+        schema.parse(req.body);
+        next();
+    } catch (err) {
+        if (err instanceof Error) {
+            return res.status(400).json({
+                success: false,
+                message: err instanceof Object && 'errors' in err ? (err as any).errors : err.message,
+            });
+        }
+        next(err);
+    }
+};
