@@ -9,6 +9,7 @@ const router = express.Router();
 // Define user-related routes here
 router.post(
     "/create-user",
+    // auth('admin', 'superAdmin'),
     validateRequest(userZodValidations.createUserValidationSchema),
     userControllers.createUser
 );
