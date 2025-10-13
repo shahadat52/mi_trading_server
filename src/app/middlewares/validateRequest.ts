@@ -2,18 +2,24 @@
 // app/middlewares/validateRequest.ts
 import { Request, Response, NextFunction } from 'express';
 import { ZodSchema } from 'zod';
+import AppError from '../errors/appErrors';
 
-export const validateRequest = (schema: ZodSchema<any>) => (req: Request, res: Response, next: NextFunction) => {
+export const validateRequest =
+  (schema: ZodSchema<any>) => (req: Request, res: Response, next: NextFunction) => {
     try {
-        schema.parse(req.body);
-        next();
+      schema.parse({
+        body: req.body,
+        query: req.query,
+        params: req.params,
+      });
+      next();
     } catch (err) {
-        if (err instanceof Error) {
-            return res.status(400).json({
-                success: false,
-                message: err instanceof Object && 'errors' in err ? (err as any).errors : err.message,
-            });
-        }
-        next(err);
+      if (err instanceof AppError) {
+        return res.status(err.statusCode).json({
+          success: false,
+          message: err.message,
+        });
+      }
+      next(err);
     }
-};
+  };
