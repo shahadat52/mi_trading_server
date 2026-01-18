@@ -29,10 +29,10 @@ const userLogin = async (payload: TLoginUser) => {
     throw new AppError(httpStatus.FORBIDDEN, 'User is blocked');
   }
 
-  const otpSendingUiLink = `http://localhost:3000/send-otp/${user.phone}`;
+  const otpSendingUiLink = `${config.client_side_url}/send-otp/${user.phone}`;
   const otp = generateOTP();
   user.otp = otp;
-  user.otpExpires = new Date(Date.now() + 4 * 60 * 1000);
+  user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
 
   await sendEmail(user.email, otp, otpSendingUiLink);
@@ -71,6 +71,7 @@ const sendOtpVerify = async ({ phone, otp }: { phone: string; otp: string }) => 
   // create access token for login session
   if (user.isVerified) {
     const jwtPayload = {
+      _id: user._id,
       id: user.id,
       role: user.role,
       email: user.email,

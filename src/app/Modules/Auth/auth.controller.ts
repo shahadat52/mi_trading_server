@@ -10,7 +10,7 @@ const login = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Token send successfully',
+    message: 'OTP send to your gmail',
     data: result,
   });
   return result;
@@ -32,7 +32,7 @@ const otpVerify = catchAsync(async (req, res) => {
   });
 });
 
-export const authCollections = {
+export const authControllers = {
   login,
   otpVerify,
 };

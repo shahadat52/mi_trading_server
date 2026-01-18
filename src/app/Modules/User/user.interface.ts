@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable no-unused-vars */
-import { Date, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { USER_ROLE } from './user.constant';
 
 export type TUser = {
+  _id?: string;
   id: string;
   email: string;
   name: string;
@@ -15,14 +15,14 @@ export type TUser = {
   status: 'in-progress' | 'blocked';
   isDeleted: boolean;
   isVerified: boolean;
+  oldPassword?: string; // For password update validation
+  newPassword?: string; // For password update validation
 };
 
 export interface TUserModel extends Model<TUser> {
   isUserExists(id: string): Promise<TUser | null>; // Ensure the implementation uses 'id'
 
   isPasswordMatch(planePassword: string, hashPassword: string): Promise<boolean>;
-
-  isPasswordChangeAfterTokenIssue(passwordChangeTime: Date, iAt: number): Promise<boolean>;
 }
 
 export type TUserRole = keyof typeof USER_ROLE;
