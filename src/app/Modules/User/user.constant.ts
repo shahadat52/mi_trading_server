@@ -1,6 +1,13 @@
 export const USER_ROLE = {
   superAdmin: 'superAdmin',
   admin: 'admin',
-  manager: 'manager',
+  specialManager: 'specialManager',
+  salesManager: 'salesManager',
+  purchaseManager: 'purchaseManager',
+  deliveryManager: 'deliveryManager',
+  commissionManager: 'commissionManager',
+
+
+
   employee: 'employee',
 } as const;

@@ -17,7 +17,7 @@ router.get(
 
 router.patch(
     '/:id',
-    auth('admin', 'manager'),
+    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
     customerControllers.updateCustomer
 )
 

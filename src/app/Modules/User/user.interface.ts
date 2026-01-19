@@ -9,10 +9,10 @@ export type TUser = {
   name: string;
   password: string;
   phone: string;
-  role: 'superAdmin' | 'admin' | 'manager' | 'employee';
+  role: 'superAdmin' | 'admin' | 'specialManager' | 'salesManager' | 'purchaseManager' | 'deliveryManager' | 'commissionManager' | 'employee';
   otp: string;
   otpExpires: any; // ✅ Correct type
-  status: 'in-progress' | 'blocked';
+  status: 'active' | 'blocked';
   isDeleted: boolean;
   isVerified: boolean;
   oldPassword?: string; // For password update validation

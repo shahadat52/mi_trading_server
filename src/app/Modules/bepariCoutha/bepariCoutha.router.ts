@@ -16,7 +16,7 @@ router.get(
 
 router.patch(
     '/:id',
-    auth('admin', 'manager', 'superAdmin'),
+    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
     bepariCouthaControllers.updateBepariCoutha
 )
 

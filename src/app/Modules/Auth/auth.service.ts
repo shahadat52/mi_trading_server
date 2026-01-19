@@ -16,17 +16,17 @@ const userLogin = async (payload: TLoginUser) => {
   }
   const isPasswordMatch = await UserModel.isPasswordMatch(password, user.password);
   if (!isPasswordMatch) {
-    throw new AppError(httpStatus.UNAUTHORIZED, 'Invalid password');
+    throw new AppError(httpStatus.UNAUTHORIZED, 'সঠিক পাসওয়ার্ড দিন');
   }
 
   const isDeleted = user.isDeleted;
   if (isDeleted) {
-    throw new AppError(httpStatus.FORBIDDEN, 'User is deleted');
+    throw new AppError(httpStatus.FORBIDDEN, 'ইউজার ডিলিট');
   }
 
   const status = user.status;
   if (status === 'blocked') {
-    throw new AppError(httpStatus.FORBIDDEN, 'User is blocked');
+    throw new AppError(httpStatus.FORBIDDEN, 'ইউজার ব্লক');
   }
 
   const otpSendingUiLink = `${config.client_side_url}/send-otp/${user.phone}`;

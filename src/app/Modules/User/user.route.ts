@@ -22,13 +22,13 @@ router.get(
 
 router.get(
   '/me',
-  auth('admin', 'employee', 'manager', 'superAdmin'),
+  auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
   userControllers.getSpecificUserInfo
 )
 
 router.patch(
   '/update-user',
-  auth('admin', 'superAdmin', 'employee', 'manager'),
+  auth('admin', 'superAdmin', 'specialManager',),
   // validateRequest(userZodValidations.updateUserValidationSchema),
   userControllers.updateUser
 );
@@ -37,6 +37,11 @@ router.patch(
   '/role/:id',
   auth('admin', 'superAdmin'),
   userControllers.updateUserRole
+)
+router.patch(
+  '/status/:id',
+  auth('admin', 'superAdmin'),
+  userControllers.updateUserStatus
 )
 
 export const userRoutes = router;

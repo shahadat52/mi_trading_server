@@ -9,7 +9,7 @@ const router = express.Router();
 // Define user-related routes here
 router.post(
   '/add',
-  auth('admin', 'superAdmin', 'manager'),
+  auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
   validateRequest(supplierValidations.createSupplierValidationSchema),
   supplierControllers.createSupplier
 );
@@ -22,7 +22,7 @@ router.get('/:id', supplierControllers.getAllSuppliers);
 
 router.patch(
   '/:id',
-  auth('admin', 'manager', 'superAdmin'),
+  auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
   supplierControllers.updateSupplier
 );
 

@@ -5,7 +5,7 @@ const router = express.Router();
 
 router.post(
   '/entry',
-  auth('admin', 'manager'),
+  auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
   // validateRequest(salesValidation.createSaleZodSchema),
   salesControllers.salesEntry
 );

@@ -21,7 +21,7 @@ const createUserInDB = async (user: TUser) => {
 };
 
 const getAllUsersFromDB = async () => {
-  const users = await UserModel.find();
+  const users = await UserModel.find({ isDeleted: false, });
   return users;
 };
 
@@ -112,10 +112,20 @@ const updateUserRoleInDB = async (id: Types.ObjectId, role: string) => {
   return result
 }
 
+const updateUserStatusInDB = async (id: Types.ObjectId, status: string) => {
+  const result = await UserModel.findByIdAndUpdate(
+    new Types.ObjectId(id),
+    { status },
+    { new: true }
+  );
+  return result
+}
+
 export const userServices = {
   createUserInDB,
   getAllUsersFromDB,
   getSpecificUserInfoFromDB,
   updateUserInDB,
-  updateUserRoleInDB
+  updateUserRoleInDB,
+  updateUserStatusInDB
 };

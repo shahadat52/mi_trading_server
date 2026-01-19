@@ -4,7 +4,7 @@ import auth from '../../middlewares/auth';
 
 const router = express.Router();
 
-router.post('/entry', auth('admin', 'manager'), commissionSalesControllers.createCommissionSales);
+router.post('/entry', auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'), commissionSalesControllers.createCommissionSales);
 
 router.get(
   '/',

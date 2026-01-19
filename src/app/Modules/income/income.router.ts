@@ -5,7 +5,7 @@ import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 
-router.post('/add', auth(USER_ROLE.admin, USER_ROLE.superAdmin, USER_ROLE.manager), incomeControllers.incomeEntry);
+router.post('/add', auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'), incomeControllers.incomeEntry);
 
 router.get('/', incomeControllers.getAllIncomes);
 

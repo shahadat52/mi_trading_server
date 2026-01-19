@@ -13,15 +13,15 @@ const userSchema = new Schema<TUser>(
     phone: { type: String, required: true, unique: true, trim: true },
     role: {
       type: String,
-      enum: ['superAdmin', 'admin', 'manager', 'employee'],
-      default: 'manager',
+      enum: ['superAdmin', 'admin', 'specialManager', 'salesManager', 'purchaseManager', 'deliveryManager', 'commissionManager', 'employee'],
+      default: 'employee',
     },
     otp: { type: String, trim: true, default: '', required: false },
     otpExpires: { type: Date }, // ✅ OK
     status: {
       type: String,
-      enum: ['in-progress', 'blocked'],
-      default: 'in-progress',
+      enum: ['active', 'blocked'],
+      default: 'active',
     },
     isDeleted: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
