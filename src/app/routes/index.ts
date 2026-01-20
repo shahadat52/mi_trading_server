@@ -15,6 +15,7 @@ import { customerRouters } from '../Modules/customer/customer.router';
 import { customerTxnRoutes } from '../Modules/customerTransaction/customerTxn.route';
 import { commissionProductRouter } from '../Modules/commissionProduct/commissionProduct.router';
 import { bepariCouthaRouters } from '../Modules/bepariCoutha/bepariCoutha.router';
+import { supplierTxnRoutes } from '../Modules/supplierTxn/supplierTxn.route';
 
 const router = Router();
 
@@ -62,6 +63,10 @@ const moduleRoutes = [
   {
     path: '/suppliers',
     router: supplierRoutes,
+  },
+  {
+    path: '/supplierTxn',
+    router: supplierTxnRoutes,
   },
   {
     path: '/deliveries',

@@ -22,5 +22,7 @@ export default {
     api_secret: process.env.CLOUDINARY_API_SECRET,
   },
   send_email_app_email: process.env.SEND_EMAIL_APP_EMAIL,
-  send_email_app_pass: process.env.SEND_EMAIL_APP_PASS
+  send_email_app_pass: process.env.SEND_EMAIL_APP_PASS,
+  sms_token: process.env.SMS_TOKEN,
+  send_sms_url: process.env.SMS_URL,
 };

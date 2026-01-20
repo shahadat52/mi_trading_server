@@ -6,6 +6,7 @@ import { createToken } from './auth.utils';
 import { TLoginUser } from './auth.interface';
 import sendEmail from '../../utils/sendEmail';
 import { generateOTP } from '../../utils/generateOTP';
+import sendSMS from '../../utils/sendSms';
 
 const userLogin = async (payload: TLoginUser) => {
   const { phone, password } = payload;
@@ -35,6 +36,8 @@ const userLogin = async (payload: TLoginUser) => {
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
 
+  const sms = await sendSMS({ to: user.phone, message: `Your OTP is: ${otp}. It will expire in 5 minutes.` });
+  console.log('SMS API Response:', sms);
   await sendEmail(user.email, otp, otpSendingUiLink);
 
   return { otpSendingUiLink };
