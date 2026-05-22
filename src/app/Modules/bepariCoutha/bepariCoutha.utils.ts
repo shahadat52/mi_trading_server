@@ -1,8 +1,7 @@
 import { BepariCouthaModel } from "./bepariCoutha.model";
 
 export const getSettlementInvoiceNumber = async () => {
-    const date = Date.now();
-    const year = new Date(date).getFullYear();
+
     const lastSale = await BepariCouthaModel.findOne().sort({ createdAt: -1 });
     if (!lastSale) {
         return `MI-0001`;
@@ -12,3 +11,16 @@ export const getSettlementInvoiceNumber = async () => {
     const newInvoiceNumber = lastInvoiceNumber + 1;
     return `MI-${newInvoiceNumber.toString().padStart(4, '0')}`;
 };
+
+export const allowedFields = [
+    "transport_rent",
+    "kuli",
+    "brokary",
+    "arot",
+    "haolat",
+    "godi",
+    "tohori",
+    "subTotal",
+    "joma",
+    "grandTotal"
+];

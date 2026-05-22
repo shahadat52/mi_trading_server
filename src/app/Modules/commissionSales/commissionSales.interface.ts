@@ -2,18 +2,18 @@ import { Types } from 'mongoose';
 import { TCustomer } from '../sales/sales.interface';
 
 export type TCommissionSalesProducts = {
-  product: string;
+  product: Types.ObjectId;
   quantity: number;
-  salesPrice: number;
-  lot: string
-  total: number;
-  commissionRatePercent: number;
-  commissionAmount: number;
+  bosta: number;
+  salePrice: number;
+  lot: string;
+  commission: number;
 };
 
 export type TCommissionSales = {
   customer: TCustomer;
   supplier: Types.ObjectId;
+  commissionBase: string;
   lot: string;
   sale: Types.ObjectId;
   items: [TCommissionSalesProducts];

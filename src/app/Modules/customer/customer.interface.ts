@@ -1,8 +1,8 @@
 export type TCustomer = {
   name: string;
+  category: string;
   phone: string;
   address: string;
-  previousDue?: number;
   type?: string
   lastTxnAt: Date;
   status: boolean;

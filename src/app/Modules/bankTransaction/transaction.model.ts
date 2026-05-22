@@ -1,26 +1,41 @@
 import { model, Schema } from "mongoose";
 import { TTransaction } from "./transaction.interface";
 
+export enum TransactionType {
+    DEBIT = "debit",
+    CREDIT = "credit",
+}
+export enum PartyModel {
+    CUSTOMER = "Customer",
+    SUPPLIER = "Supplier",
+}
 const transactionSchema = new Schema<TTransaction>(
     {
-        account: {
+        bankName: {
+            type: String,
+            required: [true, 'Bank name is required'],
+            trim: true
+        },
+        party: {
             type: Schema.Types.ObjectId,
-            ref: "Account",
-            required: [true, 'Account is required'],
+            required: true,
+            refPath: "partyModel",
+        },
+        partyModel: {
+            type: String,
+            required: true,
+            enum: Object.values(PartyModel),
         },
 
         type: {
             type: String,
-            enum: [
-                "debit",
-                "credit"
-            ],
+            enum: Object.values(TransactionType),
             required: [true, 'Transaction type is required'],
         },
 
         amount: {
             type: Number,
-            require: [true, 'Amount is required'],
+            required: [true, 'Amount is required'],
             min: 1,
         },
 
@@ -41,21 +56,17 @@ const transactionSchema = new Schema<TTransaction>(
             default: ''
         },
 
-        date: {
-            type: Date,
-            default: Date.now,
-        },
-
         createdBy: {
             type: Schema.Types.ObjectId,
             ref: "User",
-            require: [true, 'Creator is required']
+            required: [true, 'Creator is required']
         },
 
         status: {
             type: String,
-            enum: ['issued', 'posted'],
-            require: [true, 'Status is required']
+            enum: ['issued', 'posted', 'dishonored'],
+            default: 'issued',
+            required: [true, 'Status is required']
         },
 
         isDeleted: {
@@ -66,4 +77,4 @@ const transactionSchema = new Schema<TTransaction>(
     { timestamps: true }
 );
 
-export const TransactionModel = model("Transaction", transactionSchema);
+export const BankTxnModel = model("BankTransaction", transactionSchema);

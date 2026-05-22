@@ -1,7 +1,6 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
 import { customerControllers } from './customer.controller';
-import { customerServices } from './customer.service';
 const router = express.Router();
 
 router.post(
@@ -13,6 +12,11 @@ router.post(
 router.get(
     '/',
     customerControllers.getAllCustomers
+);
+
+router.get(
+    '/:id',
+    customerControllers.getCustomerById
 );
 
 router.patch(

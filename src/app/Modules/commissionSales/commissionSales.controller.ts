@@ -40,8 +40,8 @@ const getCommissionSalesById = catchAsync(async (req, res) => {
 });
 
 const getCommissionSalesSuppliersLotWise = catchAsync(async (req, res) => {
-  const { supplier, lot } = req.query;
-  const result = await commissionServices.getCommissionSalesSuppliersLotWiseFromDB(supplier, lot);
+  const { couthaOf } = req.query;
+  const result = await commissionServices.getCommissionSalesSuppliersLotWiseFromDB(couthaOf);
 
   sendResponse(res, {
     success: true,
@@ -51,9 +51,23 @@ const getCommissionSalesSuppliersLotWise = catchAsync(async (req, res) => {
   });
 });
 
+
+const commissionSalesUpdate = catchAsync(async (req, res) => {
+  const { id } = req.params;
+
+  const result = await commissionServices.commissionSalesUpdateInDB(id, req.body)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+});
+
 export const commissionSalesControllers = {
   createCommissionSales,
   getCommissionSales,
   getCommissionSalesById,
-  getCommissionSalesSuppliersLotWise
+  getCommissionSalesSuppliersLotWise,
+  commissionSalesUpdate
 };

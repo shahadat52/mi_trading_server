@@ -6,8 +6,5 @@ export type TDelivery = {
   via: string;
   sales: Types.ObjectId;
   destination: string;
-  quantity: number;
-  units: string;
   phone: string;
-  description: string;
 };

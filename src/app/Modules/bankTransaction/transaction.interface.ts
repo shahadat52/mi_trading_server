@@ -1,13 +1,14 @@
 import { Types } from "mongoose"
 
 export type TTransaction = {
-    account: Types.ObjectId;
+    bankName: string;
     type: string;
+    party: Types.ObjectId;
+    partyModel: string;
     amount: number;
     issueDate: Date;
     postingDate: Date;
     note: string;
-    date: Date;
     createdBy: Types.ObjectId;
     status: string;
     isDeleted: boolean

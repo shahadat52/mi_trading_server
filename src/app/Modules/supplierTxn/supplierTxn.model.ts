@@ -4,7 +4,7 @@ import { TSupplierTxn, TSupplierTxnModel } from './supplierTxn.interface';
 
 const supplierTxnSchema = new Schema<TSupplierTxn>(
   {
-    supplier: {
+    party: {
       type: Schema.Types.ObjectId,
       ref: "Supplier",
       required: [true, 'Supplier is required'],
@@ -23,6 +23,12 @@ const supplierTxnSchema = new Schema<TSupplierTxn>(
       type: Number,
       require: [true, 'Amount is required'],
       min: 0,
+    },
+
+    runningBalance: {
+      type: Number,
+      default: 0,
+      require: [true, 'runningBalance is missing'],
     },
 
     description: {

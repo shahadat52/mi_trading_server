@@ -39,6 +39,20 @@ const getAllOutstandingTxn = catchAsync(async (req, res) => {
     return result;
 });
 
+const updateTxnStatus = catchAsync(async (req, res) => {
+    const { id } = req.params
+    const status = req.body;
+    const result = await transactionServices.updateTxnStatusInDB(id, req.body);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Updated',
+        data: result,
+    });
+    return result;
+});
+
 
 
 
@@ -46,5 +60,6 @@ const getAllOutstandingTxn = catchAsync(async (req, res) => {
 export const transactionControllers = {
     transactionEntry,
     getAllTransaction,
-    getAllOutstandingTxn
+    getAllOutstandingTxn,
+    updateTxnStatus
 }

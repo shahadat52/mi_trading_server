@@ -17,9 +17,9 @@ const createProduct = catchAsync(async (req, res) => {
 });
 
 const getAllProducts = catchAsync(async (req, res) => {
-  const { sortBy = 'createdAt', order, search, category } = req.query;
+  const { sortBy = 'createdAt', order, searchTerm, category } = req.query;
 
-  const result = await ProductService.getAllProductsFromDB({ sortBy, order, search, category });
+  const result = await ProductService.getAllProductsFromDB({ sortBy, order, searchTerm, category });
 
   sendResponse(res, {
     success: true,
@@ -30,10 +30,24 @@ const getAllProducts = catchAsync(async (req, res) => {
   return result;
 });
 
-const getProductNames = catchAsync(async (req, res) => {
-  const { sortBy = 'createdAt', order, search, category } = req.query;
+const getProductsStock = catchAsync(async (req, res) => {
+  const { sortBy = 'createdAt', order, searchTerm, category } = req.query;
 
-  const result = await ProductService.getProductsNameFromDB({ sortBy, order, search, category });
+  const result = await ProductService.getProductsStockFromDB({ sortBy, order, searchTerm, category });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+  return result;
+});
+
+const getProductNames = catchAsync(async (req, res) => {
+  const { sortBy = 'createdAt', order, searchTerm, category } = req.query;
+
+  const result = await ProductService.getProductsNameFromDB({ sortBy, order, searchTerm, category });
 
   sendResponse(res, {
     success: true,
@@ -57,6 +71,19 @@ const getProduct = catchAsync(async (req, res) => {
   return result;
 });
 
+const updateProductData = catchAsync(async (req, res) => {
+  const { id } = req.params
+  const result = await ProductService.updateProductInDB(id, req.body,)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+  return result;
+
+});
+
 const deleteProduct = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await ProductService.deleteProductFromDB(id);
@@ -73,7 +100,9 @@ const deleteProduct = catchAsync(async (req, res) => {
 export const productControllers = {
   createProduct,
   getAllProducts,
+  getProductsStock,
   getProductNames,
   getProduct,
+  updateProductData,
   deleteProduct,
 };

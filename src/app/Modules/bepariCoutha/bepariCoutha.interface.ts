@@ -3,11 +3,11 @@ import { Types } from "mongoose";
 export type TBepariCoutha = {
     supplier: Types.ObjectId;
     lot: any;
+    couthaOf: Types.ObjectId;
     import: string;
     importDate: Date;
     description: string;
     invoice: string;
-    truck_rent?: number
     transport_rent?: number;
     kuli: number;
     brokary: number;
@@ -21,5 +21,7 @@ export type TBepariCoutha = {
     joma: number;
     grandTotal: number;
     isPaid: boolean;
+    isTransfared: boolean;
+    createdBy: Types.ObjectId
     paymentMethod: string
 }

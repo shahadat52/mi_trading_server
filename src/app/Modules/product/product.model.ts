@@ -1,18 +1,12 @@
 import { Schema, model } from 'mongoose';
-import { TProduct } from './product.interface';
+import { TProductName } from './product.interface';
 
-const productSchema = new Schema<TProduct>(
+const productNameSchema = new Schema<TProductName>(
   {
-    name: { type: String, required: [true, 'Product name is required'] },
-    sku: { type: String, required: [true, 'SKU is required'], unique: true },
-    category: { type: String, required: [true, 'Category is required'] },
-    purchasePrice: { type: Number, required: [true, 'Purchase price is required'] },
-    salesPrice: { type: Number, required: [true, 'Sales price is required'] },
-    unit: { type: String, required: [true, 'Unit is required'] },
-    reorderLevel: { type: Number, default: 5 },
-    stockQty: { type: Number, default: 0 },
+    name: { type: String, trim: true, required: [true, 'Product name is required'], unique: true },
+    sku: { type: String, trim: true, required: [true, 'SKU is required'], unique: true },
   },
   { timestamps: true }
 );
 
-export const ProductModel = model<TProduct>('Product', productSchema);
+export const ProductNameModel = model<TProductName>('ProductName', productNameSchema);

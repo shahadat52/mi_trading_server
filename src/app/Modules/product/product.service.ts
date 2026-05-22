@@ -1,77 +1,114 @@
-import { ProductModel } from './product.model';
-import { TProduct } from './product.interface';
+import { ProductNameModel } from './product.model';
+import { TProductName } from './product.interface';
+import { PurchaseModel } from '../purchase/purchase.model';
+import { makeRegex } from '../../utils/makeRegex';
 
-const createProductInDB = async (payload: TProduct) => {
-  const existing = await ProductModel.findOne({ sku: payload.sku });
-  if (existing) throw new Error('This SKU already exists');
+const createProductInDB = async (payload: TProductName) => {
+  const existing = await ProductNameModel.findOne({
+    $or: [
+      { sku: payload.sku },
+      { name: payload.name }
+    ]
+  });
+  if (existing) throw new Error('This Name Or SKU already exists');
 
-  return await ProductModel.create(payload);
+  return await ProductNameModel.create(payload);
 };
 
 const getAllProductsFromDB = async (options: any) => {
-  const { sortBy, order, search, category } = options;
+  const { sortBy, order, searchTerm, category } = options;
 
   const query: any = {};
   // Search by product name or SKU
-  if (search) {
+  if (searchTerm) {
     query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { sku: { $regex: search, $options: 'i' } },
+      { product: makeRegex(searchTerm) },
+      { sku: makeRegex(searchTerm) },
     ];
   }
 
-  // Filter by category
-  if (category) {
-    query.category = category;
+  const data = await PurchaseModel.find(query).sort({ createdAt: -1 });
+  return data;
+};
+
+const getProductsStockFromDB = async (options: any) => {
+  const { searchTerm } = options;
+
+  const pipeline: any[] = [];
+
+  // 🔍 Search filter
+  if (searchTerm) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { product: makeRegex(searchTerm) },
+          { sku: makeRegex(searchTerm) },
+        ],
+      },
+    });
   }
 
-  // Sort order
-  const orderValue = order === 'desc' ? -1 : 1;
-  const sortCriteria: any = {};
-  sortCriteria[sortBy] = orderValue;
+  // 📦 Group by SKU
+  pipeline.push({
+    $group: {
+      _id: "$sku",
+      name: { $first: "$product" },
+      price: { $first: "$purchasePrice" },
+      bag: { $first: "$bosta" },
+      unit: { $first: "$unit" },
+      totalStock: { $sum: "$quantity" },
+    },
+  });
 
-  // Fetch data with sorting
-  const data = await ProductModel.find(query).sort({ stockQty: 1 });
+  pipeline.push({
+    $addFields: {
+      totalAmount: {
+        $multiply: ["$totalStock", "$price"],
+      },
+    },
+  });
+
+  // 🔽 Sort
+  pipeline.push({
+    $sort: { totalStock: -1 },
+  });
+
+  const data = await PurchaseModel.aggregate(pipeline);
   return data;
 };
 
 const getProductsNameFromDB = async (options: any) => {
-  const { page, limit, sortBy, order, search, category } = options;
+  const { searchTerm } = options;
 
   const query: any = {};
-
-  // Search by product name or SKU
-  if (search) {
+  if (searchTerm) {
+    const regex = makeRegex(searchTerm);
     query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { sku: { $regex: search, $options: 'i' } },
+      { name: regex },
+      { sku: regex },
     ];
-  }
+  };
 
-  // Pagination
-
-  // Total documents for meta info
-  const total = await ProductModel.countDocuments(query);
-
-  // Fetch data with sorting
-  const data = await ProductModel.find(query)
+  const data = await ProductNameModel.find(query)
     .sort({ createdAt: -1 })
-    .select('name _id stockQty salesPrice purchasePrice unit'); // Select only name and sku fields
+    .select('name sku _id')
+    .limit(10)
 
   return data;
 };
 
-const getProductByIdFromDB = async (id: string) => await ProductModel.findById(id);
+const getProductByIdFromDB = async (id: string) => await ProductNameModel.findById(id);
 
-const updateProductInDB = async (id: string, payload: Partial<TProduct>) => {
-  const result = await ProductModel.findByIdAndUpdate(id, payload, { new: true });
+const updateProductInDB = async (id: string, payload: Partial<TProductName>) => {
+  const result = await ProductNameModel.findByIdAndUpdate(id, payload, { new: true });
   return result;
 };
-const deleteProductFromDB = async (id: string) => await ProductModel.findByIdAndDelete(id);
+const deleteProductFromDB = async (id: string) => await ProductNameModel.findByIdAndDelete(id);
 
 export const ProductService = {
   createProductInDB,
   getAllProductsFromDB,
+  getProductsStockFromDB,
   getProductsNameFromDB,
   getProductByIdFromDB,
   updateProductInDB,

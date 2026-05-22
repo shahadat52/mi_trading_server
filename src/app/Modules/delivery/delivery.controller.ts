@@ -39,8 +39,8 @@ const getAllDeliveries = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Deliveries data retrieved',
-    data: result.data,
-    meta: result.meta,
+    data: result,
+    meta: result,
   });
 });
 

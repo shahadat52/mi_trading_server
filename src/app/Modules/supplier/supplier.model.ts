@@ -4,12 +4,14 @@ import { TSupplier, TSupplierModel } from './supplier.interface';
 
 const supplierSchema = new Schema<TSupplier>(
   {
-    name: { type: String, required: [true, 'Supplier name is required'] },
-    type: { type: String, enum: ['regular', 'commission'], required: [true, 'Supplier type is required'] },
-    phone: { type: String, required: [true, 'Supplier phone is required'], unique: true },
+    name: { type: String, trim: true, required: [true, 'Supplier name is required'] },
+    type: { type: String, enum: ['regular', 'commission', 'common'], required: [true, 'Supplier type is required'] },
+    phone: { type: String, trim: true, required: [true, 'Supplier phone is required'], unique: true },
     address: { type: String, required: true },
-    commissionPayable: { type: Number, default: 0 },
-    totalPaidCommission: { type: Number, default: 0 },
+    lastTxnAt: {
+      type: Date,
+      default: Date.now()
+    },
   },
   {
     timestamps: true,

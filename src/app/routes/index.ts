@@ -4,18 +4,22 @@ import { authRoutes } from '../Modules/Auth/auth.route';
 import { supplierRoutes } from '../Modules/supplier/supplier.route';
 import { productRouters } from '../Modules/product/product.router';
 import { purchaseRouters } from '../Modules/purchase/purchase.router';
-import { incomeRoutes } from '../Modules/income/income.router';
-import { expenseRoutes } from '../Modules/expense/expense.router';
 import { salesRouters } from '../Modules/sales/sales.router';
 import { commissionSalesRoutes } from '../Modules/commissionSales/commissionSales.router';
 import { deliveryRoutes } from '../Modules/delivery/delivery.router';
 import { accountRoutes } from '../Modules/Account/account.route';
-import { transactionRoutes } from '../Modules/transaction/transaction.route';
 import { customerRouters } from '../Modules/customer/customer.router';
 import { customerTxnRoutes } from '../Modules/customerTransaction/customerTxn.route';
 import { commissionProductRouter } from '../Modules/commissionProduct/commissionProduct.router';
 import { bepariCouthaRouters } from '../Modules/bepariCoutha/bepariCoutha.router';
 import { supplierTxnRoutes } from '../Modules/supplierTxn/supplierTxn.route';
+import { bothSalesRouters } from '../Modules/bothSales/bothSales.router';
+import { brokerRoutes } from '../Modules/Broker/broker.router';
+import { brokerTxnRoutes } from '../Modules/BrokerTxn/brokerTxn.router';
+import { cashboxRoutes } from '../Modules/cashbox/cashbox.router';
+import { bankTransactionRoutes } from '../Modules/bankTransaction/transaction.route';
+import { transactionRoutes } from '../Modules/incomeExpanseTxn/transaction.route';
+import { attendanceRoutes } from '../Modules/Attendance/attendance.route';
 
 const router = Router();
 
@@ -27,6 +31,10 @@ const moduleRoutes = [
   {
     path: '/auth',
     router: authRoutes,
+  },
+  {
+    path: '/bothSales',
+    router: bothSalesRouters
   },
   {
     path: '/sales',
@@ -73,20 +81,32 @@ const moduleRoutes = [
     router: deliveryRoutes,
   },
   {
-    path: '/income',
-    router: incomeRoutes,
-  },
-  {
-    path: '/expense',
-    router: expenseRoutes,
-  },
-  {
     path: '/account',
     router: accountRoutes
   },
   {
-    path: '/transaction',
+    path: '/bankTxn',
+    router: bankTransactionRoutes
+  },
+  {
+    path: '/txn',
     router: transactionRoutes
+  },
+  {
+    path: '/broker',
+    router: brokerRoutes
+  },
+  {
+    path: '/brokerTxn',
+    router: brokerTxnRoutes
+  },
+  {
+    path: '/cashbox',
+    router: cashboxRoutes
+  },
+  {
+    path: '/attendance',
+    router: attendanceRoutes
   }
 ];
 

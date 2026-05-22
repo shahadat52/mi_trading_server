@@ -6,7 +6,8 @@ const customerSchema = new Schema<TCommissionProduct>(
         name: { type: String, required: [true, 'Product name is required'] },
         lot: { type: Number, required: [true, 'Lot is required'] },
         quantity: { type: Number, required: [true, 'Quantity is required'], default: 0 },
-        unit: { type: String, required: [true, 'Unit is required'] },
+        unit: { type: String, required: [true, 'Unit is required'], default: 'কেজি' },
+        bosta: { type: Number, required: [true, 'Bosta is required'], default: 0 },
         supplier: {
             type: Schema.Types.ObjectId,
             ref: 'Supplier',

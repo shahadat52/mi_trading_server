@@ -2,12 +2,11 @@ import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import httpStatus from 'http-status';
 import { customerTxnServices } from './customerTxn.service';
-import { customerServices } from '../customer/customer.service';
 
 //✅ create supplier
 const customerTxnEntry = catchAsync(async (req, res) => {
 
-  const result = await customerTxnServices.customerTxnEntryInDB(req.body);
+  const result = await customerTxnServices.customerTxnEntryInDB(req.body, req.user);
 
   sendResponse(res, {
     success: true,
@@ -27,6 +26,22 @@ const getAllCustomerTxn = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     message: 'All transaction data retrieved',
     data: result,
+  });
+  return result;
+});
+
+
+
+//✅ Get Outstanding Txn
+const getOutStandingCustomerTxn = catchAsync(async (req, res) => {
+  const result = await customerTxnServices.getOutStandingCustomerTxnFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Outstanding transaction data retrieved',
+    data: result.data,
+    meta: result.metaData
   });
   return result;
 });
@@ -72,10 +87,23 @@ const deleteCustomerTxn = catchAsync(async (req, res) => {
   });
 });
 
+const getOrphanCustomerTxn = catchAsync(async (req, res) => {
+  const result = await customerTxnServices.getOrphanCustomerTxnsFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 export const customerTxnControllers = {
   customerTxnEntry,
   getAllCustomerTxn,
+  getOutStandingCustomerTxn,
   getCustomerTxnById,
   updateById,
-  deleteCustomerTxn
+  deleteCustomerTxn,
+  getOrphanCustomerTxn
 };

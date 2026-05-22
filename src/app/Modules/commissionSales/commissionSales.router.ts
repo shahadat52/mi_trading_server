@@ -13,7 +13,7 @@ router.get(
 );
 
 router.get(
-  '/supplierLot',
+  '/couthaOf',
   commissionSalesControllers.getCommissionSalesSuppliersLotWise
 )
 
@@ -21,6 +21,12 @@ router.get(
   '/:id',
   // auth('admin'),
   commissionSalesControllers.getCommissionSalesById
+);
+
+router.patch(
+  '/update/:id',
+  // auth('admin'),
+  commissionSalesControllers.commissionSalesUpdate
 );
 
 export const commissionSalesRoutes = router;

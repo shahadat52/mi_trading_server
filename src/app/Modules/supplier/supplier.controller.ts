@@ -31,8 +31,7 @@ const getAllSuppliers = catchAsync(async (req, res) => {
 });
 
 const getSuppliersName = catchAsync(async (req, res) => {
-  const { sortBy = 'createdAt', order, search, category } = req.query;
-  const result = await supplierServices.getSuppliersNameFromDB({ sortBy, order, search, category });
+  const result = await supplierServices.getSuppliersNameFromDB(req.query);
 
   sendResponse(res, {
     success: true,

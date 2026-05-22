@@ -1,11 +1,9 @@
-import { Schema, model, Types } from 'mongoose';
+import { Types } from 'mongoose';
 
 export type TSaleItem = {
   product: Types.ObjectId;
   quantity: number;
   salePrice: number;
-  totalPrice: number;
-  purchasePrice?: number;
   profit?: number;
 };
 
@@ -21,16 +19,16 @@ export type TSales = {
   date: Date;
   items: TSaleItem[];
   broker?: string;
+  labour: number;
+  customerCommission: number;
   subtotal: number;
   discount: number;
-  vat: number;
+  others: number;
   grandTotal: number;
   grandProfit: number;
   paidAmount: number;
-  dueAmount: number;
   paymentMethod: string;
   supplier?: Types.ObjectId; // Commission-based seller
-  commissionRef?: Types.ObjectId;
   salesType: 'regular' | 'commission' | 'due';
   createdBy: Types.ObjectId;
   status: 'unpaid' | 'partial' | 'paid';

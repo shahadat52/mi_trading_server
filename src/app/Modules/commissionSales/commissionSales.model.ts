@@ -1,16 +1,15 @@
 import mongoose, { Schema, model } from 'mongoose';
 import { TCommissionSales, TCommissionSalesProducts } from './commissionSales.interface';
-import { required } from 'zod/v4/core/util.cjs';
 
 // Sub-schema for products
 const commissionSalesProductSchema = new Schema<TCommissionSalesProducts>(
   {
-    product: { type: String, required: true },
+    product: { type: Schema.Types.ObjectId, ref: 'CommissionProduct', required: [true, 'Product is required'], },
     quantity: { type: Number, required: true },
-    salesPrice: { type: Number, required: true },
+    bosta: { type: Number, required: true },
+    salePrice: { type: Number, required: true },
     lot: { type: String, required: [true, 'লট নাম্বার নাই'] },
-    total: { type: Number, required: true },
-    commissionRatePercent: { type: Number, required: true },
+    commission: { type: Number, required: true },
   },
   { _id: false }
 );
@@ -21,7 +20,6 @@ const commissionSalesProductSchema = new Schema<TCommissionSalesProducts>(
 const commissionSalesSchema = new Schema<TCommissionSales>(
   {
     customer: { type: Schema.Types.ObjectId, ref: 'Customer', required: [true, 'Customer name is required'] },
-    supplier: { type: Schema.Types.ObjectId, ref: 'Supplier', required: [true, 'Supplier name is required'] },
 
     items: {
       type: [commissionSalesProductSchema],
@@ -37,15 +35,15 @@ const commissionSalesSchema = new Schema<TCommissionSales>(
     invoice: { type: String, required: true },
     date: {
       type: Date,
-      default: Date.now,
+      default: new Date()
     },
     paymentMethod: {
       type: String,
-      enum: ['Cash', 'Bkash', 'Nagad', 'Rocket', 'Card', 'Bank'],
+      enum: ['cash', 'bkash', 'nagad', 'rocket', 'card', 'bank'],
       default: 'Cash',
       required: [true, 'Payment method is required'],
     },
-    salesBy: { type: Schema.Types.ObjectId, ref: 'User' },
+    salesBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'Saller is required'], },
     notes: { type: String, default: '' },
   },
   { timestamps: true }

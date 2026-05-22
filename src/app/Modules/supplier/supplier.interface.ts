@@ -5,9 +5,8 @@ export type TSupplier = {
   type: string;
   phone: string;
   address: string;
-  totalPaidCommission: number;
-  commissionPayable: number;
   createdAt?: Date;
+  lastTxnAt: Date;
   updatedAt?: Date;
 };
 

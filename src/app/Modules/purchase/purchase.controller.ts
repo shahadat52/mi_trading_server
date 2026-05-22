@@ -47,6 +47,19 @@ const getAllPurchases = catchAsync(async (req, res) => {
   });
 });
 
+const getPurchaseById = catchAsync(async (req, res) => {
+  const { id } = req.params
+  const result = await purchaseServices.getPurchaseByIdFromDB(id)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+  return result;
+
+});
+
 const getCommissionPurchases = catchAsync(async (req, res) => {
   const {
     page = 1,
@@ -77,34 +90,6 @@ const getCommissionPurchases = catchAsync(async (req, res) => {
   });
 });
 
-const getProductsName = catchAsync(async (req, res) => {
-  const {
-    page = 1,
-    limit = 10,
-    sortBy = 'createdAt',
-    order = 'desc',
-    search,
-    category,
-  } = req.query;
-  const options = {
-    page: parseInt(page as string, 10),
-    limit: parseInt(limit as string, 10),
-    sortBy: sortBy as string,
-    order: (order === 'asc' ? 1 : -1) as 1 | -1,
-    search: search as string,
-    category: category as string | undefined,
-  };
-
-  const result = await purchaseServices.getProductsNameFromDB(options);
-
-  sendResponse(res, {
-    success: true,
-    statusCode: httpStatus.OK,
-    message: 'Products names retrieved',
-    data: result.data,
-  });
-});
-
 const getCommissionPurchase = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await purchaseServices.getPurchaseByIdFromDB(id);
@@ -124,7 +109,7 @@ const deleteProduct = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Product data deleted',
+    message: 'Deleted',
     data: result,
   });
 });
@@ -135,7 +120,7 @@ const updatePurchaseData = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Product data updated',
+    message: 'Updated',
     data: result,
   });
   return result;
@@ -168,8 +153,8 @@ const getPurchaseReport = catchAsync(async (req, res) => {
 export const purchaseControllers = {
   createPurchase,
   getAllPurchases,
+  getPurchaseById,
   getCommissionPurchases,
-  getProductsName,
   getCommissionPurchase,
   deleteProduct,
   updatePurchaseData,

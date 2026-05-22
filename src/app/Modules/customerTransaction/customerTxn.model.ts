@@ -4,7 +4,7 @@ import { TCustomerTxn, TCustomerTxnModel } from './customerTxn.interface';
 
 const customerTxnSchema = new Schema<TCustomerTxn>(
   {
-    customer: {
+    party: {
       type: Schema.Types.ObjectId,
       ref: "Customer",
       required: [true, 'customer is required'],
@@ -21,7 +21,7 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
 
     amount: {
       type: Number,
-      require: [true, 'Amount is required'],
+      required: [true, 'Amount is required'],
       min: 0,
     },
 
@@ -35,7 +35,6 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
       default: Date.now,
       required: [true, 'Date is required']
     },
-
   },
   {
     timestamps: true

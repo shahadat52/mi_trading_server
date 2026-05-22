@@ -2,18 +2,16 @@ import { JwtPayload } from 'jsonwebtoken';
 import { TCommissionSales } from './commissionSales.interface';
 import mongoose, { Types } from 'mongoose';
 import { CommissionSalesModel } from './commissionSales.model';
-import { IncomeModel } from '../income/income.model';
 import { getSalesInvoiceNumber } from '../sales/sales.utils';
-import {
-  getCommissionSalesInvoiceNumber,
-} from './commissionSales.utils';
+import { getCommissionSalesInvoiceNumber, } from './commissionSales.utils';
 import { CommissionProductModel } from '../commissionProduct/commissionProduct.model';
+import AppError from '../../errors/appErrors';
+import httpStatus from 'http-status'
 
 
-const createCommissionSalesInDB = async (
-  commissionSalesData: TCommissionSales,
-  user: JwtPayload
+const createCommissionSalesInDB = async (commissionSalesData: TCommissionSales, user: JwtPayload
 ) => {
+  commissionSalesData.date = commissionSalesData.date || new Date()
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -22,17 +20,20 @@ const createCommissionSalesInDB = async (
     commissionSalesData.invoice = invoiceNumber;
 
     // 1️⃣ Create commission sales entry
-    const commissionSalesRes = await CommissionSalesModel.create([commissionSalesData], {
-      session,
-    });
+    const commissionSalesRes = await CommissionSalesModel.create([commissionSalesData], { session, });
 
     //  2️⃣PRODUCT STOCK UPDATE
     for (const item of commissionSalesData.items) {
-      const { product, quantity, lot } = item;
+      const { product, quantity, bosta, lot } = item;
 
       const updateResult = await CommissionProductModel.updateOne(
         { supplier: commissionSalesData.supplier, lot: lot },
-        { $inc: { quantity: -quantity } },
+        {
+          $inc: {
+            quantity: -quantity,
+            bosta: -bosta
+          }
+        },
         { session }
       );
 
@@ -53,43 +54,40 @@ const createCommissionSalesInDB = async (
 
 
     //5️⃣create income entry
-    const incomeData = {
-      incomeFrom: commissionSalesRes[0].invoice,
-      amount: commissionSalesData.totalCommission,
-      description: commissionSalesData.notes || '',
-      addedBy: user?._id,
-    };
 
-    await IncomeModel.create([incomeData], { session });
 
     // COMMIT
     await session.commitTransaction();
     session.endSession();
 
     return commissionSalesRes[0];
-  } catch (error) {
+  } catch (error: any) {
     await session.abortTransaction();
     session.endSession();
-    throw error;
+    throw new AppError(httpStatus.BAD_REQUEST, error.message);
   }
 };
 
-const getCommissionSalesSuppliersLotWiseFromDB = async (supplier: any, lot: any) => {
+const getCommissionSalesSuppliersLotWiseFromDB = async (productId: any) => {
   const result = await CommissionSalesModel.aggregate([
     {
-      $match: { supplier: new Types.ObjectId(supplier) }
+      $unwind: "$items"
     },
     {
-      $unwind: '$items'
+      $match: {
+        "items.product": new mongoose.Types.ObjectId(productId)
+      }
     },
     {
-      $project: { items: 1 }
-    },
-    {
-      $match: { 'items.lot': (lot as string) }
+      $project: {
+        _id: 1,
+        invoice: 1,
+        date: 1,
+        customer: 1,
+        product: "$items"
+      }
     }
-
-  ])
+  ]);
 
   return result
 }
@@ -127,9 +125,23 @@ const getCommissionSalesByIdFromDB = async (id: string) => {
   return result;
 };
 
+const commissionSalesUpdateInDB = async (id: string, data: any) => {
+  const result = await CommissionSalesModel.findByIdAndUpdate(id,
+    {
+      $set: {
+        "items.0.salePrice": data.salePrice,
+        "items.0.quantity": data.quantity,
+        "items.0.bosta": data.bosta
+      },
+    },
+    { new: true });
+  return result
+}
+
 export const commissionServices = {
   createCommissionSalesInDB,
   getCommissionSalesFromDB,
   getCommissionSalesByIdFromDB,
-  getCommissionSalesSuppliersLotWiseFromDB
+  getCommissionSalesSuppliersLotWiseFromDB,
+  commissionSalesUpdateInDB
 };

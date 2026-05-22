@@ -18,7 +18,7 @@ router.get('/', supplierControllers.getAllSuppliers);
 
 router.get('/names', supplierControllers.getSuppliersName);
 
-router.get('/:id', supplierControllers.getAllSuppliers);
+router.get('/:id', supplierControllers.getSupplier);
 
 router.patch(
   '/:id',

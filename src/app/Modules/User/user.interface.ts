@@ -9,6 +9,7 @@ export type TUser = {
   name: string;
   password: string;
   phone: string;
+  basicSalary: number;
   role: 'superAdmin' | 'admin' | 'specialManager' | 'salesManager' | 'purchaseManager' | 'deliveryManager' | 'commissionManager' | 'employee';
   otp: string;
   otpExpires: any; // ✅ Correct type

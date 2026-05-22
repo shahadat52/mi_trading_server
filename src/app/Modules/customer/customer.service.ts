@@ -1,44 +1,98 @@
 import AppError from '../../errors/appErrors';
+import { makeRegex } from '../../utils/makeRegex';
 import { TCustomerTxn } from '../customerTransaction/customerTxn.interface';
 import { CustomerTxnModel } from '../customerTransaction/customerTxn.model';
-import { makeRegex } from '../sales/sales.utils';
 import { TCustomer } from './customer.interface';
 import { CustomerModel } from './customer.model';
 import httpStatus from 'http-status'
+import mongoose from 'mongoose';
+
 
 const createCustomerInBD = async (customerData: TCustomer) => {
-  const { name, phone, address, previousDue, type } = customerData
-  const txnPayload: any = {}
+  const session = await mongoose.startSession();
 
-  const isCustomerExists = await CustomerModel.findOne({ phone: customerData.phone })
-  if (isCustomerExists) {
-    throw new AppError(httpStatus.ALREADY_REPORTED, 'This customer already exists')
+  try {
+    session.startTransaction();
+
+    const isCustomerExists = await CustomerModel.findOne(
+      { phone: customerData.phone },
+      null,
+      { session }
+    );
+
+    if (isCustomerExists) {
+      throw new AppError(
+        httpStatus.ALREADY_REPORTED,
+        'This customer already exists'
+      );
+    }
+
+    const createdCustomers = await CustomerModel.create([customerData], {
+      session,
+    });
+
+    const customer = createdCustomers[0];
+
+    if (!customer?._id) {
+      throw new AppError(
+        httpStatus.FAILED_DEPENDENCY,
+        'Customer creation failed'
+      );
+    }
+
+    const txnData = {
+      party: customer._id,
+      amount: 0,
+      type: 'credit',
+    };
+
+    const createdTxn = await CustomerTxnModel.create([txnData], { session });
+
+    if (!createdTxn[0]?._id) {
+      throw new AppError(
+        httpStatus.FAILED_DEPENDENCY,
+        'Customer transaction creation failed'
+      );
+    }
+
+    await session.commitTransaction();
+    await session.endSession();
+
+    return customer;
+  } catch (error) {
+    await session.abortTransaction();
+    await session.endSession();
+    throw error;
   }
-  const result = await CustomerModel.create(customerData);
+};
 
-  if (result._id) {
-    txnPayload.amount = previousDue || 0
-    txnPayload.type = type || 'credit' as string
-    txnPayload.date = new Date(Date.now());
-    txnPayload.customer = result._id
-    await CustomerTxnModel.create(txnPayload)
+
+const getAllCustomersFromDB = async ({
+  searchTerm, limit }: {
+    searchTerm?: string;
+    limit?: number;
+  }) => {
+  const query: any = {};
+
+
+  if (searchTerm) {
+    const regex = makeRegex(searchTerm);
+    query.$or = [
+      { name: regex },
+      { phone: regex },
+    ];
   }
 
+  const result = await CustomerModel.find(query)
+    .sort({ lastTxnAt: -1 })
+    .limit(Number(limit))
+    .lean();
 
   return result;
 };
 
-
-const getAllCustomersFromDB = async (options: any) => {
-  const search = options.search || '';
-  const query: any = {};
-  if (search) {
-    query.$or = [
-      { name: makeRegex(search) },
-      { phone: makeRegex(search) },
-    ];
-  }
-  const result = await CustomerModel.find(query).sort({ lastTxnAt: -1 });
+const getCustomerByIdFromDB = async (id: any) => {
+  const result = await CustomerModel.findById(id);
   return result;
 };
 
@@ -48,14 +102,43 @@ const updateCustomerFromDB = async (id: any, data: any) => {
   return customer;
 };
 const deleteCustomerFromDB = async (id: any) => {
-  const supplier = await CustomerModel.findByIdAndDelete(id);
-  if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Customer found');
-  return supplier;
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    // 1️⃣ Delete customer
+    const customer = await CustomerModel.findByIdAndDelete(id, { session });
+
+    if (!customer) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Customer not found');
+    }
+
+    // 2️⃣ Delete related transactions
+    const customerTxn = await CustomerTxnModel.deleteMany(
+      { party: id },
+      { session }
+    );
+
+
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return customer;
+
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+
+    throw new AppError(httpStatus.EXPECTATION_FAILED, 'ডিলিট হয়নি');
+  }
 };
 
 export const customerServices = {
   createCustomerInBD,
   getAllCustomersFromDB,
+  getCustomerByIdFromDB,
   deleteCustomerFromDB,
   updateCustomerFromDB
 };

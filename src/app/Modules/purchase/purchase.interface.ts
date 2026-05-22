@@ -13,22 +13,31 @@ export interface TCommissionSalesRef {
 }
 
 export interface TPurchase {
-  product: Types.ObjectId; // Product name
-  purchaseType: 'regular' | 'due' | 'commission';
-  supplier: Types.ObjectId; // Supplier name
-  commissionPerUnit?: number;
-  commissionSalesRef?: [TCommissionSalesRef];
-  totalCommission?: number;
-  dueAmount?: number;
-  quantity: number;
-  lot: string;
-  purchaseDate?: Date;
+  _id: string
   invoice: string;
+  product: string; // Product name
+  sku: string;
+  purchaseType: 'regular' | 'due' | 'commission';
+  unit: "কেজি" | "পিস" | "মণ" | "বস্তা" | "লিটার" | "বক্স" | "টন";
+  supplier: Types.ObjectId; // Supplier name
+  quantity: number;
+  purchaseQty: number;
+  bosta: number;
+  lot: string;
+  labour: number;
+  commission: number;
+  isCommissionPaid: boolean
+  isOthersPaid: boolean
+  isLabourPaid: boolean
+  others: number;
+  othersField: string;
+  purchaseDate?: Date;
   purchasePrice: number;
   reorderLevel: number;
   isPaid: boolean;
   isVerified: boolean;
   isDeleted?: boolean;
+  paidAmount: number;
   note: string;
   createdAt?: Date;
   updatedAt?: Date;

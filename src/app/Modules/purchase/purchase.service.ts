@@ -1,48 +1,91 @@
 import mongoose from 'mongoose';
-import { ProductModel } from '../product/product.model';
 import { PurchaseModel } from './purchase.model';
 import { TGetAllPurchasesOptions, TPurchase } from './purchase.interface';
 import { SupplierModel } from '../supplier/supplier.model';
 import httpStatus from 'http-status';
 import { getPurchaseInvoiceNumber } from './purchase.utils';
 import AppError from '../../errors/appErrors';
-import { CommissionProductModel } from '../commissionProduct/commissionProduct.model';
+import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 
-const createPurchaseInDB = async (payload: TPurchase) => {
+const createPurchaseInDB = async (data: TPurchase) => {
+  const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
+
+  payload.purchaseQty = payload.quantity
   const session = await mongoose.startSession();
   session.startTransaction();
 
   try {
-    const supplier = await SupplierModel.findById(payload.supplier);
+    // const productName = await ProductNameModel.findById(product).select("name sku -_id");
+
+    const supplier = await SupplierModel.findById(payload.supplier).session(session);
     const supplierProd = await PurchaseModel.find({ supplier: payload.supplier });
     const invoiceNumber = await getPurchaseInvoiceNumber();
     if (!invoiceNumber) {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to generate invoice number');
     }
     payload.invoice = invoiceNumber;
-    // Update Product stockQty
-    const product = await ProductModel.findById(payload.product).session(session);
-    const commissionProduct = await CommissionProductModel.findById(payload.product).session(session);
-    if (!product && !commissionProduct) {
-      throw new AppError(httpStatus.FORBIDDEN, 'Product not found');
-    }
-    if (product) {
-      product.stockQty = Number(product.stockQty) + Number(payload.quantity);
-      product.purchasePrice = payload.purchasePrice;
-      await product.save({ session });
-    }
-    if (commissionProduct) {
-      commissionProduct.quantity = Number(commissionProduct.quantity) + Number(payload.quantity);
 
-      await commissionProduct.save({ session });
-    }
-    payload.lot = `${supplier?.name}-${supplierProd?.length + 1}`;
-    const result = await PurchaseModel.create([payload], { session, new: true });
 
+
+
+    const purchaseData = {
+      ...payload,
+      lot: `${supplier?.name}-${supplierProd?.length + 1}`
+    }
+
+    //✅ Purchase entry
+    const purchaseRes = await PurchaseModel.create([purchaseData], { session, new: true });
+    const amount = (data.quantity * data.purchasePrice) + (isCommissionPaid ? Number(payload.commission) : 0) + (isLabourPaid ? Number(payload.labour) : 0) + (isOthersPaid ? Number(payload.others) : 0);
+
+
+
+    //✅ Supplier Txn Entry
+    if (!supplier) {
+      throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
+    }
+    const txnCreditData = {
+      party: payload.supplier,
+      amount,
+      type: 'credit',
+      description: `${payload?.product} ${payload.quantity} ${payload?.unit}র বিল`
+    };
+    // 3️⃣ create transaction
+    await SupplierTxnModel.create(
+      [
+        txnCreditData,
+      ],
+      { session }
+    );
+    if (data.paidAmount >= 1) {
+      const txnCreditData = {
+        party: payload.supplier,
+        amount: data.paidAmount,
+        type: 'debit',
+        description: `${payload?.product} ${payload.quantity} ${payload?.unit}র বিল বাবদ`
+      };
+      // 3️⃣ create transaction
+      const supDebitTxnAdd = await SupplierTxnModel.create(
+        [
+          txnCreditData,
+        ],
+        { session }
+      );
+    }
+
+    // 4️⃣ update customr current balance
+    const lastTxnUpdate = await SupplierModel.findByIdAndUpdate(
+      txnCreditData.party,
+      {
+        lastTxnAt: new Date(Date.now())
+      },
+      { new: true, session }
+    );
+
+    //✅ Last Txn Time Update
+    await SupplierModel.findByIdAndUpdate(purchaseRes[0].supplier, { lastTxnAt: new Date(Date.now()) }, { session });
     await session.commitTransaction();
     session.endSession();
-
-    return result[0];
+    return purchaseRes;
   } catch (error) {
     await session.abortTransaction();
     session.endSession();
@@ -54,7 +97,7 @@ export const getAllPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
   const { page, limit, sortBy, order, search, category, purchaseType } = options;
 
   const matchStage: any = {
-    // isDeleted: false,
+    isDeleted: { $ne: true },
   };
 
   if (purchaseType) {
@@ -216,55 +259,23 @@ const getCommissionPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
   return data;
 };
 
-const getProductsNameFromDB = async (options: TGetAllPurchasesOptions) => {
-  const { page, limit, sortBy, order, search, category } = options;
-
-  const query: any = {};
-
-  // Search by product name or SKU
-  if (search) {
-    query.$or = [
-      { name: { $regex: search, $options: 'i' } },
-      { sku: { $regex: search, $options: 'i' } },
-    ];
-  }
-
-
-  const total = await PurchaseModel.countDocuments(query);
-
-  // Fetch data with sorting
-  const data = await PurchaseModel.find(query)
-    .sort({ [sortBy]: order })
-    .select('name salesPrice _id'); // Select only name and sku fields
-
-  return {
-    data,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.ceil(total / limit),
-    },
-  };
-};
-
 const getPurchaseByIdFromDB = async (id: string) => {
-  const result = await PurchaseModel.find({ supplier: id }).populate([
+  const result = await PurchaseModel.findById(id).populate([
     { path: 'product' },
     { path: 'supplier' },
   ]);
   return result;
 };
 
-const updatePurchaseDataInDB = async (id: string, payload: Partial<TPurchase>) => {
+const updatePurchaseDataInDB = async (id: string, payload: any) => {
 
-  const product = await ProductModel.findById(payload.product?._id);
+  const product = await PurchaseModel.findById(payload.product?._id);
   if (product && payload.quantity) {
-    // Adjust stockQty based on the difference in quantity
+    // Adjust quantity based on the difference in quantity
     const existingPurchase = await PurchaseModel.findById(id);
     if (existingPurchase) {
       const quantityDifference = payload.quantity - existingPurchase.quantity;
-      product.stockQty = Number(product.stockQty) + quantityDifference;
+      product.quantity = Number(product.quantity) + quantityDifference;
       await product.save();
     }
   }
@@ -273,7 +284,8 @@ const updatePurchaseDataInDB = async (id: string, payload: Partial<TPurchase>) =
 };
 
 const deletePurchaseDataInDB = async (id: string) => {
-
+  const purchase = await PurchaseModel.findById(id);
+  const res = await PurchaseModel.findByIdAndDelete(id, { new: true });
   const result = await PurchaseModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true });
   return result;
 };
@@ -319,44 +331,7 @@ export const purchaseServices = {
   getAllPurchasesFromDB,
   getCommissionPurchasesFromDB,
   getPurchaseByIdFromDB,
-  getProductsNameFromDB,
   updatePurchaseDataInDB,
   deletePurchaseDataInDB,
   getPurchaseReportFromDB
 };
-
-
-
-
-//  const query: any = {};
-//   // Search by product name or SKU
-//   if (search) {
-//     query.$or = [
-//       { name: { $regex: search, $options: 'i' } },
-//       { sku: { $regex: search, $options: 'i' } },
-//     ];
-//   }
-
-//   if (purchaseType) {
-//     query.purchaseType = purchaseType;
-//   }
-//   // query.isDeleted = false;
-
-//   if (category && category !== 'all') {
-//     query.category = category;
-//   }
-//   // Pagination
-//   const skip = (page - 1) * limit;
-//   // Total documents for meta info
-//   const total = await PurchaseModel.countDocuments(query);
-
-//   // Fetch data with sorting
-//   const data = await PurchaseModel.find(query)
-//     .populate({
-//       path: 'product',
-//       // match: { category }   // Product-এর category অনুযায়ী filter
-//     })
-//     .populate('supplier') // supplier populate
-//     .sort({ [sortBy]: order })
-//     .skip(skip)
-//     .limit(limit);

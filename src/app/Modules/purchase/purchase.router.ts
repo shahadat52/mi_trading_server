@@ -10,10 +10,11 @@ router.get('/', purchaseControllers.getAllPurchases);
 router.get('/commissionPurchases', purchaseControllers.getCommissionPurchases);
 router.get('/reports', purchaseControllers.getPurchaseReport)
 
-router.get('/products-names', purchaseControllers.getProductsName);
+// router.get('/products-names', purchaseControllers.getProductsName);
 
-router.get('/:id', purchaseControllers.getCommissionPurchase);
-router.patch('/:id', purchaseControllers.updatePurchaseData);
+router.get('/commission/:id', purchaseControllers.getCommissionPurchase);
+router.get('/regular/:id', purchaseControllers.getPurchaseById);
+router.patch('/update/:id', purchaseControllers.updatePurchaseData);
 router.delete('/:id', purchaseControllers.deletePurchase);
 
 // router.delete(

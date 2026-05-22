@@ -7,7 +7,20 @@ import { customerServices } from '../customer/customer.service';
 //✅ create supplier
 const supplierTxnEntry = catchAsync(async (req, res) => {
 
-  const result = await supplierTxnServices.supplierTxnEntryInDB(req.body);
+  const result = await supplierTxnServices.supplierTxnEntryInDB(req.body, req.user);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Transaction successful',
+    data: result,
+  });
+  return result;
+});
+
+const bepariTxnEntry = catchAsync(async (req, res) => {
+
+  const result = await supplierTxnServices.bepariTxnEntryInDB(req.body, req.user);
 
   sendResponse(res, {
     success: true,
@@ -27,6 +40,21 @@ const getAllSupplierTxn = catchAsync(async (req, res) => {
     statusCode: httpStatus.OK,
     message: 'All transaction data retrieved',
     data: result,
+  });
+  return result;
+});
+
+//✅ Get Outstanding Txn
+const getOutStandingTxnSuppliers = catchAsync(async (req, res) => {
+  const searchTerm = req.query;
+  const result = await supplierTxnServices.getOutStandingTxnSuppliersFromDB(searchTerm);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Outstanding transaction data retrieved',
+    data: result.data,
+    meta: result.metaData
   });
   return result;
 });
@@ -74,7 +102,9 @@ const deleteSupplierTxn = catchAsync(async (req, res) => {
 
 export const supplierTxnControllers = {
   supplierTxnEntry,
+  bepariTxnEntry,
   getAllSupplierTxn,
+  getOutStandingTxnSuppliers,
   getSupplierTxnById,
   updateById,
   deleteSupplierTxn

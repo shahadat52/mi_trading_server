@@ -4,6 +4,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
 import cookieParser from 'cookie-parser';
+import mongoose from 'mongoose';
 
 const app = express();
 
@@ -38,6 +39,7 @@ app.use('/api/v1', router);
 app.get('/', (req: Request, res: Response) => {
   res.send(`Server is running successfully!`);
 });
+
 
 app.use(globalErrorHandler);
 app.use(notFound);

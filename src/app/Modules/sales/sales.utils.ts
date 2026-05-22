@@ -11,7 +11,4 @@ export const getSalesInvoiceNumber = async () => {
   return `MI(S)-${newInvoiceNumber.toString().padStart(4, '0')}`;
 };
 
-export const makeRegex = (value: string) => ({
-  $regex: value,
-  $options: 'i',
-});
+

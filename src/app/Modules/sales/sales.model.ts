@@ -1,6 +1,5 @@
-import mongoose, { Schema, model } from 'mongoose';
-import { TSaleItem, TCustomer, TSales } from './sales.interface';
-import { required } from 'zod/v4/core/util.cjs';
+import { Schema, model } from 'mongoose';
+import { TSaleItem, TSales } from './sales.interface';
 
 // ==========================
 //  Sale Item Schema (Validated)
@@ -10,35 +9,24 @@ const saleItemSchema = new Schema<TSaleItem>(
     product: {
       type: Schema.Types.ObjectId,
       ref: 'Product',
-      required: [true, 'Product is required'],
+      required: [true, 'Product is required']
     },
 
     quantity: {
       type: Number,
       required: [true, 'Quantity is required'],
-      min: [1, 'Quantity must be at least 1'],
+      min: [1, 'Quantity must be at least 1']
     },
 
     salePrice: {
       type: Number,
       required: [true, 'Sale price per unit is required'],
-      min: [0, 'Price cannot be negative'],
-    },
-
-    purchasePrice: {
-      type: Number,
-      min: [0, 'Purchase price cannot be negative'],
-    },
-
-    totalPrice: {
-      type: Number,
-      required: [true, 'Total price is required'],
-      min: [0, 'Total price cannot be negative'],
+      min: [0, 'Price cannot be negative']
     },
 
     profit: {
       type: Number,
-      default: 0,
+      default: 0
     },
   },
   { _id: false }
@@ -66,10 +54,19 @@ const salesSchema = new Schema<TSales>(
       type: Date,
       default: Date.now,
     },
+    labour: {
+      type: Number,
+      default: 0
+    },
+    customerCommission: {
+      type: Number,
+      default: 0
+    },
     broker: {
       type: String,
-      default: '',
+      default: ''
     },
+
     items: {
       type: [saleItemSchema],
       validate: {
@@ -84,14 +81,7 @@ const salesSchema = new Schema<TSales>(
       required: true,
       min: [0, 'Subtotal cannot be negative'],
     },
-
-    discount: {
-      type: Number,
-      default: 0,
-      min: [0, 'Discount cannot be negative'],
-    },
-
-    vat: {
+    others: {
       type: Number,
       default: 0,
       min: [0, 'VAT cannot be negative'],
@@ -101,20 +91,13 @@ const salesSchema = new Schema<TSales>(
       type: Number,
       required: true,
     },
-
-    grandProfit: {
-      type: Number,
-    },
-
     paidAmount: {
       type: Number,
       required: true,
     },
 
-    dueAmount: {
+    grandProfit: {
       type: Number,
-      required: true,
-      min: [0, 'Due amount cannot be negative'],
     },
 
     paymentMethod: {
@@ -123,12 +106,6 @@ const salesSchema = new Schema<TSales>(
       required: [true, 'Payment method is required'],
     },
 
-    salesType: {
-      type: String,
-      enum: ['regular', 'commission', 'due'],
-      required: true,
-      default: 'regular',
-    },
 
     createdBy: {
       type: Schema.Types.ObjectId,

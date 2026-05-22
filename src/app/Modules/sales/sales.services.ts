@@ -1,14 +1,23 @@
-import { create } from 'domain';
-import { PurchaseModel } from '../purchase/purchase.model';
-import { TSales } from './sales.interface';
-import { SalesModel } from './sales.model';
-import { getSalesInvoiceNumber, makeRegex } from './sales.utils';
-import mongoose from 'mongoose';
-import { ProductModel } from '../product/product.model';
-import { IncomeModel } from '../income/income.model';
-import { CustomerTxnModel } from '../customerTransaction/customerTxn.model';
 
-const salesEntryInDB = async (salesData: TSales) => {
+import { SalesModel } from './sales.model';
+import { getSalesInvoiceNumber } from './sales.utils';
+import mongoose from 'mongoose';
+import { ProductNameModel } from '../product/product.model';
+import { CustomerTxnModel } from '../customerTransaction/customerTxn.model';
+import { BankTxnModel } from '../bankTransaction/transaction.model';
+import { makeRegex } from '../../utils/makeRegex';
+
+const salesEntryInDB = async (payload: any) => {
+  const { bankName, type, amount, issuDate, postingDate, note, ...salesData } = payload;
+  const bankTxnData = {
+    bankName,
+    customer: salesData.customer,
+    type,
+    amount,
+    issuDate,
+    postingDate,
+    note
+  }
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
@@ -23,7 +32,7 @@ const salesEntryInDB = async (salesData: TSales) => {
     for (const item of salesData.items) {
       const { product, quantity } = item;
 
-      const updated = (await ProductModel.findByIdAndUpdate(
+      const updated = (await ProductNameModel.findByIdAndUpdate(
         product,
         { $inc: { stockQty: -quantity } }, // reduce stock
         { new: true, session }
@@ -49,6 +58,7 @@ const salesEntryInDB = async (salesData: TSales) => {
     }
     // 3. Create Sale Entry
     const salesResult = await SalesModel.create([salesData], { session });
+
     const customerDebitTxnPayload = {
       customer: salesData.customer,
       type: 'debit',
@@ -58,23 +68,22 @@ const salesEntryInDB = async (salesData: TSales) => {
     }
     await CustomerTxnModel.create([customerDebitTxnPayload], { session })
 
-    const customerCreditTxnPayload = {
-      customer: salesData.customer,
-      type: 'credit',
-      amount: salesData.paidAmount,
-      description: salesResult[0].invoice,
-      date: salesData.date
-    }
-    await CustomerTxnModel.create([customerCreditTxnPayload], { session })
+    if (salesResult[0].paidAmount > 0) {
+      const customerCreditTxnPayload = {
+        customer: salesData.customer,
+        type: 'credit',
+        amount: salesData.paidAmount,
+        description: payload.description,
+        date: salesData.date
+      }
+      await CustomerTxnModel.create([customerCreditTxnPayload], { session })
 
-    const incomePayload = {
-      incomeFrom: salesResult[0].invoice,
-      amount: salesData?.grandProfit,
-      description: '',
-      date: salesData?.date,
-      addedBy: salesData?.createdBy,
     };
-    await IncomeModel.create([incomePayload], { session });
+
+
+    if (salesData.paymentMethod === 'bank') {
+      await BankTxnModel.create([bankTxnData], { session })
+    }
 
     // 4. Commit
     await session.commitTransaction();

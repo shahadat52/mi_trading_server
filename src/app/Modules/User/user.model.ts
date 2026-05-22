@@ -23,6 +23,11 @@ const userSchema = new Schema<TUser>(
       enum: ['active', 'blocked'],
       default: 'active',
     },
+    basicSalary: {
+      type: Number,
+      default: 14000,
+      required: [true, 'Basic salary is required']
+    },
     isDeleted: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
   },
@@ -31,10 +36,6 @@ const userSchema = new Schema<TUser>(
     toJSON: {
       virtuals: true,
       versionKey: false,
-      // transform: function (doc, ret: any) {
-      //   delete ret._id;
-      //   delete ret.password;
-      // },
     },
   }
 );

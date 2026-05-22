@@ -2,15 +2,17 @@ import { Server } from 'http';
 import mongoose from 'mongoose';
 import config from './app/config';
 import app from './app';
+import { initCronJobs } from './app/cron';
 let server: Server;
 
 
 async function main() {
   try {
 
-
-
     await mongoose.connect(config.database as string);
+
+    initCronJobs()
+
     server = app.listen(config.port, () => {
       console.log(`🚀 M.I Server running on port ${config.port}`);
     });

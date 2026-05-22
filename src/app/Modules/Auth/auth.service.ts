@@ -37,7 +37,6 @@ const userLogin = async (payload: TLoginUser) => {
   await user.save();
 
   const sms = await sendSMS({ to: user.phone, message: `Your OTP is: ${otp}. It will expire in 5 minutes.` });
-  console.log('SMS API Response:', sms);
   await sendEmail(user.email, otp, otpSendingUiLink);
 
   return { otpSendingUiLink };

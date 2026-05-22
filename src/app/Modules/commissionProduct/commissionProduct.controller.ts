@@ -11,15 +11,25 @@ const createCommissionProduct = catchAsync(async (req, res) => {
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: 'Commission product successfully created',
+        message: '✅পণ্য যুক্ত হয়েছে',
         data: result,
     });
 });
 
 const getAllCommissionProducts = catchAsync(async (req, res) => {
-    const user = req.user;
-    req.body.createdBy = user?._id;
-    const result = await commissionProductServices.getAllCommissionProductsFromDB(req.body);
+    const result = await commissionProductServices.getAllCommissionProductsFromDB(req.query);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+});
+
+const getProductDetails = catchAsync(async (req, res) => {
+    const id = req.params.id;
+    const result = await commissionProductServices.getProductDetailsFromDB(id);
 
     sendResponse(res, {
         success: true,
@@ -41,8 +51,36 @@ const supplierWiseSupply = catchAsync(async (req, res) => {
     });
 });
 
+const updateProductData = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await commissionProductServices.updateProductInDB(id, req.body);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Updated',
+        data: result,
+    });
+});
+
+const deleteProduct = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await commissionProductServices.deleteProductInDB(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Deleted',
+        data: result,
+    });
+});
+
 export const commissionProductControllers = {
     createCommissionProduct,
     getAllCommissionProducts,
-    supplierWiseSupply
+    getProductDetails,
+    supplierWiseSupply,
+    updateProductData,
+    deleteProduct
+
 }

@@ -1,11 +1,18 @@
 import { Model, Types } from 'mongoose';
 
 export type TSupplierTxn = {
-  supplier: Types.ObjectId;
+  party: Types.ObjectId;
+  partyModel: string;
   type: string;
   amount: number;
   description: string;
   date: Date
+  runningBalance: number;
+  paymentMethod?: string;
+  bankName?: string
+  issueDate?: Date;
+  postingDate?: Date;
+  note?: string
 };
 
 export interface TSupplierTxnModel extends Model<TSupplierTxn> {

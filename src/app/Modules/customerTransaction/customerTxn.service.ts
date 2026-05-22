@@ -4,21 +4,64 @@ import { CustomerTxnModel } from './customerTxn.model';
 import { TCustomerTxn } from './customerTxn.interface';
 import mongoose, { Types } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
+import { BankTxnModel } from '../bankTransaction/transaction.model';
+import { TUser } from '../User/user.interface';
+import { JwtPayload } from 'jsonwebtoken';
+import { SupplierModel } from '../supplier/supplier.model';
 
 // ✅ Create Supplier
-const customerTxnEntryInDB = async (payload: TCustomerTxn) => {
+const customerTxnEntryInDB = async (payload: TCustomerTxn, user: JwtPayload) => {
+  const { bankName, issueDate, postingDate, note, ...txnData } = payload;
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
-    const isCustomerExists = CustomerTxnModel.findById(payload.customer)
-    if (!isCustomerExists) throw new AppError(httpStatus.NOT_FOUND, 'Customer not found');
-    const txn = await CustomerTxnModel.create([payload], { session });
 
-    await CustomerModel.findByIdAndUpdate(
-      payload.customer,
-      { lastTxnAt: new Date() },
+    // 1️⃣ find Customer
+    const customer = await CustomerModel.findById(payload.party).session(session);
+
+    if (!customer) {
+      throw new AppError(httpStatus.NOT_FOUND, "Customer not found");
+    }
+
+
+
+    // 3️⃣ create transaction
+    const txn = await CustomerTxnModel.create(
+      [
+        {
+          ...txnData
+        },
+      ],
       { session }
     );
+
+    // 4️⃣ update customr current balance
+    await CustomerModel.findByIdAndUpdate(
+      txnData.party,
+      {
+        lastTxnAt: new Date(Date.now()),
+      },
+      { new: true, session }
+    );
+
+
+    if (payload.paymentMethod === 'bank') {
+      const txnInfo = {
+        bankName,
+        amount: txnData.amount,
+        party: txnData.party,
+        partyModel: txnData.partyModel,
+        type: txnData.type,
+        createdBy: user._id,
+        issueDate,
+        postingDate,
+        note,
+      };
+      //✅ Bank txn entry 
+      await BankTxnModel.create([txnInfo], { session })
+    }
+
+
     await session.commitTransaction();
     session.endSession();
 
@@ -34,34 +77,251 @@ const customerTxnEntryInDB = async (payload: TCustomerTxn) => {
 // ✅ Get All Suppliers
 const getAllCustomerTxnFromDB = async () => {
 
-  const result = await CustomerTxnModel.find().populate('customer')
+  const result = await CustomerTxnModel.find().populate('party')
 
   return result;
 };
 
-// ✅ Get Supplier by ID
-const getCustomerTxnByIdInDB = async (id: string) => {
-  // const customerTxn = await CustomerTxnModel.find({ customer: id }).populate('customer');
-  const customerTxn = await CustomerTxnModel.aggregate([
+
+
+// ✅ Get All outStanding txn Suppliers 
+const getOutStandingCustomerTxnFromDB = async ({ searchTerm, limit, category }: any) => {
+
+  const count = await CustomerModel.countDocuments()
+
+  const pipeline: any[] = [
     {
-      $match: { customer: new Types.ObjectId(id) },
+      $group: {
+        _id: "$party",
+        totalCredit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0]
+          }
+        },
+        totalDebit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0]
+          }
+        },
+        totalTransactions: { $sum: 1 },
+        lastDate: { $max: "$date" }
+      }
     },
+
+
     {
-      $sort: { createdAt: -1 }
+      $addFields: {
+        balance: { $subtract: ["$totalDebit", "$totalCredit"] },
+        status: {
+          $cond: [
+            { $gt: [{ $subtract: ["$totalCredit", "$totalDebit"] }, 0] },
+            "পাওনাদার",
+            {
+              $cond: [
+                { $lt: [{ $subtract: ["$totalCredit", "$totalDebit"] }, 0] },
+                "দেনাদার",
+                "হিসাব সমান"
+              ]
+            }
+          ]
+        }
+      }
     },
+
+    // customer info join
     {
       $lookup: {
-        from: 'customers',
-        localField: 'customer',
-        foreignField: '_id',
-        as: 'customer',
-      },
-    }
-  ])
+        from: "customers",
+        localField: "_id",
+        foreignField: "_id",
+        as: "party"
+      }
+    },
 
-  if (!customerTxn) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
-  return customerTxn;
+    {
+      $unwind: {
+        path: "$party",
+        preserveNullAndEmptyArrays: true
+      }
+    }
+  ];
+
+  // 🔍 Search by name / phone
+  if (searchTerm) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { "party.name": { $regex: searchTerm, $options: "i" } },
+          { "party.phone": { $regex: searchTerm, $options: "i" } }
+        ]
+      }
+    });
+  }
+
+  if (category) {
+    pipeline.push({
+      $match: {
+        $or: [
+          { "party.category": category }
+        ]
+      }
+    });
+  }
+
+  if (limit) {
+    pipeline.push({
+      $limit: Number(limit)
+    });
+  }
+  // Final projection + sort
+  pipeline.push(
+    {
+      $project: {
+        _id: 0,
+        party: {
+          _id: "$party._id",
+          name: "$party.name",
+          phone: "$party.phone",
+          address: "$party.address",
+          lastTxnAt: "$party.lastTxnAt"
+        },
+        totalCredit: 1,
+        totalDebit: 1,
+        balance: 1,
+        status: 1,
+        totalTransactions: 1,
+        lastDate: 1
+      },
+
+    },
+    {
+      $sort: { "party.lastTxnAt": -1 }
+    }
+
+  );
+
+  const result = await CustomerTxnModel.aggregate(pipeline);
+
+  return {
+    data: result,
+    metaData: count
+  };
 };
+
+
+// ✅ Get Customer Txn by ID 
+const getCustomerTxnByIdInDB = async (id: string) => {
+  const customerId = new Types.ObjectId(id);
+  const customer = await CustomerModel.findById(customerId);
+  if (!customer) {
+    throw new AppError(httpStatus.NOT_FOUND, "Customer not found");
+  };
+
+  const supplier = await SupplierModel.findOne({
+    phone: customer.phone,
+  });
+
+  const supplierId = supplier?._id;
+
+  const data = await CustomerTxnModel.aggregate([
+    {
+      $match: {
+        party: customerId,
+      },
+    },
+    {
+      $project: {
+        _id: 1,
+        amount: 1,
+        type: 1,
+        date: 1,
+        description: { $ifNull: ["$description", ""] },
+        source: { $literal: "customer" },
+      },
+    },
+
+    ...(supplierId
+      ? [
+        {
+          $unionWith: {
+            coll: "suppliertxns",
+            pipeline: [
+              {
+                $match: {
+                  party: new Types.ObjectId(supplierId),
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  amount: 1,
+                  type: 1,
+                  date: 1,
+                  description: { $ifNull: ["$description", ""] },
+                  source: { $literal: "supplier" },
+                },
+              },
+            ],
+          },
+        },
+      ]
+      : []),
+
+    // ✅ Step 1: signed amount
+    {
+      $addFields: {
+        signedAmount: {
+          $cond: [
+            { $eq: ["$type", "credit"] },
+            "$amount",
+            { $multiply: ["$amount", -1] },
+          ],
+        },
+      },
+    },
+
+    // ✅ Step 2: MUST ascending for correct balance
+    {
+      $sort: {
+        date: 1,
+        _id: 1, // same date হলে stable ordering
+      },
+    },
+
+    // ✅ Step 3: running balance
+    {
+      $setWindowFields: {
+        sortBy: { date: 1, _id: 1 },
+        output: {
+          balance: {
+            $sum: "$signedAmount",
+            window: {
+              documents: ["unbounded", "current"],
+            },
+          },
+        },
+      },
+    },
+
+    // ✅ Step 4: final output (latest first)
+    {
+      $sort: {
+        date: -1,
+        _id: -1,
+      },
+    },
+
+    // ✅ optional পরিষ্কার output
+    {
+      $project: {
+        signedAmount: 0,
+      },
+    },
+  ]);
+  return data;
+};
+
+
 
 const updateByIdInDB = async (id: string, updateData: any) => {
   const session = await mongoose.startSession()
@@ -72,7 +332,7 @@ const updateByIdInDB = async (id: string, updateData: any) => {
     if (!txn) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
     if (txn) {
       const cusUpda = await CustomerModel.findByIdAndUpdate(
-        txn.customer,
+        txn.party,
         { lastTxnAt: new Date(Date.now()) },
         { session }
       );
@@ -98,11 +358,27 @@ const deleteCustomerTxnFromDB = async (id: string) => {
   return supplier;
 };
 
+// ✅ যেসকল txn এর customer/party delete করে দেওয়া হয়েচে
+const getOrphanCustomerTxnsFromDB = async () => {
+  const txns = await CustomerTxnModel.find();
+
+  const orphanTxns = [];
+
+  for (const txn of txns) {
+    const exists = await CustomerModel.exists({ _id: txn.party });
+    if (!exists) orphanTxns.push(txn);
+  }
+
+  return orphanTxns;
+};
+
 export const customerTxnServices = {
   customerTxnEntryInDB,
   getAllCustomerTxnFromDB,
+  getOutStandingCustomerTxnFromDB,
   getCustomerTxnByIdInDB,
   updateByIdInDB,
-  deleteCustomerTxnFromDB
+  deleteCustomerTxnFromDB,
+  getOrphanCustomerTxnsFromDB
 
 };

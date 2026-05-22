@@ -8,7 +8,7 @@ const router = express.Router();
 // Define user-related routes here
 router.post(
     '/entry',
-    auth(USER_ROLE.admin),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
     transactionControllers.transactionEntry
 );
 
@@ -20,6 +20,16 @@ router.get(
 router.get(
     '/outstandingTxn',
     transactionControllers.getAllOutstandingTxn
+);
+
+router.patch(
+    '/:id',
+    transactionControllers.updateTxnStatus
+)
+
+router.delete(
+    '/:id',
+    transactionControllers.deleteTxn
 )
 
 
