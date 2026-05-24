@@ -259,7 +259,7 @@ const getCommissionPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
   return data;
 };
 
-const getPurchaseByIdFromDB = async (id: string) => {
+const getPurchaseByIdFromDB = async (id: any) => {
   const result = await PurchaseModel.findById(id).populate([
     { path: 'product' },
     { path: 'supplier' },
@@ -267,7 +267,7 @@ const getPurchaseByIdFromDB = async (id: string) => {
   return result;
 };
 
-const updatePurchaseDataInDB = async (id: string, payload: any) => {
+const updatePurchaseDataInDB = async (id: any, payload: any) => {
 
   const product = await PurchaseModel.findById(payload.product?._id);
   if (product && payload.quantity) {
@@ -283,7 +283,7 @@ const updatePurchaseDataInDB = async (id: string, payload: any) => {
   return result;
 };
 
-const deletePurchaseDataInDB = async (id: string) => {
+const deletePurchaseDataInDB = async (id: any) => {
   const purchase = await PurchaseModel.findById(id);
   const res = await PurchaseModel.findByIdAndDelete(id, { new: true });
   const result = await PurchaseModel.findByIdAndUpdate(id, { isDeleted: true }, { new: true });

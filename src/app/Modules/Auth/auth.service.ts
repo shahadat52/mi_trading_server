@@ -4,9 +4,9 @@ import httpStatus from 'http-status';
 import config from '../../config';
 import { createToken } from './auth.utils';
 import { TLoginUser } from './auth.interface';
-import sendEmail from '../../utils/sendEmail';
 import { generateOTP } from '../../utils/generateOTP';
 import sendSMS from '../../utils/sendSms';
+import { sendEmail } from '../../utils/sendEmail';
 
 const userLogin = async (payload: TLoginUser) => {
   const { phone, password } = payload;

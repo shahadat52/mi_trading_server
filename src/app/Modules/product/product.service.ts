@@ -97,13 +97,13 @@ const getProductsNameFromDB = async (options: any) => {
   return data;
 };
 
-const getProductByIdFromDB = async (id: string) => await ProductNameModel.findById(id);
+const getProductByIdFromDB = async (id: any) => await ProductNameModel.findById(id);
 
-const updateProductInDB = async (id: string, payload: Partial<TProductName>) => {
+const updateProductInDB = async (id: any, payload: Partial<TProductName>) => {
   const result = await ProductNameModel.findByIdAndUpdate(id, payload, { new: true });
   return result;
 };
-const deleteProductFromDB = async (id: string) => await ProductNameModel.findByIdAndDelete(id);
+const deleteProductFromDB = async (id: any) => await ProductNameModel.findByIdAndDelete(id);
 
 export const ProductService = {
   createProductInDB,

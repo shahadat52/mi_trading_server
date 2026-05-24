@@ -20,6 +20,7 @@ import { cashboxRoutes } from '../Modules/cashbox/cashbox.router';
 import { bankTransactionRoutes } from '../Modules/bankTransaction/transaction.route';
 import { transactionRoutes } from '../Modules/incomeExpanseTxn/transaction.route';
 import { attendanceRoutes } from '../Modules/Attendance/attendance.route';
+import { sectorRoutes } from '../Modules/incomeExpenseSector/sector.route';
 
 const router = Router();
 
@@ -107,6 +108,10 @@ const moduleRoutes = [
   {
     path: '/attendance',
     router: attendanceRoutes
+  },
+  {
+    path: '/sector',
+    router: sectorRoutes
   }
 ];
 

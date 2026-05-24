@@ -82,7 +82,7 @@ const getSpecificBrokerTxnsFromDB = async (broker: any) => {
 };
 
 const updateBrokerTxnInDB = async (
-    id: string,
+    id: any,
     payload: Partial<TBrokerTxn>
 ) => {
     const session = await mongoose.startSession();

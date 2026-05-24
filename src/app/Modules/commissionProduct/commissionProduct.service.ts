@@ -58,23 +58,23 @@ const getAllCommissionProductsFromDB = async (options: any) => {
     return result;
 };
 
-const getProductDetailsFromDB = async (id: string) => {
+const getProductDetailsFromDB = async (id: any) => {
     const result = await CommissionProductModel.findById(id).populate('supplier').sort({ createdAt: -1 });
     return result;
 };
 
 
-const supplierWiseSupplyInDB = async (id: string) => {
+const supplierWiseSupplyInDB = async (id: any) => {
     const result = await CommissionProductModel.find({ supplier: id }).populate('supplier').sort({ createdAt: -1 });
     return result;
 };
 
-const updateProductInDB = async (id: string, payload: Partial<TCommissionProduct>) => {
+const updateProductInDB = async (id: any, payload: Partial<TCommissionProduct>) => {
     const result = await CommissionProductModel.findByIdAndUpdate(id, payload, { new: true });
     return result;
 };
 
-const deleteProductInDB = async (id: string) => {
+const deleteProductInDB = async (id: any) => {
     const result = await CommissionProductModel.findByIdAndDelete(id);
     return result;
 };

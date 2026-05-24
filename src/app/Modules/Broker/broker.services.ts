@@ -41,16 +41,16 @@ const getAllBrokersFromDB = async ({ limit, searchTerm }: any) => {
     return result;
 };
 
-const getBrokerByIdFromDB = async (id: string) => {
+const getBrokerByIdFromDB = async (id: any) => {
     const result = await BrokerModel.findById(id);
     return result
 };
 
-const brokerUpdateInDB = async (id: string, data: any) => {
+const brokerUpdateInDB = async (id: any, data: any) => {
     const result = await BrokerModel.findByIdAndUpdate(id, data, { new: true });
     return result
 }
-const brokerDeleteFromDB = async (id: string) => {
+const brokerDeleteFromDB = async (id: any) => {
     const result = await BrokerModel.findByIdAndDelete(id);
     return result
 }

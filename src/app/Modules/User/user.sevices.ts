@@ -103,7 +103,7 @@ const updateUserInDB = async (id: string, user: Partial<TUser>) => {
   return { accessToken };
 };
 
-const updateUserRoleInDB = async (id: Types.ObjectId, role: string) => {
+const updateUserRoleInDB = async (id: any, role: any) => {
   const result = await UserModel.findByIdAndUpdate(
     new Types.ObjectId(id),
     { role },
@@ -112,7 +112,7 @@ const updateUserRoleInDB = async (id: Types.ObjectId, role: string) => {
   return result
 }
 
-const updateUserStatusInDB = async (id: Types.ObjectId, status: string) => {
+const updateUserStatusInDB = async (id: any, status: string) => {
   const result = await UserModel.findByIdAndUpdate(
     new Types.ObjectId(id),
     { status },

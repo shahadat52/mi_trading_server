@@ -55,7 +55,7 @@ const updateUser = catchAsync(async (req, res) => {
 const updateUserRole = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { role } = req.body;
-  const result = await userServices.updateUserRoleInDB(new ObjectId(id), role);
+  const result = await userServices.updateUserRoleInDB(id, role);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -67,7 +67,7 @@ const updateUserRole = catchAsync(async (req, res) => {
 const updateUserStatus = catchAsync(async (req, res) => {
   const { id } = req.params
   const { status } = req.body
-  const result = await userServices.updateUserStatusInDB(new ObjectId(id), status);
+  const result = await userServices.updateUserStatusInDB(id, status);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

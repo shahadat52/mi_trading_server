@@ -1,0 +1,21 @@
+import express from 'express';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../User/user.constant';
+import { sectorControllers } from './sector.controller';
+
+const router = express.Router();
+
+// Define user-related routes here
+router.post(
+    '/create',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.superAdmin),
+    sectorControllers.createSector
+);
+
+router.get(
+    '/',
+    sectorControllers.getSectorsFromDB
+);
+
+
+export const sectorRoutes = router;

@@ -255,7 +255,7 @@ const getOutStandingTxnSuppliersFromDB = async ({ searchTerm, type, limit }: any
 
 
 // ✅ Get Supplier by ID
-const getSupplierTxnByIdInDB = async (id: string) => {
+const getSupplierTxnByIdInDB = async (id: any) => {
   // const customerTxn = await CustomerTxnModel.find({ customer: id }).populate('customer');
   const supplierTxn = await SupplierTxnModel.aggregate([
     {
@@ -322,7 +322,7 @@ const getSupplierTxnByIdInDB = async (id: string) => {
 };
 
 // ✅ Update by id
-const updateByIdInDB = async (id: string, updateData: any) => {
+const updateByIdInDB = async (id: any, updateData: any) => {
   const session = await mongoose.startSession()
   try {
     session.startTransaction();
@@ -351,7 +351,7 @@ const updateByIdInDB = async (id: string, updateData: any) => {
 
 
 // ✅ Delete Supplier
-const deleteSupplierTxnFromDB = async (id: string) => {
+const deleteSupplierTxnFromDB = async (id: any) => {
 
   const session = await mongoose.startSession()
   try {

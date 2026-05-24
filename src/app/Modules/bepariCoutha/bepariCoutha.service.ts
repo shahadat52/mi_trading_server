@@ -20,7 +20,7 @@ const createSettlementTxnDInDB = async (payload: TBepariCoutha): Promise<any> =>
     return result;
 };
 
-const getSettlementsOfSupplierFromDb = async (id: string) => {
+const getSettlementsOfSupplierFromDb = async (id: any) => {
     const result = await BepariCouthaModel.find({ supplier: id }).populate([
         { path: 'supplier' },
         { path: 'createdBy' },
@@ -28,7 +28,7 @@ const getSettlementsOfSupplierFromDb = async (id: string) => {
     return result
 };
 
-const getCouthaByIdFromDB = async (id: string) => {
+const getCouthaByIdFromDB = async (id: any) => {
     const result = await BepariCouthaModel.findById(id);
     return result
 

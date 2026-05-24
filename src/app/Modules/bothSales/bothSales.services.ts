@@ -280,7 +280,7 @@ const getAllBothSalesFromDB = async (options: any) => {
   };
 };
 
-const getBothSaleByIdFromDB = async (id: string) => {
+const getBothSaleByIdFromDB = async (id: any) => {
   const sale = await BothSalesModel.findById(id).populate([{
     path: 'customer',
     select: 'name phone address -_id', // শুধু name, _id বাদ
@@ -292,7 +292,7 @@ const getBothSaleByIdFromDB = async (id: string) => {
   return sale;
 };
 
-const getBothSaleByInvoiceFromDB = async (invoice: string) => {
+const getBothSaleByInvoiceFromDB = async (invoice: any) => {
   const sale = await BothSalesModel.findOne({ invoice: invoice }).populate([
 
     {
@@ -376,7 +376,7 @@ const getBothSalesReportFromDB = async ({ startDate, endDate }: any) => {
   };
 };
 
-const getProductWiseSalesReportFromDB = async (product: string) => {
+const getProductWiseSalesReportFromDB = async (product: any) => {
   const pipeline = [
     {
       $match: {

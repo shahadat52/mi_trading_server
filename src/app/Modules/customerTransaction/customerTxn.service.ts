@@ -210,7 +210,7 @@ const getOutStandingCustomerTxnFromDB = async ({ searchTerm, limit, category }: 
 
 
 // ✅ Get Customer Txn by ID 
-const getCustomerTxnByIdInDB = async (id: string) => {
+const getCustomerTxnByIdInDB = async (id: any) => {
   const customerId = new Types.ObjectId(id);
   const customer = await CustomerModel.findById(customerId);
   if (!customer) {
@@ -323,7 +323,7 @@ const getCustomerTxnByIdInDB = async (id: string) => {
 
 
 
-const updateByIdInDB = async (id: string, updateData: any) => {
+const updateByIdInDB = async (id: any, updateData: any) => {
   const session = await mongoose.startSession()
   try {
     session.startTransaction();
@@ -352,7 +352,7 @@ const updateByIdInDB = async (id: string, updateData: any) => {
 
 
 // ✅ Delete Supplier
-const deleteCustomerTxnFromDB = async (id: string) => {
+const deleteCustomerTxnFromDB = async (id: any) => {
   const supplier = await CustomerTxnModel.findByIdAndDelete(id);
   if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
   return supplier;

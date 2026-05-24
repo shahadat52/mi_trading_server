@@ -4,13 +4,12 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
 import cookieParser from 'cookie-parser';
-import mongoose from 'mongoose';
 
 const app = express();
 
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://mitrading.netlify.app"
+  "https://mitrading.shop"
 ];
 
 app.use(

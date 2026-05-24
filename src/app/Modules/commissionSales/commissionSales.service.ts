@@ -106,7 +106,7 @@ const getCommissionSalesFromDB = async () => {
   return result;
 };
 
-const getCommissionSalesByIdFromDB = async (id: string) => {
+const getCommissionSalesByIdFromDB = async (id: any) => {
 
   const result = await CommissionSalesModel.find({ supplier: id })
     .populate([
@@ -125,7 +125,7 @@ const getCommissionSalesByIdFromDB = async (id: string) => {
   return result;
 };
 
-const commissionSalesUpdateInDB = async (id: string, data: any) => {
+const commissionSalesUpdateInDB = async (id: any, data: any) => {
   const result = await CommissionSalesModel.findByIdAndUpdate(id,
     {
       $set: {

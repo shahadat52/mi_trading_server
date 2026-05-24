@@ -174,7 +174,7 @@ const getAllSalesFromDB = async (options: any) => {
 
 
 
-const getSaleByIdFromDB = async (id: string) => {
+const getSaleByIdFromDB = async (id: any) => {
   const sale = await SalesModel.findById(id).populate({
     path: 'salesProducts.product',
     select: 'name -_id', // শুধু name, _id বাদ

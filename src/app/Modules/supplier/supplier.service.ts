@@ -121,21 +121,21 @@ const getSuppliersNameFromDB = async (options: any) => {
 };
 
 // ✅ Get Supplier by ID
-const getSupplierByIdInDB = async (id: string) => {
+const getSupplierByIdInDB = async (id: any) => {
   const supplier = await SupplierModel.findById(id);
   if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Supplier not found');
   return supplier;
 };
 
 // ✅ Update Supplier
-const updateSupplierInDB = async (id: string, payload: Partial<TSupplier>) => {
+const updateSupplierInDB = async (id: any, payload: Partial<TSupplier>) => {
   const supplier = await SupplierModel.findByIdAndUpdate(id, payload, { new: true });
   if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Supplier not found');
   return supplier;
 };
 
 // ✅ Delete Supplier
-const deleteSupplierFromDB = async (id: string) => {
+const deleteSupplierFromDB = async (id: any) => {
   const session = await mongoose.startSession();
 
   try {

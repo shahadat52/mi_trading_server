@@ -25,4 +25,5 @@ export default {
   send_email_app_pass: process.env.SEND_EMAIL_APP_PASS,
   sms_token: process.env.SMS_TOKEN,
   send_sms_url: process.env.SMS_URL,
-};
+  resend_api_key: process.env.RESEND_API_KEY
+}
