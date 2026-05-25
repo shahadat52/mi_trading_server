@@ -8,19 +8,21 @@ const router = express.Router();
 // Define user-related routes here
 router.post(
   '/entry',
-  auth(USER_ROLE.admin, USER_ROLE.superAdmin, USER_ROLE.salesManager, USER_ROLE.specialManager, USER_ROLE.purchaseManager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   customerTxnControllers.customerTxnEntry
 
 );
 
-router.get('/', customerTxnControllers.getAllCustomerTxn);
-router.get('/outStanding', customerTxnControllers.getOutStandingCustomerTxn);
+router.get('/', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getAllCustomerTxn);
+router.get('/outStanding', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getOutStandingCustomerTxn);
 
-router.get('/:id', customerTxnControllers.getCustomerTxnById);
-router.get('/orphan/txn', customerTxnControllers.getOrphanCustomerTxn);
-router.patch('/:id', customerTxnControllers.updateById);
+router.get('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getCustomerTxnById);
+
+router.get('/orphan/txn', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getOrphanCustomerTxn);
+
+router.patch('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.updateById);
 
 
-router.delete('/:id', customerTxnControllers.deleteCustomerTxn);
+router.delete('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager), customerTxnControllers.deleteCustomerTxn);
 
 export const customerTxnRoutes = router;

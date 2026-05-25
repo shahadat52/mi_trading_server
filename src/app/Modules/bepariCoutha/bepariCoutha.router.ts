@@ -1,26 +1,30 @@
 import express from 'express';
 import { bepariCouthaControllers } from './bepariCoutha.controller';
 import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 router.get(
     '/field',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     bepariCouthaControllers.getFieldsWiseData
 );
 
 router.post(
     '/',
-    auth('commissionManager', 'specialManager', 'admin', 'superAdmin'),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     bepariCouthaControllers.createSettlementTxn
 );
 
 router.get(
     '/coutha/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     bepariCouthaControllers.getCouthaByIdFromDB
 );
 
 router.get(
     '/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     bepariCouthaControllers.getSettlementsOfSupplier
 );
 
@@ -28,12 +32,13 @@ router.get(
 
 router.patch(
     '/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth(USER_ROLE.admin, USER_ROLE.manager, USER_ROLE.specialManager),
     bepariCouthaControllers.updateBepariCoutha
 );
 
 router.delete(
     '/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
     bepariCouthaControllers.deleteBepariCoutha
 )
 

@@ -8,7 +8,7 @@ const router = express.Router();
 // Define user-related routes here
 router.post(
     '/create',
-    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.superAdmin),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     sectorControllers.createSector
 );
 

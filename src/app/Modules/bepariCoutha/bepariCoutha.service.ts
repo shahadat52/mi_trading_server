@@ -35,7 +35,7 @@ const getCouthaByIdFromDB = async (id: any) => {
 };
 
 const getFieldsWiseDataFromDb = async (field: any) => {
-
+    console.log(field)
     if (!allowedFields.includes(field)) {
         throw new Error("Invalid field name");
     }
@@ -53,6 +53,7 @@ const getFieldsWiseDataFromDb = async (field: any) => {
             }
         }
     ]);
+    console.log(result)
     return result[0].total || 0;
 };
 

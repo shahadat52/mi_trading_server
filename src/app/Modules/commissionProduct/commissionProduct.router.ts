@@ -5,42 +5,42 @@ const router = express.Router();
 
 router.post(
     '/create',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.createCommissionProduct
 );
 router.get(
     '/',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.getAllCommissionProducts
 );
 
 router.get(
     '/productDetails/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.getProductDetails
 );
 
 router.get(
     '/update/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.getProductDetails
 );
 
 router.get(
     '/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.supplierWiseSupply
 );
 
 router.patch(
     '/update/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'specialManager',),
     commissionProductControllers.updateProductData
 );
 
 router.delete(
     '/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.deleteProduct
 );
 

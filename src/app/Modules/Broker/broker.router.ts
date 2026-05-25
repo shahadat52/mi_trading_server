@@ -6,31 +6,31 @@ const router = express.Router();
 
 router.post(
     '/create',
-    // auth('admin', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     brokerControllers.createBroker
 );
 
 router.get(
     '/',
-    // auth('admin', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     brokerControllers.getAllBrokers
 );
 
 router.get(
     '/:id',
-    // auth('admin', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'manager', 'specialManager',),
     brokerControllers.getBrokerById
 );
 
 router.patch(
     '/update/:id',
-    auth('admin', 'superAdmin', 'specialManager'),
+    auth('admin', 'specialManager'),
     brokerControllers.brokerUpdate
 );
 
 router.delete(
     '/delete/:id',
-    auth('admin', 'superAdmin', 'specialManager'),
+    auth('admin', 'specialManager'),
     brokerControllers.brokerDelete
 );
 

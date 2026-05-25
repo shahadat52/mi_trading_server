@@ -4,28 +4,29 @@ import auth from '../../middlewares/auth';
 
 const router = express.Router();
 
-router.post('/entry', auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'), commissionSalesControllers.createCommissionSales);
+router.post('/entry', auth('admin', 'manager', 'specialManager',), commissionSalesControllers.createCommissionSales);
 
 router.get(
   '/',
-  // auth('admin'),
+  auth('admin', 'manager', 'specialManager',),
   commissionSalesControllers.getCommissionSales
 );
 
 router.get(
   '/couthaOf',
+  auth('admin', 'manager', 'specialManager',),
   commissionSalesControllers.getCommissionSalesSuppliersLotWise
 )
 
 router.get(
   '/:id',
-  // auth('admin'),
+  auth('admin', 'manager', 'specialManager',),
   commissionSalesControllers.getCommissionSalesById
 );
 
 router.patch(
   '/update/:id',
-  // auth('admin'),
+  auth('admin', 'specialManager',),
   commissionSalesControllers.commissionSalesUpdate
 );
 

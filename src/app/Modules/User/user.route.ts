@@ -3,44 +3,44 @@ import { userControllers } from './user.controller';
 import { userZodValidations } from './user.validation';
 import { validateRequest } from '../../middlewares/validateRequest';
 import auth from '../../middlewares/auth';
+import { USER_ROLE } from './user.constant';
 
 const router = express.Router();
 
-// Define user-related routes here
+
 router.post(
   '/create-user',
-  auth('admin', 'superAdmin'),
+  auth(USER_ROLE.admin),
   validateRequest(userZodValidations.createUserValidationSchema),
   userControllers.createUser
 );
 
 router.get(
   '/',
-  auth('admin', 'superAdmin'),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager),
   userControllers.getAllUsers
 );
 
 router.get(
   '/me',
-  auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   userControllers.getSpecificUserInfo
 )
 
 router.patch(
   '/update-user',
-  auth('admin', 'superAdmin', 'specialManager',),
-  // validateRequest(userZodValidations.updateUserValidationSchema),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager),
   userControllers.updateUser
 );
 
 router.patch(
   '/role/:id',
-  auth('admin', 'superAdmin'),
+  auth(USER_ROLE.admin),
   userControllers.updateUserRole
 )
 router.patch(
   '/status/:id',
-  auth('admin', 'superAdmin'),
+  auth(USER_ROLE.admin),
   userControllers.updateUserStatus
 )
 

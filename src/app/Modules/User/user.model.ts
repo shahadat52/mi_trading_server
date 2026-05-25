@@ -13,7 +13,7 @@ const userSchema = new Schema<TUser>(
     phone: { type: String, required: true, unique: true, trim: true },
     role: {
       type: String,
-      enum: ['superAdmin', 'admin', 'specialManager', 'salesManager', 'purchaseManager', 'deliveryManager', 'commissionManager', 'employee'],
+      enum: ['superAdmin', 'admin', 'manager', 'employee'],
       default: 'employee',
     },
     otp: { type: String, trim: true, default: '', required: false },

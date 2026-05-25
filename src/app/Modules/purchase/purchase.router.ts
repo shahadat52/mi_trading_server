@@ -1,25 +1,44 @@
 import express from 'express';
 import { purchaseControllers } from './purchase.controller';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 
-router.post('/entry', purchaseControllers.createPurchase);
+router.post(
+    '/entry',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    purchaseControllers.createPurchase
+);
 
-router.get('/', purchaseControllers.getAllPurchases);
+router.get(
+    '/',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    purchaseControllers.getAllPurchases
+);
 
-router.get('/commissionPurchases', purchaseControllers.getCommissionPurchases);
-router.get('/reports', purchaseControllers.getPurchaseReport)
+router.get(
+    '/commissionPurchases',
+    purchaseControllers.getCommissionPurchases
+);
+router.get(
+    '/reports',
+    purchaseControllers.getPurchaseReport
+);
 
-// router.get('/products-names', purchaseControllers.getProductsName);
 
-router.get('/commission/:id', purchaseControllers.getCommissionPurchase);
-router.get('/regular/:id', purchaseControllers.getPurchaseById);
-router.patch('/update/:id', purchaseControllers.updatePurchaseData);
-router.delete('/:id', purchaseControllers.deletePurchase);
 
-// router.delete(
-//     '/',
-//     // purchaseControllers.deletePurchase
-// );
+router.get('/commission/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), purchaseControllers.getCommissionPurchase);
+
+router.get('/regular/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), purchaseControllers.getPurchaseById);
+
+router.patch('/update/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    purchaseControllers.updatePurchaseData
+);
+router.delete('/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    purchaseControllers.deletePurchase
+);
 
 export const purchaseRouters = router;

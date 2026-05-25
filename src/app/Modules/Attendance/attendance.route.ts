@@ -1,12 +1,13 @@
 import express from 'express';
 import { attendanceControllers } from './attendance.controller';
+import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 
-router.patch('/basic/:id', attendanceControllers.updateBasicSalary);
-router.patch('/:id', attendanceControllers.updateEmployeeStatus);
-
-router.get('/:id', attendanceControllers.getAttendanceById);
+router.patch('/basic/:id', auth(USER_ROLE.admin), attendanceControllers.updateBasicSalary);
+router.patch('/:id', auth(USER_ROLE.admin), attendanceControllers.updateEmployeeStatus);
+router.get('/:id', auth(USER_ROLE.admin), attendanceControllers.getAttendanceById);
 
 
 

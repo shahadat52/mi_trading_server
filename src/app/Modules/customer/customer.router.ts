@@ -5,29 +5,31 @@ const router = express.Router();
 
 router.post(
     '/add',
-    // auth('admin', 'manager'),
+    auth('admin', 'manager', 'specialManager',),
     customerControllers.addCustomer
 );
 
 router.get(
     '/',
+    auth('admin', 'manager', 'specialManager',),
     customerControllers.getAllCustomers
 );
 
 router.get(
     '/:id',
+    auth('admin', 'manager', 'specialManager',),
     customerControllers.getCustomerById
 );
 
 router.patch(
     '/:id',
-    auth('admin', 'employee', 'superAdmin', 'specialManager', 'commissionManager', 'deliveryManager', 'salesManager', 'purchaseManager'),
+    auth('admin', 'specialManager',),
     customerControllers.updateCustomer
 )
 
 router.delete(
     '/:id',
-    auth('admin', 'superAdmin'),
+    auth('admin'),
     customerControllers.deleteCustomer
 )
 

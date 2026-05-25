@@ -7,13 +7,13 @@ const router = express.Router();
 
 router.post(
   '/create',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.salesManager, USER_ROLE.deliveryManager, USER_ROLE.superAdmin, USER_ROLE.employee),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   deliveryControllers.deliveryEntry
 );
 
 router.get(
   '/all',
-  // auth(USER_ROLE.admin, USER_ROLE.manager, USER_ROLE.superAdmin, USER_ROLE.employee),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   deliveryControllers.getAllDeliveries
 );
 
