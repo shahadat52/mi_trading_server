@@ -1,4 +1,4 @@
-import nodemailer from 'nodemailer';
+
 import config from '../config';
 import { Resend } from 'resend';
 import AppError from '../errors/appErrors';

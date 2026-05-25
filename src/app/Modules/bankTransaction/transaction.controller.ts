@@ -27,6 +27,20 @@ const getAllTransaction = catchAsync(async (req, res) => {
     return result;
 });
 
+const getBankWiseTransactions = catchAsync(async (req, res) => {
+
+    const query = req.query
+    const result = await transactionServices.getBankWiseTransactionsFromDB(query);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'All transaction data retrieved',
+        data: result,
+    });
+    return result;
+});
+
 const getAllOutstandingTxn = catchAsync(async (req, res) => {
     const result = await transactionServices.getAllOutstandingTxnFromDB();
 
@@ -53,6 +67,35 @@ const updateTxnStatus = catchAsync(async (req, res) => {
     return result;
 });
 
+// ✅ Transaction data update
+const updateById = catchAsync(async (req, res) => {
+    const { id } = req.params
+    const updateData = req.body
+    const result = await transactionServices.updateByIdInDB(id, updateData);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Transaction Updated',
+        data: result,
+    });
+});
+
+
+
+// ✅ Delete
+const deleteBankTxn = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await transactionServices.deleteBankTxnFromDB(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Deleted',
+        data: result,
+    });
+});
+
 
 
 
@@ -60,6 +103,9 @@ const updateTxnStatus = catchAsync(async (req, res) => {
 export const transactionControllers = {
     transactionEntry,
     getAllTransaction,
+    getBankWiseTransactions,
     getAllOutstandingTxn,
-    updateTxnStatus
+    updateTxnStatus,
+    updateById,
+    deleteBankTxn
 }

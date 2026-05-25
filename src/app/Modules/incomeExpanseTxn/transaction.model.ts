@@ -23,6 +23,11 @@ const transactionSchema = new Schema<TTransaction>(
             enum: Object.values(TransactionType),
             required: [true, 'Transaction type is required'],
         },
+        paymentMethod: {
+            type: String,
+            required: [true, 'Method is required'],
+            default: 'cash'
+        },
 
         amount: {
             type: Number,

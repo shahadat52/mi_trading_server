@@ -1,17 +1,85 @@
 import { JwtPayload } from "jsonwebtoken";
 import { TTransaction } from "./transaction.interface"
 import { TxnModel } from "./transaction.model"
-import { format } from "date-fns";
+import { format, formatDate } from "date-fns";
 import { makeRegex } from "../../utils/makeRegex";
-import { PipelineStage } from "mongoose";
+import mongoose, { PipelineStage } from "mongoose";
+import AppError from "../../errors/appErrors";
+import httpStatus from 'http-status'
+import { BankTxnModel } from "../bankTransaction/transaction.model";
 
 
-const transactionEntryInDB = async (payload: TTransaction, user: JwtPayload) => {
-    payload.createdBy = user._id;
-    const date = format(new Date(), "dd/MM/yyyy, HH:mm");
-    payload.date = date
-    const result = await TxnModel.create(payload);
-    return result;
+const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
+
+    const { bankName, issueDate, postingDate, ...txnData } = payload;
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction()
+        const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
+        txnData.date = date
+
+        if (user) {
+            txnData.createdBy = user
+        }
+        // 3️⃣ create transaction
+        const txn = await TxnModel.create(
+            [
+                {
+                    ...txnData
+                },
+            ],
+            { session }
+        );
+
+        if (issueDate && postingDate && payload.paymentMethod === 'bank') {
+            const txnInfo = {
+                bankName,
+                amount: payload.amount,
+                party: user._id,
+                partyModel: 'User',
+                type: txnData.type,
+                createdBy: user._id,
+                issueDate,
+                postingDate,
+                note: txnData.note,
+            };
+
+            //✅ Bank txn entry 
+            await BankTxnModel.create([txnInfo], { session })
+        }
+
+        if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nogod') {
+            const txnInfo = {
+                head: 'expense',
+                category: payload.paymentMethod,
+                type: 'debit',
+                amount: payload.amount,
+                paymentMethod: payload.paymentMethod,
+                note: payload.note,
+                date: date,
+                createdBy: user._id
+            };
+
+            //✅ Bank txn entry 
+            await TxnModel.create([txnInfo], { session })
+        }
+
+
+
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return txn[0];
+    } catch (error) {
+
+        await session.abortTransaction()
+        session.endSession()
+        throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');
+
+    }
+
+
 };
 
 

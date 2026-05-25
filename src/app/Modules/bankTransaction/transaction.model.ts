@@ -5,10 +5,7 @@ export enum TransactionType {
     DEBIT = "debit",
     CREDIT = "credit",
 }
-export enum PartyModel {
-    CUSTOMER = "Customer",
-    SUPPLIER = "Supplier",
-}
+
 const transactionSchema = new Schema<TTransaction>(
     {
         bankName: {
@@ -16,17 +13,6 @@ const transactionSchema = new Schema<TTransaction>(
             required: [true, 'Bank name is required'],
             trim: true
         },
-        party: {
-            type: Schema.Types.ObjectId,
-            required: true,
-            refPath: "partyModel",
-        },
-        partyModel: {
-            type: String,
-            required: true,
-            enum: Object.values(PartyModel),
-        },
-
         type: {
             type: String,
             enum: Object.values(TransactionType),
@@ -36,7 +22,7 @@ const transactionSchema = new Schema<TTransaction>(
         amount: {
             type: Number,
             required: [true, 'Amount is required'],
-            min: 1,
+            min: 0,
         },
 
         issueDate: {
@@ -77,4 +63,5 @@ const transactionSchema = new Schema<TTransaction>(
     { timestamps: true }
 );
 
+transactionSchema.index({ bankName: 1 })
 export const BankTxnModel = model("BankTransaction", transactionSchema);

@@ -13,6 +13,7 @@ export type TSupplierTxn = {
   issueDate?: Date;
   postingDate?: Date;
   note?: string
+  txnBy: Types.ObjectId
 };
 
 export interface TSupplierTxnModel extends Model<TSupplierTxn> {

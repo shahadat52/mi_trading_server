@@ -11,11 +11,16 @@ router.post(
     auth(USER_ROLE.admin),
     transactionControllers.transactionEntry
 );
+router.get(
+    '/name',
+    transactionControllers.getBankWiseTransactions
+);
 
 router.get(
     '/',
     transactionControllers.getAllTransaction
 );
+
 
 router.get(
     '/outstandingTxn',
@@ -23,8 +28,18 @@ router.get(
 );
 
 router.patch(
+    '/update/:id',
+    transactionControllers.updateById
+)
+
+router.patch(
     '/:id',
     transactionControllers.updateTxnStatus
+)
+
+router.delete(
+    '/:id',
+    transactionControllers.deleteBankTxn
 )
 
 

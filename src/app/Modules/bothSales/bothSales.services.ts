@@ -14,9 +14,13 @@ import { getSalesInvoiceNumber } from './sales.utils';
 import { PurchaseModel } from '../purchase/purchase.model';
 import { makeRegex } from '../../utils/makeRegex';
 import { CustomerModel } from '../customer/customer.model';
+import { JwtPayload } from 'jsonwebtoken';
+import { TxnModel } from '../incomeExpanseTxn/transaction.model';
+import { formatDate } from 'date-fns';
 
 const bothSalesEntryInDB = async (payload: any) => {
-  const { bankInfo, broker, brokerBill, ...salesData } = payload;
+  const { broker, brokerBill, ...salesData } = payload;
+
   if (broker?.name) {
     salesData.broker = broker?.name
   }
@@ -82,7 +86,7 @@ const bothSalesEntryInDB = async (payload: any) => {
       commissionSalesData.invoice = CsInvoiceNumber;
 
       // 1️⃣ Create commission sales entry
-      const commissionSalesRes = await CommissionSalesModel.create([commissionSalesData], {
+      await CommissionSalesModel.create([commissionSalesData], {
         session,
       });
 
@@ -121,9 +125,11 @@ const bothSalesEntryInDB = async (payload: any) => {
     const customerDebitTxnPayload = {
       party: salesData.customer,
       type: 'debit',
+      paymentMethod: 'cash',
       amount: salesData.grandTotal,
       description: salesResult[0].invoice,
-      date: salesData.date
+      date: salesData.date,
+      txnBy: payload.createdBy
     }
     await CustomerTxnModel.create([customerDebitTxnPayload], { session })
 
@@ -131,13 +137,16 @@ const bothSalesEntryInDB = async (payload: any) => {
       const customerCreditTxnPayload = {
         party: salesData.customer,
         type: 'credit',
+        paymentMethod: 'cash',
         amount: salesData.paidAmount,
         description: payload.description,
-        date: salesData.date
+        date: salesData.date,
+        txnBy: payload.createdBy
       }
       await CustomerTxnModel.create([customerCreditTxnPayload], { session })
 
     };
+    //Broker Txn
     if (broker._id !== "" && brokerBill > 0) {
       const brokerData = await BrokerModel.findById(broker._id).session(session);
       const brokerTxnData = {
@@ -160,15 +169,11 @@ const bothSalesEntryInDB = async (payload: any) => {
       }
 
       const currentBal = brokerData?.currentBalance || 0;
-
-      // 2️⃣ calculate new balance
       let newBal = currentBal;
-
       if (brokerTxnData.type === "credit") {
         newBal = Number(currentBal) + Number(brokerTxnData.amount);
       }
 
-      // 3️⃣ create transaction
       const [createdTxn] = await BrokerTxnModel.create(
         [
           {
@@ -179,7 +184,6 @@ const bothSalesEntryInDB = async (payload: any) => {
         { session }
       );
 
-      // 4️⃣ update broker balance
       await BrokerModel.findByIdAndUpdate(
         brokerTxnData.broker,
         {
@@ -188,12 +192,27 @@ const bothSalesEntryInDB = async (payload: any) => {
         },
         { new: true, session }
       );
-
     }
-    // 4. Commit
+
+    //✅ Bank txn 
+    if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nogod') {
+      const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
+      const txnInfo = {
+        head: 'income',
+        category: payload.paymentMethod,
+        type: 'credit',
+        amount: payload.paidAmount,
+        paymentMethod: payload.paymentMethod,
+        note: payload.comments,
+        createdBy: payload.createdBy,
+        date
+      };
+
+      //✅ Bank txn entry 
+      await TxnModel.create([txnInfo], { session })
+    }
     await session.commitTransaction();
     session.endSession();
-
     return salesResult[0];
   } catch (error) {
     await session.abortTransaction();

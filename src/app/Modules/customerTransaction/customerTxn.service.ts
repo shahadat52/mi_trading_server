@@ -5,17 +5,22 @@ import { TCustomerTxn } from './customerTxn.interface';
 import mongoose, { Types } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
-import { TUser } from '../User/user.interface';
-import { JwtPayload } from 'jsonwebtoken';
 import { SupplierModel } from '../supplier/supplier.model';
+import { TTransaction } from '../bankTransaction/transaction.interface';
+import { TxnModel } from '../incomeExpanseTxn/transaction.model';
+import { formatDate } from 'date-fns';
 
 // ✅ Create Supplier
-const customerTxnEntryInDB = async (payload: TCustomerTxn, user: JwtPayload) => {
-  const { bankName, issueDate, postingDate, note, ...txnData } = payload;
+const customerTxnEntryInDB = async (payload: any, user: any) => {
+  const { note, ...txnData } = payload;
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
+    const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
 
+    if (txnData.paymentMethod === 'bank') {
+      txnData.amount = 0
+    }
     // 1️⃣ find Customer
     const customer = await CustomerModel.findById(payload.party).session(session);
 
@@ -24,7 +29,9 @@ const customerTxnEntryInDB = async (payload: TCustomerTxn, user: JwtPayload) => 
     }
 
 
-
+    if (user) {
+      txnData.txnBy = user
+    }
     // 3️⃣ create transaction
     const txn = await CustomerTxnModel.create(
       [
@@ -45,20 +52,20 @@ const customerTxnEntryInDB = async (payload: TCustomerTxn, user: JwtPayload) => 
     );
 
 
-    if (payload.paymentMethod === 'bank') {
+    if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
       const txnInfo = {
-        bankName,
-        amount: txnData.amount,
-        party: txnData.party,
-        partyModel: txnData.partyModel,
-        type: txnData.type,
-        createdBy: user._id,
-        issueDate,
-        postingDate,
-        note,
+        head: 'income',
+        category: payload.paymentMethod,
+        type: 'credit',
+        amount: payload.amount,
+        paymentMethod: payload.paymentMethod,
+        note: payload.description,
+        date: date,
+        createdBy: user._id
       };
+
       //✅ Bank txn entry 
-      await BankTxnModel.create([txnInfo], { session })
+      await TxnModel.create([txnInfo], { session })
     }
 
 
@@ -67,6 +74,7 @@ const customerTxnEntryInDB = async (payload: TCustomerTxn, user: JwtPayload) => 
 
     return txn[0];
   } catch (error) {
+
     await session.abortTransaction()
     session.endSession()
     throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');

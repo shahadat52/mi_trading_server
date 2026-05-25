@@ -1,46 +1,195 @@
 import { JwtPayload } from "jsonwebtoken";
 import { TTransaction } from "./transaction.interface"
 import { BankTxnModel } from "./transaction.model"
+import { endOfDay, startOfDay } from "date-fns";
+import AppError from "../../errors/appErrors";
+import mongoose from "mongoose";
+import httpStatus from 'http-status'
 
-const transactionEntryInDB = async (payload: TTransaction, user: JwtPayload) => {
 
+const transactionEntryInDB = async (
+    payload: TTransaction,
+    user: JwtPayload
+) => {
     payload.createdBy = user._id;
 
-    const postingDate = new Date(payload.postingDate);
-    postingDate.setHours(0, 0, 0, 0);
+    payload.postingDate = startOfDay(new Date(payload.postingDate));
 
-    payload.postingDate = postingDate;
     const result = await BankTxnModel.create(payload);
+
     return result;
 };
-
 const getAllTransactionFromDB = async (options: any) => {
-    const {
-        dateFrom,
-        dateTo,
-        id,
-    } = options;
-    const query: any = {};
+    const { dateFrom, dateTo } = options;
 
-    //✅ Date range
+    const matchStage: any = {
+        isDeleted: false,
+    };
+
+    // optional date filter (issueDate বা postingDate যেটা business logic)
     if (dateFrom && dateTo) {
-        query.date = {
+        matchStage.issueDate = {
             $gte: new Date(dateFrom),
             $lte: new Date(dateTo),
         };
     }
 
+    const result = await BankTxnModel.aggregate([
+        { $match: matchStage },
 
-    const result = await BankTxnModel.find(query)
-        .populate([
-            { path: 'party' },
-            { path: 'createdBy' },
-        ])
-        .sort({ createdAt: -1 });
+        // enrich fields if needed (optional)
+        {
+            $group: {
+                _id: "$bankName",
 
 
-    return result
+
+                totalDebit: {
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$type", "debit"] },
+                            "$amount",
+                            0,
+                        ],
+                    },
+                },
+
+                totalCredit: {
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$type", "credit"] },
+                            "$amount",
+                            0,
+                        ],
+                    },
+                },
+            },
+        },
+
+        {
+            $addFields: {
+                currentBalance: {
+                    $subtract: ["$totalCredit", "$totalDebit"],
+                },
+            },
+        },
+
+        {
+            $project: {
+                _id: 0,
+                bankName: "$_id",
+                totalDebit: 1,
+                totalCredit: 1,
+                currentBalance: 1,
+            },
+        },
+
+        {
+            $sort: { bankName: 1 },
+        },
+    ]);
+
+    return result;
 };
+
+
+
+
+
+const getBankWiseTransactionsFromDB = async ({
+    fromDate,
+    toDate,
+    bankName,
+    limit = 10,
+}: any) => {
+
+    const matchStage: any = {
+        isDeleted: false,
+    };
+
+    if (fromDate && toDate) {
+        matchStage.createdAt = {
+            $gte: startOfDay(new Date(fromDate)),
+            $lte: endOfDay(new Date(toDate)),
+        };
+    }
+
+    if (bankName) {
+        matchStage.bankName = bankName;
+    }
+
+    return BankTxnModel.aggregate([
+        // 1️⃣ Match
+        { $match: matchStage },
+
+        // 2️⃣ Sort
+        { $sort: { bankName: 1, postingDate: 1, _id: 1 } },
+
+
+
+        // 7️⃣ Running balance
+        {
+            $setWindowFields: {
+                partitionBy: "$bankName",
+                sortBy: { postingDate: 1, _id: 1 },
+                output: {
+                    balance: {
+                        $sum: {
+                            $cond: [
+                                { $eq: ["$type", "credit"] },
+                                "$amount",
+                                { $multiply: ["$amount", -1] },
+                            ],
+                        },
+                        window: {
+                            documents: ["unbounded", "current"],
+                        },
+                    },
+                },
+            },
+        },
+
+        // 8️⃣ Group by bank
+        {
+            $group: {
+                _id: "$bankName",
+                totalAmount: { $sum: "$amount" },
+                count: { $sum: 1 },
+
+                transactions: {
+                    $push: {
+                        _id: "$_id",
+                        type: "$type",
+                        amount: "$amount",
+                        postingDate: "$postingDate",
+                        issueDate: "$issueDate",
+                        status: "$status",
+                        note: "$note",
+
+                        balance: "$balance",
+                    },
+                },
+            },
+        },
+
+        // 9️⃣ Limit
+        {
+            $project: {
+                _id: 0,
+                bankName: "$_id",
+                totalAmount: 1,
+                count: 1,
+                transactions: {
+                    $slice: ["$transactions", Number(limit)],
+                },
+            },
+        },
+
+        // 🔟 Sort banks
+        { $sort: { totalAmount: -1 } },
+    ]);
+};
+
 
 const getAllOutstandingTxnFromDB = async () => {
     const query: any = {};
@@ -53,10 +202,6 @@ const getAllOutstandingTxnFromDB = async () => {
     };
 
     const result = await BankTxnModel.find(query)
-        .populate([
-            { path: 'party' },
-            { path: 'createdBy' },
-        ])
         .sort({ postingDate: 1 });
 
     return result;
@@ -67,10 +212,39 @@ const updateTxnStatusInDB = async (id: any, status: any) => {
     return result
 };
 
+const updateByIdInDB = async (id: any, updateData: any) => {
+    const session = await mongoose.startSession()
+    try {
+        session.startTransaction();
+        const txn = await BankTxnModel.findByIdAndUpdate(id, updateData, { new: true, session });
+        if (!txn) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
+        await session.commitTransaction();
+        session.endSession()
+        return txn;
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন আপডেট হয়নি');
+
+    }
+};
+
+
+
+// ✅ Delete Supplier
+const deleteBankTxnFromDB = async (id: any) => {
+    const supplier = await BankTxnModel.findByIdAndDelete(id);
+    if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
+    return supplier;
+};
+
 
 export const transactionServices = {
     transactionEntryInDB,
     getAllTransactionFromDB,
+    getBankWiseTransactionsFromDB,
     getAllOutstandingTxnFromDB,
-    updateTxnStatusInDB
+    updateTxnStatusInDB,
+    updateByIdInDB,
+    deleteBankTxnFromDB
 }

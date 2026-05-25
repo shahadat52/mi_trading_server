@@ -4,6 +4,7 @@ import globalErrorHandler from './app/middlewares/globalErrorHandler';
 import notFound from './app/middlewares/notFound';
 import router from './app/routes';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 
 const app = express();
 
@@ -34,6 +35,11 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/v1', router);
+
+app.get('/{*splat}', (req: Request, res: Response) => {
+  const frontendIndex = path.resolve(__dirname, '../../public_html/index.html');
+  res.sendFile(frontendIndex);
+});
 
 app.get('/', (req: Request, res: Response) => {
   res.send(`Server is running successfully!`);

@@ -5,19 +5,19 @@ import { TSupplierTxn } from './supplierTxn.interface';
 import mongoose, { Types, now } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
 import { SupplierModel } from '../supplier/supplier.model';
-import { BankTxnModel } from '../bankTransaction/transaction.model';
-import { TUser } from '../User/user.interface';
 import { JwtPayload } from 'jsonwebtoken';
 import { makeRegex } from '../../utils/makeRegex';
 import { BepariCouthaModel } from '../bepariCoutha/bepariCoutha.model';
 
-// ✅ Create Supplier
-const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: JwtPayload) => {
-  const { bankName, issueDate, postingDate, note, paymentMethod, ...txnData } = payload
+//✅ Create Supplier
+const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
+  const { note, ...txnData } = payload
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
-
+    if (txnData.paymentMethod === 'bank') {
+      txnData.amount = 0
+    }
     // 1️⃣ find Supplier
     const supplier = await SupplierModel.findById(payload.party).session(session);
 
@@ -25,6 +25,9 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: JwtPayload) => 
       throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
     }
 
+    if (user) {
+      txnData.txnBy = user
+    }
     // 3️⃣ create transaction
     const [txn] = await SupplierTxnModel.create(
       [
@@ -37,27 +40,10 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: JwtPayload) => 
     await SupplierModel.findByIdAndUpdate(
       txnData.party,
       {
-
         lastTxnAt: new Date(Date.now()),
       },
       { new: true, session }
     );
-
-    if (payload.paymentMethod === 'bank') {
-      const txnInfo = {
-        bankName,
-        amount: txnData.amount,
-        party: txnData.party,
-        partyModel: txnData.partyModel,
-        type: txnData.type,
-        createdBy: user._id,
-        issueDate,
-        postingDate,
-        note,
-      };
-      //✅ Bank txn entry 
-      await BankTxnModel.create([txnInfo], { session })
-    }
 
     const supTxn = await SupplierModel.findByIdAndUpdate(
       payload.party,
@@ -72,7 +58,6 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: JwtPayload) => 
     await session.abortTransaction()
     session.endSession()
     throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');
-
   }
 };
 

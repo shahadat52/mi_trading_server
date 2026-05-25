@@ -19,6 +19,12 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
       required: [true, 'Transaction type is required'],
     },
 
+    paymentMethod: {
+      type: String,
+      required: [true, 'Method is required'],
+      default: 'cash'
+    },
+
     amount: {
       type: Number,
       required: [true, 'Amount is required'],
@@ -35,6 +41,8 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
       default: Date.now,
       required: [true, 'Date is required']
     },
+    txnBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'লেনদেনকারীর নাম নাই'] },
+
   },
   {
     timestamps: true

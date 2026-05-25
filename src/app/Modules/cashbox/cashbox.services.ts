@@ -1,7 +1,4 @@
 import AppError from "../../errors/appErrors";
-import { BrokerTxnModel } from "../BrokerTxn/brokerTxn.model";
-import { BepariCouthaModel } from "../bepariCoutha/bepariCoutha.model";
-import { CustomerTxnModel } from "../customerTransaction/customerTxn.model";
 import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 import { TCashbox } from "./cashbox.interface";
 import { CashboxModel } from "./cashbox.model";
@@ -9,17 +6,23 @@ import { startOfDay, endOfDay } from "date-fns";
 import httpStatus from "http-status"
 
 const cashboxEntryInDB = async (payload: TCashbox) => {
-    const todayStart = startOfDay(new Date());
-    const isAddedBal = await CashboxModel.findOne({ date: todayStart })
-    if (isAddedBal) {
-        throw new AppError(
-            httpStatus.ALREADY_REPORTED,
-            'ব্যালেন্স যুক্ত করা হয়েছে',
-        );
-    }
-    payload.date = todayStart
-    const result = await CashboxModel.create(payload);
-    return result
+    const date = startOfDay(new Date());
+
+    const result = await CashboxModel.findOneAndUpdate(
+        { date },
+        {
+            $set: {
+                ...payload,
+                date,
+            },
+        },
+        {
+            new: true,
+            upsert: true, // creates if not exists
+        }
+    );
+
+    return result;
 };
 
 const getTodayOpeningBalFromDB = async () => {
@@ -41,6 +44,7 @@ const getTodayCashInFromDB = async () => {
             $match: {
                 head: "income",
                 type: "credit",
+                paymentMethod: "cash",
                 createdAt: {
                     $gte: startDate,
                     $lte: endDate,
@@ -68,6 +72,7 @@ const getTodayCashInFromDB = async () => {
                     {
                         $match: {
                             type: "credit",
+                            paymentMethod: 'cash',
                             createdAt: {
                                 $gte: startDate,
                                 $lte: endDate,
@@ -166,6 +171,7 @@ const getTodayCashOutFromDB = async () => {
         {
             $match: {
                 head: "expense",
+                paymentMethod: "cash",
                 type: "debit",
                 createdAt: { $gte: startDate, $lte: endDate },
             },
@@ -188,6 +194,7 @@ const getTodayCashOutFromDB = async () => {
                     {
                         $match: {
                             type: "debit",
+                            paymentMethod: "cash",
                             createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },

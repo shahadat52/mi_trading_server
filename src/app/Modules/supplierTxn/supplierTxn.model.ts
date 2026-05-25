@@ -35,12 +35,17 @@ const supplierTxnSchema = new Schema<TSupplierTxn>(
       type: String,
       default: ''
     },
+    paymentMethod: {
+      type: String,
+      default: 'cash'
+    },
 
     date: {
       type: Date,
       default: Date.now,
       required: [true, 'Date is required']
     },
+    txnBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'লেনদেনকারীর নাম নাই'] },
 
   },
   {

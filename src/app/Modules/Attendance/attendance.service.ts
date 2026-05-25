@@ -34,7 +34,6 @@ const generateEmployeesAttendance = async () => {
         console.log('Attendance generated');
 
     } catch (error) {
-        console.log(error);
     }
 };
 
@@ -44,7 +43,7 @@ const getAttendanceByIdFromDb = async ({ id, year, month }: any) => {
 
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
-    const [result] = await UserModel.aggregate([
+    const [result]: any = await UserModel.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(id)

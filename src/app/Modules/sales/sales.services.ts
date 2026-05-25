@@ -103,9 +103,7 @@ const getAllSalesFromDB = async (options: any) => {
 
   const query: any = {};
 
-  // ======================
-  // 1. Main Search (Global)
-  // ======================
+
   if (search) {
     query.$or = [
       { invoice: makeRegex(search) },
@@ -116,24 +114,16 @@ const getAllSalesFromDB = async (options: any) => {
     ];
   }
 
-  // ======================
-  // 2. Filter by broker
-  // (Merge with existing $or)
-  // ======================
+
   if (broker) {
     query.$or = [...(query?.$or ?? []), { broker: makeRegex(broker) }];
   }
 
-  // ======================
-  // 3. Filter by category (via product)
-  // ======================
   if (category) {
     query['items.product.category'] = category;
   }
 
-  // ======================
-  // 4. Date Range Filter
-  // ======================
+
   if (dateFrom && dateTo) {
     query.date = {
       $gte: new Date(dateFrom),
@@ -158,9 +148,7 @@ const getAllSalesFromDB = async (options: any) => {
     ]),
   ]);
 
-  // ======================
-  // 8. Return Response
-  // ======================
+
   return {
     meta: {
       page,

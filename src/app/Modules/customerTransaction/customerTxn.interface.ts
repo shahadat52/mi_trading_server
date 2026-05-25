@@ -11,7 +11,8 @@ export type TCustomerTxn = {
   bankName?: string
   issueDate?: Date;
   postingDate?: Date;
-  note?: string
+  note?: string;
+  txnBy: Types.ObjectId
   createdAt?: any
 };
 
