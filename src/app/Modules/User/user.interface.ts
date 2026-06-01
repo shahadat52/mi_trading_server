@@ -10,7 +10,7 @@ export type TUser = {
   password: string;
   phone: string;
   basicSalary: number;
-  role: 'superAdmin' | 'admin' | 'specialManager' | 'salesManager' | 'purchaseManager' | 'deliveryManager' | 'commissionManager' | 'employee';
+  role: 'superAdmin' | 'admin' | 'specialManager' | 'manager' | 'employee';
   otp: string;
   otpExpires: any; // ✅ Correct type
   status: 'active' | 'blocked';

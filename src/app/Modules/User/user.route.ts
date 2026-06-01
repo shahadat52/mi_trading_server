@@ -23,7 +23,7 @@ router.get(
 
 router.get(
   '/me',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager, USER_ROLE.employee),
   userControllers.getSpecificUserInfo
 )
 

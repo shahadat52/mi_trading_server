@@ -7,7 +7,7 @@ import { getPurchaseInvoiceNumber } from './purchase.utils';
 import AppError from '../../errors/appErrors';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 
-const createPurchaseInDB = async (data: TPurchase) => {
+const createPurchaseInDB = async (data: TPurchase, user: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
 
   payload.purchaseQty = payload.quantity
@@ -47,7 +47,8 @@ const createPurchaseInDB = async (data: TPurchase) => {
       party: payload.supplier,
       amount,
       type: 'credit',
-      description: `${payload?.product} ${payload.quantity} ${payload?.unit}র বিল`
+      description: `${payload?.product} ${payload.bosta} বস্তার বিল`,
+      txnBy: user._id
     };
     // 3️⃣ create transaction
     await SupplierTxnModel.create(
@@ -61,7 +62,8 @@ const createPurchaseInDB = async (data: TPurchase) => {
         party: payload.supplier,
         amount: data.paidAmount,
         type: 'debit',
-        description: `${payload?.product} ${payload.quantity} ${payload?.unit}র বিল বাবদ`
+        description: `${payload?.product} ${payload.bosta} বস্তার বিল বাবদ`,
+        txnBy: user._id
       };
       // 3️⃣ create transaction
       const supDebitTxnAdd = await SupplierTxnModel.create(

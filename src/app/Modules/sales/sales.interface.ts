@@ -37,34 +37,4 @@ export type TSales = {
   isVerified: boolean;
 };
 
-// export type TSalesProducts = {
-//     product: Types.ObjectId;
-//     qty: number;
-//     unitPrice: number;
-//     total: number
-// };
 
-// export type TSales = {
-//     customer: string;
-//     phone: string;
-//     salesDate: Date;
-//     invoice: string;
-//     salesProducts: [TSalesProducts];
-//     truck_rent?: number
-//     cash_transport?: number;
-//     kuli: number;
-//     brokary: number;
-//     arot?: number;
-//     haolat?: number;
-//     godi?: number;
-//     tohori?: number;
-//     subTotal: number,
-//     discount: number,
-//     broker: string
-//     grandTotal: number
-//     paidAmount: number;
-//     isPaid: boolean;
-//     isDelivered?: boolean;
-//     dueAmount: number;
-//     paymentMethod: string
-// }

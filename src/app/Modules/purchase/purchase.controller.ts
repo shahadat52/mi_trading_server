@@ -3,10 +3,10 @@ import sendResponse from '../../utils/sendResponse';
 import { ProductService } from '../product/product.service';
 import httpStatus from 'http-status';
 import { purchaseServices } from './purchase.service';
-import { PurchaseModel } from './purchase.model';
 
 const createPurchase = catchAsync(async (req, res) => {
-  const result = await purchaseServices.createPurchaseInDB(req.body);
+  const user = req.user;
+  const result = await purchaseServices.createPurchaseInDB(req.body, user);
 
   sendResponse(res, {
     success: true,

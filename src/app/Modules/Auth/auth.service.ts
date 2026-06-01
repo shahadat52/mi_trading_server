@@ -11,7 +11,6 @@ import { sendEmail } from '../../utils/sendEmail';
 const userLogin = async (payload: TLoginUser) => {
   const { phone, password } = payload;
   const user = await UserModel.findOne({ phone }).select('+password');
-
   if (!user) {
     throw new AppError(httpStatus.NOT_FOUND, 'User not available');
   }
@@ -35,7 +34,6 @@ const userLogin = async (payload: TLoginUser) => {
   user.otp = otp;
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
-
   const sms = await sendSMS({ to: user.phone, message: `Your OTP is: ${otp}. It will expire in 5 minutes.` });
   await sendEmail(user.email, otp, otpSendingUiLink);
 

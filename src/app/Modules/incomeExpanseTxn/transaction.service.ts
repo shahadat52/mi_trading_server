@@ -1,7 +1,7 @@
 import { JwtPayload } from "jsonwebtoken";
 import { TTransaction } from "./transaction.interface"
 import { TxnModel } from "./transaction.model"
-import { format, formatDate } from "date-fns";
+import { endOfDay, format, formatDate, startOfDay } from "date-fns";
 import { makeRegex } from "../../utils/makeRegex";
 import mongoose, { PipelineStage } from "mongoose";
 import AppError from "../../errors/appErrors";
@@ -83,18 +83,17 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
 };
 
 
-
-
 const getAllTransactionFromDB = async (options: any) => {
     const {
         category,
         head,
-        dateFrom,
-        dateTo,
+        startDate,
+        endDate,
         search,
         limit = 20,
         page = 1,
     } = options;
+
 
     const matchStage: any = {};
 
@@ -125,17 +124,13 @@ const getAllTransactionFromDB = async (options: any) => {
         ];
     }
 
-    // Date range filter
-    if (dateFrom || dateTo) {
-        matchStage.date = {};
 
-        if (dateFrom) {
-            matchStage.date.$gte = new Date(dateFrom);
-        }
 
-        if (dateTo) {
-            matchStage.date.$lte = new Date(dateTo);
-        }
+    if (startDate && endDate) {
+        matchStage.createdAt = {
+            $gte: startOfDay(new Date(startDate)),
+            $lte: endOfDay(new Date(endDate)),
+        };
     }
 
     // Aggregation Pipeline
@@ -188,7 +183,6 @@ const getAllTransactionFromDB = async (options: any) => {
             },
         },
 
-        // Clean response structure
         {
             $project: {
                 data: 1,

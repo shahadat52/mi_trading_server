@@ -45,9 +45,8 @@ const getCouthaByIdFromDB = catchAsync(async (req, res) => {
 
 
 const getFieldsWiseData = catchAsync(async (req, res) => {
-    const { field } = req.query
-    console.log(field)
-    const result = await BepariCouthaServices.getFieldsWiseDataFromDb(field);
+    const { field, startDate, toDate } = req.query
+    const result = await BepariCouthaServices.getFieldsWiseDataFromDb(field, startDate, toDate);
 
     sendResponse(res, {
         success: true,
