@@ -1,1 +1,7 @@
-yaml deployment: tasks: - export PATH=/home/mitradin/nodevenv/backend/22/bin:/bin:/usr/bin:/usr/local/bin - npm install - npm run build - touch tmp/restart.txt
+deployment:
+tasks:
+- export PATH=/home/sitegjjh/nodevenv/backend/20/bin:/bin:/usr/bin:/usr/local/bin
+- npm install
+- npm run build
+
+- touch tmp/restart.txt
