@@ -6,11 +6,19 @@ import httpStatus from 'http-status';
 import { getPurchaseInvoiceNumber } from './purchase.utils';
 import AppError from '../../errors/appErrors';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
+import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 
-const createPurchaseInDB = async (data: TPurchase, user: any) => {
+const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
 
-  payload.purchaseQty = payload.quantity
+  payload.purchaseQty = Number(payload.quantity)
+  payload.labour = Number(payload.labour)
+  payload.commission = Number(payload.commission)
+  payload.others = Number(payload.others);
+  payload.quantity = Number(payload.quantity)
+  payload.bosta = Number(payload.bosta)
+  payload.purchasePrice = Number(payload.purchasePrice)
+  payload.paidAmount = Number(payload.paidAmount)
   const session = await mongoose.startSession();
   session.startTransaction();
 
@@ -26,16 +34,23 @@ const createPurchaseInDB = async (data: TPurchase, user: any) => {
     payload.invoice = invoiceNumber;
 
 
+    let imgUrl = ''
+    if (image?.path) {
+      const fileName = `${invoiceNumber}`;
+      const { data } = await sendImageToImgbb(image?.path, fileName) as any;
+      imgUrl = data?.url;
+    }
 
 
     const purchaseData = {
       ...payload,
-      lot: `${supplier?.name}-${supplierProd?.length + 1}`
+      lot: `${supplier?.name}-${supplierProd?.length + 1}`,
+      imageurl: imgUrl || ''
     }
 
     //✅ Purchase entry
     const purchaseRes = await PurchaseModel.create([purchaseData], { session, new: true });
-    const amount = (data.quantity * data.purchasePrice) + (isCommissionPaid ? Number(payload.commission) : 0) + (isLabourPaid ? Number(payload.labour) : 0) + (isOthersPaid ? Number(payload.others) : 0);
+    const amount = (Number(data.quantity) * Number(data.purchasePrice)) + (isCommissionPaid ? Number(payload.commission) : 0) + (isLabourPaid ? Number(payload.labour) : 0) + (isOthersPaid ? Number(payload.others) : 0);
 
 
 

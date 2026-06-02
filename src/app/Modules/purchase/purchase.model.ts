@@ -46,6 +46,7 @@ const purchaseSchema = new Schema<TPurchase>(
     lot: { type: String, required: [true, 'Lot number is required'] },
     paidAmount: { type: Number, default: 0, required: [true, 'Paid amount is missing'] },
     note: { type: String, default: '' },
+    imageurl: { type: String, default: '' },
     isDeleted: { type: Boolean, default: false },
     isVerified: { type: Boolean, default: false },
     invoice: { type: String, required: [true, 'Invoice is required'], unique: true },

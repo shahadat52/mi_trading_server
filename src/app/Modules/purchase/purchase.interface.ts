@@ -39,6 +39,7 @@ export interface TPurchase {
   isDeleted?: boolean;
   paidAmount: number;
   note: string;
+  imageurl: string
   createdAt?: Date;
   updatedAt?: Date;
 }
