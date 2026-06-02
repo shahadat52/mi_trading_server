@@ -14,7 +14,7 @@ const createUserInDB = async (user: TUser) => {
   if (isExist) {
     throw new Error('User already exists');
   }
-  const uid = uniqueId();
+  const uid = await uniqueId();
   user.id = uid;
   const result = await UserModel.create(user);
   return result;

@@ -5,11 +5,17 @@ const attendanceSchema = new Schema<TAttendance>(
     {
         employee: {
             type: Schema.Types.ObjectId,
-            ref: 'User',
+            ref: 'Employee',
             required: [true, 'Employee Id is Required'],
             index: true
         },
+        score: {
+            type: Number,
+            required: [true, 'Score is required'],
+            default: 3,
+            max: 3
 
+        },
         date: {
             type: Date,
             required: [true, 'Date is required']

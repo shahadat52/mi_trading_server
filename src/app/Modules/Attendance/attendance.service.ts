@@ -3,6 +3,7 @@ import { UserModel } from "../User/user.model";
 import { AttendanceModel } from "./attendance.model";
 import mongoose from 'mongoose';
 import { startOfMonth, endOfMonth } from 'date-fns';
+import { EmployeeModel } from "../employee/employee.model";
 
 
 const generateEmployeesAttendance = async () => {
@@ -10,7 +11,7 @@ const generateEmployeesAttendance = async () => {
 
         const today = format(new Date(), 'yyyy-MM-dd');
 
-        const employees = await UserModel.find({
+        const employees = await EmployeeModel.find({
             status: 'active',
         });
 
@@ -24,6 +25,7 @@ const generateEmployeesAttendance = async () => {
         const attendancePayload = employees.map((employee) => ({
             employee: employee._id,
             date: today,
+            score: 0,
             status: 'present',
         }));
 
@@ -43,7 +45,7 @@ const getAttendanceByIdFromDb = async ({ id, year, month }: any) => {
 
     const startDate = startOfMonth(new Date(year, month - 1));
     const endDate = endOfMonth(new Date(year, month - 1));
-    const [result]: any = await UserModel.aggregate([
+    const [result]: any = await EmployeeModel.aggregate([
         {
             $match: {
                 _id: new mongoose.Types.ObjectId(id)
@@ -72,7 +74,8 @@ const getAttendanceByIdFromDb = async ({ id, year, month }: any) => {
                         $project: {
                             _id: 1,
                             date: 1,
-                            status: 1
+                            status: 1,
+                            score: 1
                         }
                     }
                 ],
@@ -92,11 +95,11 @@ const getAttendanceByIdFromDb = async ({ id, year, month }: any) => {
     return result;
 };
 
-const updateEmployeeStatus = async ({ id, status, date: statusDate }: any) => {
+const updateEmployeeStatus = async ({ id, status, date: statusDate, score }: any) => {
     const date = format(new Date(statusDate), 'yyyy-MM-dd');
     const result = await AttendanceModel.findOneAndUpdate(
         { _id: id, date: date },
-        { $set: { status: status } },
+        { $set: { status: status, score: score } },
         {
             upsert: true,
             new: true,
@@ -109,7 +112,7 @@ const updateEmployeeStatus = async ({ id, status, date: statusDate }: any) => {
 };
 
 const updateBasicSalaryInDB = async ({ id, basicSalary }: any) => {
-    const result = await UserModel.findOneAndUpdate(
+    const result = await EmployeeModel.findOneAndUpdate(
         { _id: id },
         { $set: { basicSalary } },
         {

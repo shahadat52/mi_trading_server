@@ -21,6 +21,7 @@ import { bankTransactionRoutes } from '../Modules/bankTransaction/transaction.ro
 import { transactionRoutes } from '../Modules/incomeExpanseTxn/transaction.route';
 import { attendanceRoutes } from '../Modules/Attendance/attendance.route';
 import { sectorRoutes } from '../Modules/incomeExpenseSector/sector.route';
+import { employeeRoutes } from '../Modules/employee/employee.route';
 
 const router = Router();
 
@@ -28,6 +29,10 @@ const moduleRoutes = [
   {
     path: '/users',
     router: userRoutes,
+  },
+  {
+    path: '/employee',
+    router: employeeRoutes,
   },
   {
     path: '/auth',

@@ -20,9 +20,9 @@ const getAttendanceById = catchAsync(async (req, res) => {
 });
 
 const updateEmployeeStatus = catchAsync(async (req, res) => {
-    const { status, date } = req.query;
+    const { status, date, score } = req.query;
     const { id } = req.params
-    const result = await attendanceServices.updateEmployeeStatus({ id, status, date })
+    const result = await attendanceServices.updateEmployeeStatus({ id, status, date, score })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
