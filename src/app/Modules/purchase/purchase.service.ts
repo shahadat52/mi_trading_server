@@ -47,7 +47,6 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       lot: `${supplier?.name}-${supplierProd?.length + 1}`,
       imageurl: imgUrl || ''
     }
-    console.log({ purchaseData })
 
     //✅ Purchase entry
     const purchaseRes = await PurchaseModel.create([purchaseData], { session, new: true });

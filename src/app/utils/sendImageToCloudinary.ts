@@ -29,7 +29,11 @@ export const sendImageToImgbb = (path: string, fileName: string) => {
             const data = await res.json();
 
             fs.unlink(path, (err) => {
-                if (err) console.error(err);
+                if (err) {
+                    // console.error("Delete Error:", err);
+                } else {
+                    console.log("File deleted successfully");
+                }
             });
 
             resolve(data);
