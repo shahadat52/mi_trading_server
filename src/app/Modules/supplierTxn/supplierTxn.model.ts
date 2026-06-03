@@ -25,11 +25,6 @@ const supplierTxnSchema = new Schema<TSupplierTxn>(
       min: 0,
     },
 
-    runningBalance: {
-      type: Number,
-      default: 0,
-      require: [true, 'runningBalance is missing'],
-    },
 
     description: {
       type: String,
@@ -45,6 +40,11 @@ const supplierTxnSchema = new Schema<TSupplierTxn>(
       default: Date.now,
       required: [true, 'Date is required']
     },
+    isApproved: {
+      type: Boolean,
+      default: true
+    },
+    imageurl: { type: String, default: '' },
     txnBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'লেনদেনকারীর নাম নাই'] },
 
   },

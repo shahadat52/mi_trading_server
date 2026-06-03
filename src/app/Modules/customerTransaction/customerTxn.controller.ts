@@ -87,6 +87,17 @@ const deleteCustomerTxn = catchAsync(async (req, res) => {
   });
 });
 
+
+const getUnApprovedCustomerTxn = catchAsync(async (req, res) => {
+  const result = await customerTxnServices.getUnApprovedCustomerTxnFromDB();
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 const getOrphanCustomerTxn = catchAsync(async (req, res) => {
   const result = await customerTxnServices.getOrphanCustomerTxnsFromDB();
 
@@ -105,5 +116,6 @@ export const customerTxnControllers = {
   getCustomerTxnById,
   updateById,
   deleteCustomerTxn,
+  getUnApprovedCustomerTxn,
   getOrphanCustomerTxn
 };

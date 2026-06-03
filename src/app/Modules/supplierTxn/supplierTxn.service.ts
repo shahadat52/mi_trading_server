@@ -29,9 +29,14 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
       txnData.txnBy = user
     }
     // 3️⃣ create transaction
+    const isCrossLimit = txnData.amount >= 50000
+    const createData = {
+      ...txnData,
+      isApproved: !isCrossLimit
+    }
     const [txn] = await SupplierTxnModel.create(
       [
-        txnData
+        createData
       ],
       { session }
     );
@@ -74,10 +79,16 @@ const bepariTxnEntryInDB = async (payload: any, user: JwtPayload) => {
       throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
     }
 
+    const isCrossLimit = txnCData.amount >= 50000
+    const createData = {
+      ...txnCData,
+      isApproved: !isCrossLimit
+    }
+
     // 3️⃣ create transaction
     const [txn] = await SupplierTxnModel.create(
       [
-        txnCData
+        createData
       ],
       { session }
     );
@@ -367,6 +378,13 @@ const deleteSupplierTxnFromDB = async (id: any) => {
   }
 };
 
+const getUnApprovedSupplierTxnFromDB = async () => {
+  const result = await SupplierTxnModel.find({ isApproved: false }).populate([
+    { path: 'party', select: 'name phone -_id', }
+  ]).sort({ createdAt: -1 })
+  return result
+}
+
 export const supplierTxnServices = {
   supplierTxnEntryInDB,
   bepariTxnEntryInDB,
@@ -374,5 +392,6 @@ export const supplierTxnServices = {
   getOutStandingTxnSuppliersFromDB,
   getSupplierTxnByIdInDB,
   updateByIdInDB,
-  deleteSupplierTxnFromDB
+  deleteSupplierTxnFromDB,
+  getUnApprovedSupplierTxnFromDB
 };

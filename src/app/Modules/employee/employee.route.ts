@@ -43,6 +43,7 @@ router.patch(
 
 router.delete(
   '/:id',
+  auth(USER_ROLE.admin),
   employeeControllers.deleteEmployee
 )
 

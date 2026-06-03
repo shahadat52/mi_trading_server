@@ -100,6 +100,17 @@ const deleteSupplierTxn = catchAsync(async (req, res) => {
   });
 });
 
+const getUnApprovedSupplierTxn = catchAsync(async (req, res) => {
+  const result = await supplierTxnServices.getUnApprovedSupplierTxnFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 export const supplierTxnControllers = {
   supplierTxnEntry,
   bepariTxnEntry,
@@ -107,5 +118,6 @@ export const supplierTxnControllers = {
   getOutStandingTxnSuppliers,
   getSupplierTxnById,
   updateById,
-  deleteSupplierTxn
+  deleteSupplierTxn,
+  getUnApprovedSupplierTxn
 };

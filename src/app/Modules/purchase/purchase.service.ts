@@ -47,6 +47,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       lot: `${supplier?.name}-${supplierProd?.length + 1}`,
       imageurl: imgUrl || ''
     }
+    console.log({ purchaseData })
 
     //✅ Purchase entry
     const purchaseRes = await PurchaseModel.create([purchaseData], { session, new: true });
@@ -58,13 +59,17 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
     if (!supplier) {
       throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
     }
+
+    const isCrossLimit = amount >= 50000
     const txnCreditData = {
       party: payload.supplier,
       amount,
+      isApproved: !isCrossLimit,
       type: 'credit',
       description: `${payload?.product} ${payload.bosta} বস্তার বিল`,
       txnBy: user._id
     };
+
     // 3️⃣ create transaction
     await SupplierTxnModel.create(
       [
@@ -72,10 +77,13 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       ],
       { session }
     );
+
     if (data.paidAmount >= 1) {
+      const isCrossLimit = data.paidAmount >= 50000
       const txnCreditData = {
         party: payload.supplier,
         amount: data.paidAmount,
+        isApproved: !isCrossLimit,
         type: 'debit',
         description: `${payload?.product} ${payload.bosta} বস্তার বিল বাবদ`,
         txnBy: user._id

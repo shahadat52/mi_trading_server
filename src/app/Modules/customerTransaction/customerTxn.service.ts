@@ -1,12 +1,9 @@
 import AppError from '../../errors/appErrors';
 import httpStatus from 'http-status';
 import { CustomerTxnModel } from './customerTxn.model';
-import { TCustomerTxn } from './customerTxn.interface';
 import mongoose, { Types } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
-import { BankTxnModel } from '../bankTransaction/transaction.model';
 import { SupplierModel } from '../supplier/supplier.model';
-import { TTransaction } from '../bankTransaction/transaction.interface';
 import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { formatDate } from 'date-fns';
 
@@ -32,6 +29,9 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
     if (user) {
       txnData.txnBy = user
     }
+
+    const isCrossLimit = txnData.amount >= 50000
+    txnData.isApproved = !isCrossLimit
     // 3️⃣ create transaction
     const txn = await CustomerTxnModel.create(
       [
@@ -366,6 +366,13 @@ const deleteCustomerTxnFromDB = async (id: any) => {
   return supplier;
 };
 
+const getUnApprovedCustomerTxnFromDB = async () => {
+  const result = await CustomerTxnModel.find({ isApproved: false }).populate([
+    { path: 'party', select: 'name phone -_id', }
+  ]).sort({ createdAt: -1 })
+  return result
+}
+
 // ✅ যেসকল txn এর customer/party delete করে দেওয়া হয়েচে
 const getOrphanCustomerTxnsFromDB = async () => {
   const txns = await CustomerTxnModel.find();
@@ -387,6 +394,7 @@ export const customerTxnServices = {
   getCustomerTxnByIdInDB,
   updateByIdInDB,
   deleteCustomerTxnFromDB,
+  getUnApprovedCustomerTxnFromDB,
   getOrphanCustomerTxnsFromDB
 
 };

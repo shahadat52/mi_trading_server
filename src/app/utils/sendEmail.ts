@@ -6,10 +6,14 @@ import httpStatus from 'http-status'
 
 const resend = new Resend(config.resend_api_key);
 
-export const sendEmail = async (to: string, otp: string, html: string) => {
+export const sendEmail = async (
+  to: string,
+  otp: string,
+  html: string
+) => {
   try {
-    await resend.emails.send({
-      from: 'M.I Trading <onboarding@resend.dev>',
+    const response = await resend.emails.send({
+      from: 'M.I Trading <noreply@mitrading.shop>',
       to,
       subject: 'Submit your OTP within 4 minutes',
       html: `
@@ -25,8 +29,12 @@ export const sendEmail = async (to: string, otp: string, html: string) => {
       `,
     });
 
+    // console.log("EMAIL RESPONSE:", response);
+
+    return response;
   } catch (error) {
-    throw new AppError(httpStatus.BAD_REQUEST, 'Failed to send otp ');
+    // console.error("EMAIL ERROR:", error);
+    throw error;
   }
 };
 

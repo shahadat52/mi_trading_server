@@ -12,6 +12,8 @@ export type TSupplierTxn = {
   bankName?: string
   issueDate?: Date;
   postingDate?: Date;
+  isApproved: boolean;
+  imageurl: string;
   note?: string
   txnBy: Types.ObjectId
 };

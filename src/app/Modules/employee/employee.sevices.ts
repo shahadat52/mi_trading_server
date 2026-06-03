@@ -20,7 +20,7 @@ const createEmployeeInDB = async (user: TEmployee) => {
 };
 
 const getAllEmployeesFromDB = async () => {
-  const employees = await EmployeeModel.find({ isDeleted: false, });
+  const employees = await EmployeeModel.find({ isDeleted: false, }).sort({ createdAt: -1 });
 
   return employees;
 };

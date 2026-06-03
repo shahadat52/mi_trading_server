@@ -12,6 +12,8 @@ export type TCustomerTxn = {
   issueDate?: Date;
   postingDate?: Date;
   note?: string;
+  imageurl: string;
+  isApproved: boolean;
   txnBy: Types.ObjectId
   createdAt?: any
 };

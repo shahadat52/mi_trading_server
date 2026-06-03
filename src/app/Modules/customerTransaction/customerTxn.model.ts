@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Schema, model } from 'mongoose';
+import { Schema, model, trusted } from 'mongoose';
 import { TCustomerTxn, TCustomerTxnModel } from './customerTxn.interface';
 
 const customerTxnSchema = new Schema<TCustomerTxn>(
@@ -41,6 +41,11 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
       default: Date.now,
       required: [true, 'Date is required']
     },
+    isApproved: {
+      type: Boolean,
+      default: true
+    },
+    imageurl: { type: String, default: '' },
     txnBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'লেনদেনকারীর নাম নাই'] },
 
   },

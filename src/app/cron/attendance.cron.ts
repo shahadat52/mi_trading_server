@@ -31,14 +31,12 @@ export const startAttendanceCron = () => {
     );
 
     // cron.schedule(
-    //     '54 12 * * *',
+    //     '19 00 * * *',
     //     async () => {
 
     //         try {
 
-    //             const today = format(new Date(), 'yyyy-MM-dd');
-
-    //             const suppliers = await CustomerModel.find();
+    //             const suppliers = await SupplierModel.find();
     //             console.log(suppliers)
 
     //             const supplierTxnData = suppliers.map((supplier) => ({
@@ -49,11 +47,11 @@ export const startAttendanceCron = () => {
     //                 txnBy: "692eb5f3af975d11f8f8a4dd"
     //             }));
 
-    //             const txn = await CustomerTxnModel.insertMany(supplierTxnData, {
+    //             const txn = await SupplierTxnModel.insertMany(supplierTxnData, {
     //                 ordered: false,
     //             });
 
-    //             console.log({ 'customer txn generated:': txn });
+    //             console.log({ 'supplier txn generated:': txn });
 
     //         } catch (error) {
     //             console.log(error);

@@ -34,7 +34,7 @@ const userLogin = async (payload: TLoginUser) => {
   user.otp = otp;
   user.otpExpires = new Date(Date.now() + 5 * 60 * 1000);
   await user.save();
-  const sms = await sendSMS({ to: user.phone, message: `Your OTP is: ${otp}. It will expire in 5 minutes.` });
+  // const sms = await sendSMS({ to: user.phone, message: `Your OTP is: ${otp}. It will expire in 5 minutes.` });
   await sendEmail(user.email, otp, otpSendingUiLink);
 
   return { otpSendingUiLink };
