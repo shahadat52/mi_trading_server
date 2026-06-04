@@ -29,7 +29,7 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
       txnData.txnBy = user
     }
     // 3️⃣ create transaction
-    const isCrossLimit = txnData.amount >= 50000
+    const isCrossLimit = txnData.amount >= 100000
     const createData = {
       ...txnData,
       isApproved: !isCrossLimit
@@ -71,15 +71,12 @@ const bepariTxnEntryInDB = async (payload: any, user: JwtPayload) => {
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
-
     // 1️⃣ find Supplier
     const supplier = await SupplierModel.findById(txnCData.party).session(session);
-
     if (!supplier) {
       throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
     }
-
-    const isCrossLimit = txnCData.amount >= 50000
+    const isCrossLimit = txnCData.amount >= 100000
     const createData = {
       ...txnCData,
       isApproved: !isCrossLimit
@@ -319,7 +316,7 @@ const getSupplierTxnByIdInDB = async (id: any) => {
 
 // ✅ Update by id
 const updateByIdInDB = async (id: any, updateData: any) => {
-  const limitCross = updateData.amount >= 50000;
+  const limitCross = updateData.amount >= 100000;
   if (limitCross) {
     updateData.isApproved = false;
   } else {

@@ -122,7 +122,7 @@ const bothSalesEntryInDB = async (payload: any) => {
     // 3. Create Sale Entry
     const salesResult = await BothSalesModel.create([salesData], { session });
 
-    const isCrossLimitGT = salesData.grandTotal >= 50000;
+    const isCrossLimitGT = salesData.grandTotal >= 100000;
     const customerDebitTxnPayload = {
       party: salesData.customer,
       type: 'debit',
@@ -135,7 +135,7 @@ const bothSalesEntryInDB = async (payload: any) => {
     }
     await CustomerTxnModel.create([customerDebitTxnPayload], { session })
 
-    const isCrossLimitPA = salesData.paidAmount >= 50000;
+    const isCrossLimitPA = salesData.paidAmount >= 100000;
     if (salesResult[0].paidAmount > 0) {
       const customerCreditTxnPayload = {
         party: salesData.customer,

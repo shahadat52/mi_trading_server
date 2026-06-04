@@ -30,7 +30,7 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
       txnData.txnBy = user
     }
 
-    const isCrossLimit = txnData.amount >= 50000
+    const isCrossLimit = txnData.amount >= 100000
     txnData.isApproved = !isCrossLimit
     // 3️⃣ create transaction
     const txn = await CustomerTxnModel.create(
@@ -332,7 +332,7 @@ const getCustomerTxnByIdInDB = async (id: any) => {
 
 
 const updateByIdInDB = async (id: any, updateData: any) => {
-  const limitCross = updateData.amount >= 50000
+  const limitCross = updateData.amount >= 100000
   if (limitCross) {
     updateData.isApproved = false;
   } else {

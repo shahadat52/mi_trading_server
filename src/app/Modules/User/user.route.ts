@@ -29,7 +29,7 @@ router.get(
 
 router.patch(
   '/update-user',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   userControllers.updateUser
 );
 

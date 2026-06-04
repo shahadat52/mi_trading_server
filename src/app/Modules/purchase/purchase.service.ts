@@ -59,7 +59,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       throw new AppError(httpStatus.NOT_FOUND, "Supplier not found");
     }
 
-    const isCrossLimit = amount >= 50000
+    const isCrossLimit = amount >= 100000
     const txnCreditData = {
       party: payload.supplier,
       amount,
@@ -78,7 +78,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
     );
 
     if (data.paidAmount >= 1) {
-      const isCrossLimit = data.paidAmount >= 50000
+      const isCrossLimit = data.paidAmount >= 100000
       const txnCreditData = {
         party: payload.supplier,
         amount: data.paidAmount,

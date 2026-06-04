@@ -7,7 +7,7 @@ import httpStatus from 'http-status'
 
 const addCustomer = catchAsync(async (req, res) => {
     const user = req.user;
-    req.body.createdBy = user?._id;
+    req.body.txnBy = user?._id;
     const result = await customerServices.createCustomerInBD(req.body);
 
     sendResponse(res, {

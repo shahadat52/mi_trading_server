@@ -43,6 +43,7 @@ const createCustomerInBD = async (customerData: TCustomer) => {
     const txnData = {
       party: customer._id,
       amount: 0,
+      txnBy: customerData.txnBy,
       type: 'credit',
     };
 
