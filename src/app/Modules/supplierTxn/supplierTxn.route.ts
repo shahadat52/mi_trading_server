@@ -41,8 +41,15 @@ router.get(
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   supplierTxnControllers.getSupplierTxnById
 );
+
+
 router.patch(
-  '/:id',
+  '/approve/:id',
+  auth(USER_ROLE.admin),
+  supplierTxnControllers.makeApproveSupplierTxn
+);
+router.patch(
+  '/update/:id',
   auth(USER_ROLE.admin, USER_ROLE.specialManager),
   supplierTxnControllers.updateById
 );

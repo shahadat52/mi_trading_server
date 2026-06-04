@@ -28,9 +28,17 @@ router.get(
     purchaseControllers.getPurchaseReport
 );
 
+router.get(
+    '/invoice/:id',
+    purchaseControllers.getPurchaseByInvoice
+);
 
 
-router.get('/commission/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), purchaseControllers.getCommissionPurchase);
+router.get(
+    '/commission/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    purchaseControllers.getCommissionPurchase
+);
 
 router.get('/regular/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), purchaseControllers.getPurchaseById);
 

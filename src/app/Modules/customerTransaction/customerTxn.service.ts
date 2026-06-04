@@ -332,6 +332,12 @@ const getCustomerTxnByIdInDB = async (id: any) => {
 
 
 const updateByIdInDB = async (id: any, updateData: any) => {
+  const limitCross = updateData.amount >= 50000
+  if (limitCross) {
+    updateData.isApproved = false;
+  } else {
+    updateData.isApproved = true;
+  }
   const session = await mongoose.startSession()
   try {
     session.startTransaction();
@@ -373,6 +379,12 @@ const getUnApprovedCustomerTxnFromDB = async () => {
   return result
 }
 
+const makeApproveCustomerTxnInDB = async (id: any) => {
+  const txn = await CustomerTxnModel.findByIdAndUpdate(id, { isApproved: true }, { new: true, runValidators: true });
+  if (!txn) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
+  return txn;
+};
+
 // ✅ যেসকল txn এর customer/party delete করে দেওয়া হয়েচে
 const getOrphanCustomerTxnsFromDB = async () => {
   const txns = await CustomerTxnModel.find();
@@ -395,6 +407,7 @@ export const customerTxnServices = {
   updateByIdInDB,
   deleteCustomerTxnFromDB,
   getUnApprovedCustomerTxnFromDB,
-  getOrphanCustomerTxnsFromDB
+  getOrphanCustomerTxnsFromDB,
+  makeApproveCustomerTxnInDB
 
 };

@@ -65,7 +65,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       amount,
       isApproved: !isCrossLimit,
       type: 'credit',
-      description: `${payload?.product} ${payload.bosta} বস্তার বিল`,
+      description: `${payload?.invoice}`,
       txnBy: user._id
     };
 
@@ -84,7 +84,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
         amount: data.paidAmount,
         isApproved: !isCrossLimit,
         type: 'debit',
-        description: `${payload?.product} ${payload.bosta} বস্তার বিল বাবদ`,
+        description: `${payload?.invoice}`,
         txnBy: user._id
       };
       // 3️⃣ create transaction
@@ -350,6 +350,17 @@ const getPurchaseReportFromDB = async (options: any) => {
   return result[0].totalPurchase;
 };
 
+const getPurchaseByInvoiceFromDB = async (invoice: any) => {
+  const sale = await PurchaseModel.findOne({ invoice: invoice }).populate([
+
+    {
+      path: 'supplier',
+      select: 'name phone -_id'
+    }
+  ]);
+  return sale;
+};
+
 export const purchaseServices = {
   createPurchaseInDB,
   getAllPurchasesFromDB,
@@ -357,5 +368,6 @@ export const purchaseServices = {
   getPurchaseByIdFromDB,
   updatePurchaseDataInDB,
   deletePurchaseDataInDB,
-  getPurchaseReportFromDB
+  getPurchaseReportFromDB,
+  getPurchaseByInvoiceFromDB
 };

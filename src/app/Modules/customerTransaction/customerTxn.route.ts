@@ -30,7 +30,17 @@ router.get('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.man
 
 router.get('/orphan/txn', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getOrphanCustomerTxn);
 
-router.patch('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.updateById);
+router.patch(
+  '/approve/:id',
+  auth(USER_ROLE.admin),
+  customerTxnControllers.makeApproveCustomerTxn
+);
+
+router.patch(
+  '/update/:id',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  customerTxnControllers.updateById
+);
 
 router.get(
   '/unapproved',

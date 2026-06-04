@@ -32,7 +32,6 @@ export const sendImageToImgbb = (path: string, fileName: string) => {
                 if (err) {
                     // console.error("Delete Error:", err);
                 } else {
-                    console.log("File deleted successfully");
                 }
             });
 

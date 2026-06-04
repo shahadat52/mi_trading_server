@@ -109,6 +109,19 @@ const getOrphanCustomerTxn = catchAsync(async (req, res) => {
   });
 });
 
+const makeApproveCustomerTxn = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await customerTxnServices.makeApproveCustomerTxnInDB(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Approved',
+    data: result,
+  });
+});
+
+
 export const customerTxnControllers = {
   customerTxnEntry,
   getAllCustomerTxn,
@@ -117,5 +130,6 @@ export const customerTxnControllers = {
   updateById,
   deleteCustomerTxn,
   getUnApprovedCustomerTxn,
-  getOrphanCustomerTxn
+  getOrphanCustomerTxn,
+  makeApproveCustomerTxn
 };

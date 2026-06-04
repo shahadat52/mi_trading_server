@@ -111,6 +111,19 @@ const getUnApprovedSupplierTxn = catchAsync(async (req, res) => {
   });
 });
 
+const makeApproveSupplierTxn = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await supplierTxnServices.makeApproveSupplierTxnInDB(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Approved',
+    data: result,
+  });
+});
+
+
 export const supplierTxnControllers = {
   supplierTxnEntry,
   bepariTxnEntry,
@@ -119,5 +132,6 @@ export const supplierTxnControllers = {
   getSupplierTxnById,
   updateById,
   deleteSupplierTxn,
-  getUnApprovedSupplierTxn
+  getUnApprovedSupplierTxn,
+  makeApproveSupplierTxn
 };

@@ -147,7 +147,20 @@ const getPurchaseReport = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'ddddd',
+    message: '',
+    data: result,
+  });
+});
+
+
+const getPurchaseByInvoice = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const result = await purchaseServices.getPurchaseByInvoiceFromDB(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
     data: result,
   });
 });
@@ -161,5 +174,6 @@ export const purchaseControllers = {
   deleteProduct,
   updatePurchaseData,
   deletePurchase,
-  getPurchaseReport
+  getPurchaseReport,
+  getPurchaseByInvoice
 };

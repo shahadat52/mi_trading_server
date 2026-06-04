@@ -319,6 +319,12 @@ const getSupplierTxnByIdInDB = async (id: any) => {
 
 // ✅ Update by id
 const updateByIdInDB = async (id: any, updateData: any) => {
+  const limitCross = updateData.amount >= 50000;
+  if (limitCross) {
+    updateData.isApproved = false;
+  } else {
+    updateData.isApproved = true;
+  }
   const session = await mongoose.startSession()
   try {
     session.startTransaction();
@@ -383,7 +389,13 @@ const getUnApprovedSupplierTxnFromDB = async () => {
     { path: 'party', select: 'name phone -_id', }
   ]).sort({ createdAt: -1 })
   return result
-}
+};
+
+const makeApproveSupplierTxnInDB = async (id: any) => {
+  const txn = await SupplierTxnModel.findByIdAndUpdate(id, { isApproved: true }, { new: true, runValidators: true });
+  if (!txn) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
+  return txn;
+};
 
 export const supplierTxnServices = {
   supplierTxnEntryInDB,
@@ -393,5 +405,6 @@ export const supplierTxnServices = {
   getSupplierTxnByIdInDB,
   updateByIdInDB,
   deleteSupplierTxnFromDB,
-  getUnApprovedSupplierTxnFromDB
+  getUnApprovedSupplierTxnFromDB,
+  makeApproveSupplierTxnInDB
 };
