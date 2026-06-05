@@ -79,6 +79,7 @@ const bepariTxnEntryInDB = async (payload: any, user: JwtPayload) => {
     const isCrossLimit = txnCData.amount >= 100000
     const createData = {
       ...txnCData,
+      txnBy: user._id,
       isApproved: !isCrossLimit
     }
 
@@ -346,8 +347,6 @@ const updateByIdInDB = async (id: any, updateData: any) => {
 
   }
 };
-
-
 
 // ✅ Delete Supplier
 const deleteSupplierTxnFromDB = async (id: any) => {
