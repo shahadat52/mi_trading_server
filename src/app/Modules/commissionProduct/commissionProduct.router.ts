@@ -1,10 +1,12 @@
 import express from 'express';
 import { commissionProductControllers } from './commissionProduct.controller';
 import auth from '../../middlewares/auth';
+import { upload } from '../../utils/sendImageToCloudinary';
 const router = express.Router();
 
 router.post(
     '/create',
+    upload.single("image"),
     auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.createCommissionProduct
 );

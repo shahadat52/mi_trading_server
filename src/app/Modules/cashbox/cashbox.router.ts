@@ -10,6 +10,13 @@ router.post(
     auth('admin', 'specialManager',),
     cashboxControllers.cashboxEntry
 );
+
+router.get(
+    '/closing',
+    // auth('admin', 'specialManager',),
+    cashboxControllers.getYesterdayClosingBal
+);
+
 router.get(
     '/openingBal',
     auth('admin', 'specialManager',),

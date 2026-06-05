@@ -19,7 +19,6 @@ const sendSMS = async ({ to, message }: { to: string; message: string }) => {
     );
 
     const data = await response.text(); // API usually returns text
-    console.log(data)
     return data;
 };
 

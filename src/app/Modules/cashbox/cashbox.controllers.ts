@@ -23,6 +23,16 @@ const getTodayOpeningBal = catchAsync(async (req, res) => {
     });
 });
 
+const getYesterdayClosingBal = catchAsync(async (req, res) => {
+    const result = await cashboxServices.getYesterdayClosingBalFromDB()
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+});
+
 const getTodayCashIn = catchAsync(async (req, res) => {
     const result = await cashboxServices.getTodayCashInFromDB()
     sendResponse(res, {
@@ -45,6 +55,7 @@ const getTodayCashOut = catchAsync(async (req, res) => {
 
 export const cashboxControllers = {
     cashboxEntry,
+    getYesterdayClosingBal,
     getTodayOpeningBal,
     getTodayCashIn,
     getTodayCashOut

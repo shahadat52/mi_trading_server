@@ -7,6 +7,7 @@ export type TCommissionProduct = {
     bosta: number;
     unit: string;
     supplier: Types.ObjectId;
+    imageurl: string
     commissionRate: number;
     isPaid: boolean;
 

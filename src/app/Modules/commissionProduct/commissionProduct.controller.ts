@@ -4,9 +4,10 @@ import { commissionProductServices } from "./commissionProduct.service";
 import httpStatus from 'http-status'
 
 const createCommissionProduct = catchAsync(async (req, res) => {
+    const image = req.file as any;
     const user = req.user;
     req.body.createdBy = user?._id;
-    const result = await commissionProductServices.createCommissionProductInDB(req.body);
+    const result = await commissionProductServices.createCommissionProductInDB(req.body, image);
 
     sendResponse(res, {
         success: true,

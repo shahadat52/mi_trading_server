@@ -2,8 +2,7 @@ import AppError from "../../errors/appErrors";
 import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 import { TCashbox } from "./cashbox.interface";
 import { CashboxModel } from "./cashbox.model";
-import { startOfDay, endOfDay } from "date-fns";
-import httpStatus from "http-status"
+import { startOfDay, endOfDay, subDays } from "date-fns";
 
 const cashboxEntryInDB = async (payload: TCashbox) => {
     const date = startOfDay(new Date());
@@ -18,12 +17,14 @@ const cashboxEntryInDB = async (payload: TCashbox) => {
         },
         {
             new: true,
-            upsert: true, // creates if not exists
+            upsert: true
         }
     );
 
     return result;
 };
+
+
 
 const getTodayOpeningBalFromDB = async () => {
     const todayStart = startOfDay(new Date());
@@ -31,7 +32,32 @@ const getTodayOpeningBalFromDB = async () => {
     return result;
 };
 
+const getYesterdayClosingBalFromDB = async () => {
+    const date = startOfDay(subDays(new Date(), 1));
+    const result = await CashboxModel.findOne({ date })
+    return result;
+};
 
+const closingBalSavedInDB = async () => {
+    const todayStart = startOfDay(new Date());
+
+    // 1. Opening Balance
+    const opening = await CashboxModel.findOne({ date: todayStart });
+    const openingBalance = opening?.openingBalance || 0;
+
+    // 2. Cash In
+    const cashInData = await getTodayCashInFromDB();
+    const cashIn = cashInData.totalCashIn || 0;
+
+    // 3. Cash Out
+    const cashOutData = await getTodayCashOutFromDB();
+    const cashOut = cashOutData.totalCashOut || 0;
+
+    // 4. Final Balance Calculation
+    const closingBalance = openingBalance + cashIn - cashOut;
+
+    return closingBalance;
+};
 
 // Cash In
 const getTodayCashInFromDB = async () => {
@@ -153,11 +179,6 @@ const getTodayCashInFromDB = async () => {
         transactions: result[0]?.transactions || [],
     };
 };
-
-
-
-
-
 
 //  Cash Out
 const getTodayCashOutFromDB = async () => {
@@ -297,6 +318,50 @@ const getTodayCashOutFromDB = async () => {
             },
         },
 
+
+        // 4. Normal Purchase
+        {
+            $unionWith: {
+                coll: "purchases",
+                pipeline: [
+                    {
+                        $match: {
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $project: {
+                            invoice: 1,
+                            amount: {
+                                $add: [
+                                    { $ifNull: ["$labour", 0] },
+
+                                ],
+                            },
+                            createdAt: 1,
+                        },
+                    },
+                    {
+                        $group: {
+                            _id: "$invoice",
+                            amount: { $sum: "$amount" },
+                            createdAt: { $first: "$createdAt" },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            source: "$_id",
+                            amount: 1,
+                            note: { $literal: "Normal Purchase" },
+                            createdAt: 1,
+                        },
+                    },
+                ],
+            },
+        },
+
+
         {
             $sort: { createdAt: -1 },
         },
@@ -330,6 +395,8 @@ const getTodayCashOutFromDB = async () => {
 
 export const cashboxServices = {
     cashboxEntryInDB,
+    closingBalSavedInDB,
+    getYesterdayClosingBalFromDB,
     getTodayOpeningBalFromDB,
     getTodayCashInFromDB,
     getTodayCashOutFromDB

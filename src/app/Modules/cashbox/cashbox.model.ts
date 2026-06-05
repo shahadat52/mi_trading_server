@@ -14,6 +14,16 @@ const cashboxSchema = new Schema<TCashbox>(
             },
 
         },
+        closingBalance: {
+            type: Number,
+            default: 0,
+            required: [true, "Closing Balance is required"],
+            validate: {
+                validator: Number.isFinite,
+                message: "Closing Balance must be a valid number",
+            },
+
+        },
         date: {
             type: Date,
             required: [true, "Date is required"],
