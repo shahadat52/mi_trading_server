@@ -23,6 +23,7 @@ import { attendanceRoutes } from '../Modules/Attendance/attendance.route';
 import { sectorRoutes } from '../Modules/incomeExpenseSector/sector.route';
 import { employeeRoutes } from '../Modules/employee/employee.route';
 import { smsSendRoutes } from '../Modules/SendSMS/sendsms.router';
+import { mfstxnRoutes } from '../Modules/MFS/mfs.router';
 
 const router = Router();
 
@@ -118,6 +119,10 @@ const moduleRoutes = [
   {
     path: '/sector',
     router: sectorRoutes
+  },
+  {
+    path: '/mfs',
+    router: mfstxnRoutes
   },
   {
     path: '/sms',

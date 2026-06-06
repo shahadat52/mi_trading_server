@@ -90,6 +90,44 @@ const getTodayCashInFromDB = async () => {
             },
         },
 
+
+        {
+            $unionWith: {
+                coll: "banktransactions",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "debit",
+                            source: 'cash',
+                            postingDate: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            bankName: 1,
+                            amount: { $ifNull: ["$amount", 0] },
+                            note: 1,
+                            createdAt: 1,
+                            postingDate: 1,
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 0,
+                            source: "$bankName",
+                            amount: 1,
+                            note: "$note",
+                            date: "$createdAt",
+                            postingDate: 1,
+                        },
+                    },
+                ],
+            },
+        },
+
         // merge customer transactions
         {
             $unionWith: {
@@ -317,6 +355,46 @@ const getTodayCashOutFromDB = async () => {
                 ],
             },
         },
+
+
+        // 4. Bank Txn
+        {
+            $unionWith: {
+                coll: "banktransactions",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "credit",
+                            source: "cash",
+                            postingDate: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            bankName: 1,
+                            amount: { $ifNull: ["$amount", 0] },
+                            note: 1,
+                            createdAt: 1,
+                            postingDate: 1,
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 0,
+                            source: "$bankName",
+                            amount: 1,
+                            note: 1,
+                            createdAt: 1,
+                            postingDate: 1,
+                        },
+                    },
+                ],
+            },
+        },
+
 
 
         // 4. Normal Purchase

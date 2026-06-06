@@ -8,16 +8,17 @@ import { SupplierModel } from '../supplier/supplier.model';
 import { JwtPayload } from 'jsonwebtoken';
 import { makeRegex } from '../../utils/makeRegex';
 import { BepariCouthaModel } from '../bepariCoutha/bepariCoutha.model';
+import { BankTxnModel } from '../bankTransaction/transaction.model';
+import { formatDate } from 'date-fns';
+import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 
 //✅ Create Supplier
 const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
-  const { note, ...txnData } = payload
+  const { bankName, note, ...txnData } = payload
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
-    if (txnData.paymentMethod === 'bank') {
-      txnData.amount = 0
-    }
+    const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
     // 1️⃣ find Supplier
     const supplier = await SupplierModel.findById(payload.party).session(session);
 
@@ -41,20 +42,44 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
       { session }
     );
 
-    // 4️⃣ update customr current balance
-    await SupplierModel.findByIdAndUpdate(
-      txnData.party,
-      {
-        lastTxnAt: new Date(Date.now()),
-      },
-      { new: true, session }
-    );
 
-    const supTxn = await SupplierModel.findByIdAndUpdate(
+
+    await SupplierModel.findByIdAndUpdate(
       payload.party,
       { lastTxnAt: new Date(Date.now()) },
       { session }
     );
+
+    if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
+      const txnInfo = {
+        head: 'exspense',
+        category: payload.paymentMethod,
+        type: 'debit',
+        amount: payload.amount,
+        paymentMethod: payload.paymentMethod,
+        note: payload.description,
+        date: date,
+        createdBy: user._id
+      };
+
+      //✅ আয় ব্যয় txn entry 
+      await TxnModel.create([txnInfo], { session })
+    }
+
+    if (payload.paymentMethod === 'bank') {
+      const bankTxnData = {
+        bankName,
+        source: 'others',
+        type: 'debit',
+        amount: payload.amount,
+        note: payload.description,
+        date: date,
+        createdBy: user._id
+      };
+
+      //✅ ব্যাংক txn entry 
+      await BankTxnModel.create([bankTxnData], { session })
+    }
     await session.commitTransaction();
     session.endSession();
 

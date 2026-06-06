@@ -6,18 +6,16 @@ import { CustomerModel } from '../customer/customer.model';
 import { SupplierModel } from '../supplier/supplier.model';
 import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { formatDate } from 'date-fns';
+import { BankTxnModel } from '../bankTransaction/transaction.model';
 
 // ✅ Create Supplier
 const customerTxnEntryInDB = async (payload: any, user: any) => {
-  const { note, ...txnData } = payload;
+  const { bankName, note, ...txnData } = payload;
+
   const session = await mongoose.startSession()
   try {
     session.startTransaction()
     const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
-
-    if (txnData.paymentMethod === 'bank') {
-      txnData.amount = 0
-    }
     // 1️⃣ find Customer
     const customer = await CustomerModel.findById(payload.party).session(session);
 
@@ -64,8 +62,23 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
         createdBy: user._id
       };
 
-      //✅ Bank txn entry 
+      //✅ আয় ব্যয় txn entry 
       await TxnModel.create([txnInfo], { session })
+    }
+
+    if (payload.paymentMethod === 'bank') {
+      const bankTxnData = {
+        bankName,
+        source: 'others',
+        type: 'credit',
+        amount: payload.amount,
+        note: payload.description,
+        date: date,
+        createdBy: user._id
+      };
+
+      //✅ ব্যাংক txn entry 
+      await BankTxnModel.create([bankTxnData], { session })
     }
 
 
@@ -74,7 +87,6 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
 
     return txn[0];
   } catch (error) {
-
     await session.abortTransaction()
     session.endSession()
     throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');

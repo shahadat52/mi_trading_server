@@ -6,6 +6,12 @@ export enum TransactionType {
     CREDIT = "credit",
 }
 
+export enum BankingSource {
+    Cash = "cash",
+    Others = "others",
+}
+
+
 const transactionSchema = new Schema<TTransaction>(
     {
         bankName: {
@@ -17,6 +23,12 @@ const transactionSchema = new Schema<TTransaction>(
             type: String,
             enum: Object.values(TransactionType),
             required: [true, 'Transaction type is required'],
+        },
+
+        source: {
+            type: String,
+            enum: Object.values(BankingSource),
+            required: [true, 'Banking source is required'],
         },
 
         amount: {

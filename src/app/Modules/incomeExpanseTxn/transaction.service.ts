@@ -1,8 +1,6 @@
 import { JwtPayload } from "jsonwebtoken";
-import { TTransaction } from "./transaction.interface"
 import { TxnModel } from "./transaction.model"
-import { endOfDay, format, formatDate, startOfDay } from "date-fns";
-import { makeRegex } from "../../utils/makeRegex";
+import { endOfDay, formatDate, startOfDay } from "date-fns";
 import mongoose, { PipelineStage } from "mongoose";
 import AppError from "../../errors/appErrors";
 import httpStatus from 'http-status'
@@ -55,12 +53,12 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
                 type: 'debit',
                 amount: payload.amount,
                 paymentMethod: payload.paymentMethod,
-                note: payload.note,
+                note: `${payload.category}(${payload.note})`,
                 date: date,
                 createdBy: user._id
             };
 
-            //✅ Bank txn entry 
+            //✅ আয় ব্যয় txn entry 
             await TxnModel.create([txnInfo], { session })
         }
 

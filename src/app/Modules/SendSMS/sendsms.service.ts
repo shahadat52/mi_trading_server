@@ -24,7 +24,7 @@ const sendTxnSMSFromServer = async (
 
         return result;
     } catch (error) {
-        console.error("SMS Error:", error);
+        // console.error("SMS Error:", error);
         throw error;
     }
 };
