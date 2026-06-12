@@ -5,6 +5,7 @@ import mongoose, { PipelineStage } from "mongoose";
 import AppError from "../../errors/appErrors";
 import httpStatus from 'http-status'
 import { BankTxnModel } from "../bankTransaction/transaction.model";
+import { MfsTxnModel } from "../MFS/mfs.model";
 
 
 const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
@@ -46,20 +47,17 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
             await BankTxnModel.create([txnInfo], { session })
         }
 
-        if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nogod') {
+        if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
             const txnInfo = {
-                head: 'expense',
-                category: payload.paymentMethod,
-                type: 'debit',
+                head: payload.paymentMethod,
+                type: txnData.type,
                 amount: payload.amount,
-                paymentMethod: payload.paymentMethod,
-                note: `${payload.category}(${payload.note})`,
-                date: date,
-                createdBy: user._id
+                note: payload.note,
+                txnBy: user._id
             };
 
             //✅ আয় ব্যয় txn entry 
-            await TxnModel.create([txnInfo], { session })
+            await MfsTxnModel.create([txnInfo], { session })
         }
 
 
@@ -81,6 +79,8 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
 };
 
 
+
+
 const getAllTransactionFromDB = async (options: any) => {
     const {
         category,
@@ -91,7 +91,6 @@ const getAllTransactionFromDB = async (options: any) => {
         limit = 20,
         page = 1,
     } = options;
-
 
     const matchStage: any = {};
 
@@ -122,8 +121,7 @@ const getAllTransactionFromDB = async (options: any) => {
         ];
     }
 
-
-
+    // Date filter
     if (startDate && endDate) {
         matchStage.createdAt = {
             $gte: startOfDay(new Date(startDate)),
@@ -131,16 +129,15 @@ const getAllTransactionFromDB = async (options: any) => {
         };
     }
 
-    // Aggregation Pipeline
     const pipeline: PipelineStage[] = [
         {
             $match: matchStage,
         },
 
-        // createdBy populate
+        // Populate createdBy
         {
             $lookup: {
-                from: "users", // collection name
+                from: "users",
                 localField: "createdBy",
                 foreignField: "_id",
                 as: "createdBy",
@@ -154,25 +151,60 @@ const getAllTransactionFromDB = async (options: any) => {
             },
         },
 
-        // Sort latest first
+        // Latest first
         {
             $sort: {
                 createdAt: -1,
             },
         },
 
-        // Pagination + total count together
         {
             $facet: {
                 meta: [
                     {
-                        $count: "total",
+                        $group: {
+                            _id: null,
+
+                            total: {
+                                $sum: 1,
+                            },
+
+                            totalCredit: {
+                                $sum: {
+                                    $cond: [
+                                        {
+                                            $eq: ["$type", "credit"],
+                                        },
+                                        {
+                                            $ifNull: ["$amount", 0],
+                                        },
+                                        0,
+                                    ],
+                                },
+                            },
+
+                            totalDebit: {
+                                $sum: {
+                                    $cond: [
+                                        {
+                                            $eq: ["$type", "debit"],
+                                        },
+                                        {
+                                            $ifNull: ["$amount", 0],
+                                        },
+                                        0,
+                                    ],
+                                },
+                            },
+                        },
                     },
                 ],
 
                 data: [
                     {
-                        $skip: (Number(page) - 1) * Number(limit),
+                        $skip:
+                            (Number(page) - 1) *
+                            Number(limit),
                     },
                     {
                         $limit: Number(limit),
@@ -184,21 +216,62 @@ const getAllTransactionFromDB = async (options: any) => {
         {
             $project: {
                 data: 1,
+
                 total: {
-                    $ifNull: [{ $arrayElemAt: ["$meta.total", 0] }, 0],
+                    $ifNull: [
+                        {
+                            $arrayElemAt: [
+                                "$meta.total",
+                                0,
+                            ],
+                        },
+                        0,
+                    ],
                 },
+
+                totalCredit: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: [
+                                "$meta.totalCredit",
+                                0,
+                            ],
+                        },
+                        0,
+                    ],
+                },
+
+                totalDebit: {
+                    $ifNull: [
+                        {
+                            $arrayElemAt: [
+                                "$meta.totalDebit",
+                                0,
+                            ],
+                        },
+                        0,
+                    ],
+                },
+
                 page: {
                     $literal: Number(page),
                 },
+
                 limit: {
                     $literal: Number(limit),
                 },
+
                 totalPage: {
                     $ceil: {
                         $divide: [
                             {
                                 $ifNull: [
-                                    { $arrayElemAt: ["$meta.total", 0] },
+                                    {
+                                        $arrayElemAt: [
+                                            "$meta.total",
+                                            0,
+                                        ],
+                                    },
                                     0,
                                 ],
                             },
@@ -212,8 +285,20 @@ const getAllTransactionFromDB = async (options: any) => {
 
     const result = await TxnModel.aggregate(pipeline);
 
-    return result[0];
+    return (
+        result[0] || {
+            data: [],
+            total: 0,
+            totalCredit: 0,
+            totalDebit: 0,
+            page: Number(page),
+            limit: Number(limit),
+            totalPage: 0,
+        }
+    );
 };
+
+export default getAllTransactionFromDB;
 
 const getAllOutstandingTxnFromDB = async () => {
     const query: any = {};

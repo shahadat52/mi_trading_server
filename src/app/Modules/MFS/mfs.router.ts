@@ -18,5 +18,11 @@ router.get(
     mfsTxnControllers.getMfsTxnData
 );
 
+router.patch(
+    '/:id',
+    // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    mfsTxnControllers.updateMfsTxn
+);
+
 
 export const mfstxnRoutes = router;

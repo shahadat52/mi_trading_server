@@ -27,7 +27,19 @@ const getMfsTxnData = catchAsync(async (req, res) => {
     return result;
 });
 
+const updateMfsTxn = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await mfsTxnServices.updateMfsTxnInDB(id, req.body)
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Updated',
+        data: result,
+    });
+});
+
 export const mfsTxnControllers = {
     mfstxnEntry,
-    getMfsTxnData
+    getMfsTxnData,
+    updateMfsTxn
 }

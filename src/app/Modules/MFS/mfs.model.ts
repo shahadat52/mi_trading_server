@@ -5,10 +5,17 @@ export enum TransactionType {
     DEBIT = "debit",
     CREDIT = "credit",
 }
+
+export enum Heads {
+    Bkash = "bkash",
+    Nagad = "nagad",
+    Rocket = "rocket"
+}
 const mfxTxnSchema = new Schema<TMfsTxn>(
     {
         head: {
             type: String,
+            enum: Object.values(Heads),
             required: [true, 'Txn head is required'],
             trim: true
         },

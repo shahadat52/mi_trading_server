@@ -7,6 +7,7 @@ import { SupplierModel } from '../supplier/supplier.model';
 import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { formatDate } from 'date-fns';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
+import { MfsTxnModel } from '../MFS/mfs.model';
 
 // ✅ Create Supplier
 const customerTxnEntryInDB = async (payload: any, user: any) => {
@@ -52,18 +53,15 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
 
     if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
       const txnInfo = {
-        head: 'income',
-        category: payload.paymentMethod,
-        type: 'credit',
+        head: payload.paymentMethod,
+        type: txnData.type,
         amount: payload.amount,
-        paymentMethod: payload.paymentMethod,
-        note: payload.description,
-        date: date,
-        createdBy: user._id
+        note: payload.note,
+        txnBy: user._id
       };
 
       //✅ আয় ব্যয় txn entry 
-      await TxnModel.create([txnInfo], { session })
+      await MfsTxnModel.create([txnInfo], { session })
     }
 
     if (payload.paymentMethod === 'bank') {

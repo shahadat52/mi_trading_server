@@ -5,7 +5,8 @@ import { supplierServices } from './supplier.service';
 
 //✅ create supplier
 const createSupplier = catchAsync(async (req, res) => {
-  const result = await supplierServices.createSupplierInDB(req.body);
+  const user = req.user;
+  const result = await supplierServices.createSupplierInDB(req.body, user);
 
   sendResponse(res, {
     success: true,

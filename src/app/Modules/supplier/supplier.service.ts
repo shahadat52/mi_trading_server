@@ -5,9 +5,10 @@ import { SupplierModel } from './supplier.model';
 import httpStatus from 'http-status';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 import { makeRegex } from '../../utils/makeRegex';
+import { JwtPayload } from 'jsonwebtoken';
 
 // ✅ Create Supplier
-const createSupplierInDB = async (payload: TSupplier) => {
+const createSupplierInDB = async (payload: TSupplier, user: JwtPayload) => {
   const session = await mongoose.startSession();
 
   try {
@@ -43,6 +44,7 @@ const createSupplierInDB = async (payload: TSupplier) => {
       party: supplier._id,
       amount: 0,
       type: 'credit',
+      txnBy: user?._id
     };
 
     const createdTxn = await SupplierTxnModel.create([txnData], { session });

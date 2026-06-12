@@ -11,6 +11,7 @@ import { BepariCouthaModel } from '../bepariCoutha/bepariCoutha.model';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
 import { formatDate } from 'date-fns';
 import { TxnModel } from '../incomeExpanseTxn/transaction.model';
+import { MfsTxnModel } from '../MFS/mfs.model';
 
 //✅ Create Supplier
 const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
@@ -52,18 +53,15 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
 
     if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
       const txnInfo = {
-        head: 'exspense',
-        category: payload.paymentMethod,
-        type: 'debit',
+        head: payload.paymentMethod,
+        type: txnData.type,
         amount: payload.amount,
-        paymentMethod: payload.paymentMethod,
         note: payload.description,
-        date: date,
-        createdBy: user._id
+        txnBy: user._id
       };
 
       //✅ আয় ব্যয় txn entry 
-      await TxnModel.create([txnInfo], { session })
+      await MfsTxnModel.create([txnInfo], { session })
     }
 
     if (payload.paymentMethod === 'bank') {
