@@ -11,6 +11,7 @@ import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
 
+
   payload.purchaseQty = Number(payload.quantity)
   payload.labour = Number(payload.labour)
   payload.commission = Number(payload.commission)
@@ -50,9 +51,10 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
 
     //✅ Purchase entry
     const purchaseRes = await PurchaseModel.create([purchaseData], { session, new: true });
-    const amount = (Number(data.quantity) * Number(data.purchasePrice)) + (isCommissionPaid ? Number(payload.commission) : 0) + (isLabourPaid ? Number(payload.labour) : 0) + (isOthersPaid ? Number(payload.others) : 0);
-
-
+    const amount = Number(data.quantity) * Number(data.purchasePrice) +
+      (isCommissionPaid === "true" ? Number(payload.commission || 0) : 0) +
+      (isLabourPaid === "true" ? Number(payload.labour || 0) : 0) +
+      (isOthersPaid === "true" ? Number(payload.others || 0) : 0);
 
     //✅ Supplier Txn Entry
     if (!supplier) {
@@ -95,7 +97,6 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
         { session }
       );
     }
-
     // 4️⃣ update customr current balance
     const lastTxnUpdate = await SupplierModel.findByIdAndUpdate(
       txnCreditData.party,
@@ -287,6 +288,7 @@ const getPurchaseByIdFromDB = async (id: any) => {
   const result = await PurchaseModel.findById(id).populate([
     { path: 'product' },
     { path: 'supplier' },
+    { path: 'broker', select: 'name -_id' },
   ]);
   return result;
 };

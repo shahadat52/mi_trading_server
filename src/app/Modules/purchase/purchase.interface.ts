@@ -22,13 +22,15 @@ export interface TPurchase {
   supplier: Types.ObjectId; // Supplier name
   quantity: number;
   purchaseQty: number;
+  broker: Types.ObjectId;
+  brokerBill: number;
   bosta: number;
   lot: string;
   labour: number;
   commission: number;
-  isCommissionPaid: boolean
-  isOthersPaid: boolean
-  isLabourPaid: boolean
+  isCommissionPaid: any
+  isOthersPaid: any
+  isLabourPaid: any
   others: number;
   othersField: string;
   purchaseDate?: Date;

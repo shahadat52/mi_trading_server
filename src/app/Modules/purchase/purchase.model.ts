@@ -28,6 +28,16 @@ const purchaseSchema = new Schema<TPurchase>(
       ref: 'Supplier',
       required: [true, 'Supplier is required'],
     },
+    broker: {
+      type: Schema.Types.ObjectId,
+      ref: 'Broker',
+      default: ''
+    },
+    brokerBill: {
+      type: Number,
+      default: 0,
+      required: [true, 'Broker bill is missing']
+    },
     purchaseDate: { type: Date, default: Date.now },
     purchaseType: {
       type: String,

@@ -52,7 +52,7 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
                 head: payload.paymentMethod,
                 type: txnData.type,
                 amount: payload.amount,
-                note: payload.note,
+                note: `${payload.category}(${payload.note})`,
                 txnBy: user._id
             };
 
