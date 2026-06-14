@@ -13,7 +13,7 @@ router.post(
 
 router.get(
     '/closing',
-    // auth('admin', 'specialManager',),
+    auth('admin', 'specialManager',),
     cashboxControllers.getYesterdayClosingBal
 );
 

@@ -48,6 +48,18 @@ const getAllBothSales = catchAsync(async (req, res) => {
   });
 });
 
+const getAllDueSales = catchAsync(async (req, res) => {
+
+  const result = await bothSalesServices.getAllDueSalesFromDB(req.query);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 const getBothSaleById = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await bothSalesServices.getBothSaleByIdFromDB(id);
@@ -72,7 +84,6 @@ const getBothSaleByInvoice = catchAsync(async (req, res) => {
 
 const getBothSalesReport = catchAsync(async (req, res) => {
   const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', startDate, endDate } = req.query;
-  const query = req.query;
   const result = await bothSalesServices.getBothSalesReportFromDB({ page, limit, sortBy, order, startDate, endDate });
 
   sendResponse(res, {
@@ -103,7 +114,7 @@ const updateInvoice = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Successfully Updated',
+    message: 'Updated',
     data: result,
   });
 });
@@ -115,7 +126,7 @@ const deleteBothSaleById = catchAsync(async (req, res) => {
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'Successfully Deleted',
+    message: 'Deleted',
     data: result,
   });
 });
@@ -123,6 +134,7 @@ const deleteBothSaleById = catchAsync(async (req, res) => {
 export const bothSalesControllers = {
   bothSalesEntry,
   getAllBothSales,
+  getAllDueSales,
   getBothSaleById,
   getBothSaleByInvoice,
   getBothSalesReport,

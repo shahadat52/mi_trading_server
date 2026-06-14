@@ -7,7 +7,6 @@ import { USER_ROLE } from '../User/user.constant';
 
 const router = express.Router();
 
-// Define user-related routes here
 router.post(
   '/add',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),

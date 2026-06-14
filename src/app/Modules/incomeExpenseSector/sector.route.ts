@@ -5,7 +5,6 @@ import { sectorControllers } from './sector.controller';
 
 const router = express.Router();
 
-// Define user-related routes here
 router.post(
     '/create',
     auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),

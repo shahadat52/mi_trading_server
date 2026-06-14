@@ -231,9 +231,6 @@ const getAllBothSalesFromDB = async (options: any) => {
 
   const query: any = {};
 
-  // ======================
-  // 1. Main Search (Global)
-  // ======================
   if (search) {
     query.$or = [
       { invoice: makeRegex(search) },
@@ -244,24 +241,14 @@ const getAllBothSalesFromDB = async (options: any) => {
     ];
   }
 
-  // ======================
-  // 2. Filter by broker
-  // (Merge with existing $or)
-  // ======================
   if (broker) {
     query.$or = [...(query?.$or ?? []), { broker: makeRegex(broker) }];
   }
 
-  // ======================
-  // 3. Filter by category (via product)
-  // ======================
   if (category) {
     query['items.product.category'] = category;
   }
 
-  // ======================
-  // 4. Date Range Filter
-  // ======================
   if (dateFrom && dateTo) {
     query.date = {
       $gte: new Date(dateFrom),
@@ -289,9 +276,73 @@ const getAllBothSalesFromDB = async (options: any) => {
     ]),
   ]);
 
-  // ======================
-  // 8. Return Response
-  // ======================
+  return {
+    meta: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit),
+    },
+    data,
+  };
+};
+
+
+const getAllDueSalesFromDB = async (options: any) => {
+  const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', search, broker, category, dateFrom, dateTo,
+  } = options;
+
+  const query: any = {};
+
+  query.$expr = {
+    $lt: ["$paidAmount", "$grandTotal"],
+  };
+
+  if (search) {
+    query.$or = [
+      { invoice: makeRegex(search) },
+      { broker: makeRegex(search) },
+      { 'customer.name': makeRegex(search) },
+      { 'customer.phone': makeRegex(search) },
+      { 'customer.address': makeRegex(search) },
+    ];
+  }
+
+  if (broker) {
+    query.$or = [...(query?.$or ?? []), { broker: makeRegex(broker) }];
+  }
+
+  if (category) {
+    query['items.product.category'] = category;
+  }
+
+  if (dateFrom && dateTo) {
+    query.date = {
+      $gte: new Date(dateFrom),
+      $lte: new Date(dateTo),
+    };
+  }
+
+  const sortOrder = order === 'asc' ? 1 : -1;
+  const sortCriteria: any = { [sortBy]: sortOrder };
+
+  const skip = (page - 1) * limit;  // 6. Pagination
+
+  const [total, data] = await Promise.all([
+    BothSalesModel.countDocuments(query), // single DB count
+    BothSalesModel.find(query).sort(sortCriteria).skip(skip).limit(limit).populate([
+      {
+        path: 'items.product',
+      },
+      {
+        path: 'customer',
+      },
+      {
+        path: 'createdBy',
+      }
+    ]),
+  ]);
+
   return {
     meta: {
       page,
@@ -476,6 +527,7 @@ const deleteBothSaleByIdFromDB = async (id: any) => {
 export const bothSalesServices = {
   bothSalesEntryInDB,
   getAllBothSalesFromDB,
+  getAllDueSalesFromDB,
   getBothSaleByIdFromDB,
   getBothSaleByInvoiceFromDB,
   getBothSalesReportFromDB,

@@ -46,6 +46,21 @@ const getCouthaByIdFromDB = async (id: any) => {
 
 };
 
+const getCouthaByInvoiceFromDB = async (id: any) => {
+    const result = await BepariCouthaModel.findOne({ invoice: id }).populate([
+        {
+            path: 'supplier',
+            select: 'name -_id'
+        },
+        {
+            path: 'createdBy',
+            select: 'name -_id'
+        }
+    ])
+    return result
+
+}
+
 const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) => {
     if (!allowedFields.includes(field)) {
         throw new Error("Invalid field name");
@@ -176,6 +191,7 @@ const deleteBepariCouthaFromDB = async (id: any) => {
 export const BepariCouthaServices = {
     createSettlementTxnDInDB,
     getCouthaByIdFromDB,
+    getCouthaByInvoiceFromDB,
     getSettlementsOfSupplierFromDb,
     getFieldsWiseDataFromDb,
     updateBepariCouthaFromDB,

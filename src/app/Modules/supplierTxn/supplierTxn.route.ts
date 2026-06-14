@@ -32,7 +32,7 @@ router.get(
 
 router.get(
   '/unapproved',
-  // auth(USER_ROLE.admin, USER_ROLE.specialManager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager),
   supplierTxnControllers.getUnApprovedSupplierTxn
 )
 

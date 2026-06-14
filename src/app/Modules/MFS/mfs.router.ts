@@ -5,22 +5,21 @@ import { mfsTxnControllers } from './mfs.controller';
 
 const router = express.Router();
 
-// Define user-related routes here
 router.post(
     '/entry',
-    // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     mfsTxnControllers.mfstxnEntry
 );
 
 router.get(
     '/',
-    // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     mfsTxnControllers.getMfsTxnData
 );
 
 router.patch(
     '/:id',
-    // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
     mfsTxnControllers.updateMfsTxn
 );
 

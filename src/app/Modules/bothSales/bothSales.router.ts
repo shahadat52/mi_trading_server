@@ -9,7 +9,17 @@ router.post(
   bothSalesControllers.bothSalesEntry
 );
 
-router.get('/all', auth('admin', 'manager', 'specialManager',), bothSalesControllers.getAllBothSales);
+router.get(
+  '/all',
+  auth('admin', 'manager', 'specialManager',),
+  bothSalesControllers.getAllBothSales
+);
+
+router.get(
+  '/due',
+  auth('admin', 'manager', 'specialManager',),
+  bothSalesControllers.getAllDueSales
+);
 
 router.get(
   '/:id',

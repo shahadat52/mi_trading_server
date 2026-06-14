@@ -7,7 +7,6 @@ const router = express.Router();
 router.post(
   '/entry',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
-  // validateRequest(salesValidation.createSaleZodSchema),
   salesControllers.salesEntry
 );
 
