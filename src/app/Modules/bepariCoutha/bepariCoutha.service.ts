@@ -177,6 +177,10 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
 
 
 const updateBepariCouthaFromDB = async (id: any, data: any) => {
+    const { brokary, kuli, transport_rent, tohori, haolat, godi, arot, totalSales } = data;
+    const subTotal = Number(brokary || 0) + Number(kuli || 0) + Number(transport_rent || 0) + Number(tohori || 0) + Number(haolat || 0) + Number(godi || 0) + Number(arot || 0);
+    data.subTotal = subTotal
+    data.joma = Number(totalSales) - Number(subTotal)
     const customer = await BepariCouthaModel.findByIdAndUpdate(id, data, { new: true });
     if (!customer) throw new AppError(httpStatus.NOT_FOUND, 'চৌথা পাওয়া যাচ্ছেনা');
     return customer;

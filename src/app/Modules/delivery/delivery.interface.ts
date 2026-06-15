@@ -1,7 +1,7 @@
 import { Types } from 'mongoose';
 
 export type TDelivery = {
-  deliveryBy: Types.ObjectId;
+  deliveryBy: string;
   deliveryTime: Date;
   via: string;
   sales: Types.ObjectId;

@@ -44,7 +44,26 @@ const getAllDeliveries = catchAsync(async (req, res) => {
   });
 });
 
+
+
+const updateDeliveryStatuts = catchAsync(async (req, res) => {
+  const { id } = req.params;
+  const { invoice } = req.body
+  const user = req.user
+  const result = await deliveryServices.updateDeliveryStatutsInDB({ id, invoice, user });
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+    meta: result,
+  });
+});
+
+
+
 export const deliveryControllers = {
   deliveryEntry,
   getAllDeliveries,
+  updateDeliveryStatuts
 };

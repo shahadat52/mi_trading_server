@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import mongoose from 'mongoose';
 import AppError from '../../errors/appErrors';
 import { BothSalesModel } from '../bothSales/bothSales.model';
+import { endOfDay, startOfDay } from 'date-fns';
 
 const deliveryEntryInDB = async (payload: TDelivery, user: JwtPayload) => {
   const alreadyDelivered = await DeliveryModel.findOne({ sales: payload.sales });
@@ -16,20 +17,9 @@ const deliveryEntryInDB = async (payload: TDelivery, user: JwtPayload) => {
   session.startTransaction();
 
   try {
-    payload.deliveryBy = user._id;
+    payload.deliveryBy = "";
     // Create delivery entry
     const result = await DeliveryModel.create([payload], { session });
-
-    // Update sales status
-    const updatedSales = await BothSalesModel.findByIdAndUpdate(
-      payload.sales,
-      { isDelivered: true },
-      { new: true, session }
-    );
-
-    if (!updatedSales) {
-      throw new AppError(httpStatus.NOT_FOUND, 'Sale not found');
-    }
 
     // Commit transaction
     await session.commitTransaction();
@@ -46,24 +36,80 @@ const deliveryEntryInDB = async (payload: TDelivery, user: JwtPayload) => {
 
 const getAllDeliveriesFromDB = async (options: any) => {
   const { page, limit, sortBy, order, search, startDate, endDate } = options;
-  const result = await DeliveryModel.find().populate([
-    {
-      path: 'deliveryBy',
-      select: 'name'
-    },
+  const query: any = {};
+  if (startDate && endDate) {
+    query.createdAt = {
+      $gte: startOfDay(new Date(startDate)),
+      $lte: endOfDay(new Date(endDate)),
+    };
+  }
+  const result = await DeliveryModel.find(query).populate([
     {
       path: 'sales',
-      select: 'items invoice'
-
+      select: 'invoice'
     }
   ]).sort({ createdAt: -1 });
   return result
 
 };
 
+
+
+const updateDeliveryStatutsInDB = async ({ id, invoice, user, }: any) => {
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+
+    const sale = await BothSalesModel.findOne({ invoice }).session(session);
+
+    if (!sale) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Sale not found');
+    }
+
+
+    const updatedDeliveryMan = await DeliveryModel.findByIdAndUpdate(
+      id,
+      { deliveryBy: user.name },
+      { new: true, session }
+    );
+
+    if (!updatedDeliveryMan) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Delivery not found');
+    }
+
+
+    const updatedSales = await BothSalesModel.findByIdAndUpdate(
+      sale._id,
+      { isDelivered: true },
+      { new: true, session }
+    );
+
+    if (!updatedSales) {
+      throw new AppError(httpStatus.NOT_FOUND, 'Sale update failed');
+    }
+
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return {
+      delivery: updatedDeliveryMan,
+      sale: updatedSales,
+    };
+  } catch (error) {
+
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
+};
+
 export const deliveryServices = {
   deliveryEntryInDB,
   getAllDeliveriesFromDB,
+  updateDeliveryStatutsInDB
 };
 
 

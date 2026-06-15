@@ -225,7 +225,9 @@ const getOutStandingTxnSuppliersFromDB = async ({ searchTerm, type, limit }: any
   if (type) {
     pipeline.push({
       $match: {
-        "party.type": type
+        "party.type": {
+          $in: [type, "common"]
+        }
       }
     });
   }

@@ -4,7 +4,7 @@ import { model } from 'mongoose';
 
 const deliverySchema = new Schema<TDelivery>(
   {
-    deliveryBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'source required'] },
+    deliveryBy: { type: String, default: '' },
     deliveryTime: { type: Date, default: Date.now() },
     via: { type: String, required: [true, 'মাধ্যমের তথ্য প্রয়োজন'] },
     sales: { type: Schema.Types.ObjectId, ref: 'bothSale', required: [true, 'sales  required'] },

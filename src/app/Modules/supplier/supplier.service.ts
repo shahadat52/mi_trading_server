@@ -79,7 +79,9 @@ const getAllSuppliersFromDB = async (query: Record<string, unknown>) => {
 
   // Filter by type
   if (type) {
-    filter.type = type;
+    filter.type = {
+      $in: [type, "common"]
+    };
   }
 
   // Search by name (case-insensitive)

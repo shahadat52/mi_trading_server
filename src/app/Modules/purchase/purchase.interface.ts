@@ -22,6 +22,7 @@ export interface TPurchase {
   supplier: Types.ObjectId; // Supplier name
   quantity: number;
   purchaseQty: number;
+  broker: string
   bosta: number;
   lot: string;
   labour: number;

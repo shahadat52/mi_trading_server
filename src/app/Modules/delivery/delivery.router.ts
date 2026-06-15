@@ -13,8 +13,14 @@ router.post(
 
 router.get(
   '/all',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   deliveryControllers.getAllDeliveries
 );
+
+router.patch(
+  '/:id',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  deliveryControllers.updateDeliveryStatuts
+)
 
 export const deliveryRoutes = router;

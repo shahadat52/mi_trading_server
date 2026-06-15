@@ -28,6 +28,11 @@ const purchaseSchema = new Schema<TPurchase>(
       ref: 'Supplier',
       required: [true, 'Supplier is required'],
     },
+    broker: {
+      type: String,
+      trim: true,
+      default: ''
+    },
     purchaseDate: { type: Date, default: Date.now },
     purchaseType: {
       type: String,
