@@ -2,7 +2,6 @@ import { BothSalesModel } from './bothSales.model';
 import mongoose from 'mongoose';
 import { CustomerTxnModel } from '../customerTransaction/customerTxn.model';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
-import { ProductNameModel } from '../product/product.model';
 import { CommissionProductModel } from '../commissionProduct/commissionProduct.model';
 import { getCommissionSalesInvoiceNumber } from '../commissionSales/commissionSales.utils';
 import { CommissionSalesModel } from '../commissionSales/commissionSales.model';
@@ -14,12 +13,10 @@ import { getSalesInvoiceNumber } from './sales.utils';
 import { PurchaseModel } from '../purchase/purchase.model';
 import { makeRegex } from '../../utils/makeRegex';
 import { CustomerModel } from '../customer/customer.model';
-import { JwtPayload } from 'jsonwebtoken';
-import { TxnModel } from '../incomeExpanseTxn/transaction.model';
-import { formatDate } from 'date-fns';
+import { MfsTxnModel } from '../MFS/mfs.model';
 
 const bothSalesEntryInDB = async (payload: any) => {
-  const { broker, brokerBill, ...salesData } = payload;
+  const { broker, brokerBill, bankName, ...salesData } = payload;
 
   if (broker?.name) {
     salesData.broker = broker?.name
@@ -27,6 +24,10 @@ const bothSalesEntryInDB = async (payload: any) => {
   const session = await mongoose.startSession();
   session.startTransaction();
   try {
+    const customer = await CustomerModel.findById(payload.customer).session(session);
+    if (!customer) {
+      throw new AppError(httpStatus.NOT_FOUND, "Customer not found");
+    }
     // 1. Generate Invoice
     const invoiceNumber = await getSalesInvoiceNumber();
     if (!invoiceNumber) {
@@ -199,21 +200,31 @@ const bothSalesEntryInDB = async (payload: any) => {
     }
 
     //✅ Bank txn 
-    if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nogod') {
-      const date = formatDate(new Date(), "dd/MM/yyyy, HH:mm");
+    if (bankName && payload.paymentMethod === 'bank') {
       const txnInfo = {
-        head: 'income',
-        category: payload.paymentMethod,
+        bankName,
+        source: 'others',
         type: 'credit',
         amount: payload.paidAmount,
-        paymentMethod: payload.paymentMethod,
-        note: payload.comments,
-        createdBy: payload.createdBy,
-        date
+        note: `${customer?.name}(${invoiceNumber})`,
+        createdBy: payload.createdBy
+
       };
 
       //✅ Bank txn entry 
-      await TxnModel.create([txnInfo], { session })
+      await BankTxnModel.create([txnInfo], { session })
+    }
+    if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
+      const txnInfo = {
+        head: payload.paymentMethod,
+        type: 'credit',
+        amount: payload.paidAmount,
+        note: `${customer?.name}(${invoiceNumber})`,
+        txnBy: payload.createdBy
+      };
+
+      //✅ Bank txn entry 
+      await MfsTxnModel.create([txnInfo], { session })
     }
     await session.commitTransaction();
     session.endSession();

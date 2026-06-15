@@ -56,10 +56,22 @@ const brokerDelete = catchAsync(async (req, res) => {
     });
 });
 
+const brokerTxnDelete = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await brokerServices.brokerTxnDeleteFromDB(id)
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Deleted',
+        data: result,
+    });
+});
+
 export const brokerControllers = {
     createBroker,
     getAllBrokers,
     getBrokerById,
     brokerUpdate,
-    brokerDelete
+    brokerDelete,
+    brokerTxnDelete
 }

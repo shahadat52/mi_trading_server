@@ -131,7 +131,7 @@ const getBankWiseTransactionsFromDB = async ({
         {
             $setWindowFields: {
                 partitionBy: "$bankName",
-                sortBy: { postingDate: 1, _id: 1 },
+                sortBy: { createdAt: -1, _id: 1 },
                 output: {
                     balance: {
                         $sum: {
@@ -165,7 +165,7 @@ const getBankWiseTransactionsFromDB = async ({
                         issueDate: "$issueDate",
                         status: "$status",
                         note: "$note",
-
+                        createdAt: "$createdAt",
                         balance: "$balance",
                     },
                 },
@@ -186,7 +186,7 @@ const getBankWiseTransactionsFromDB = async ({
         },
 
         // 🔟 Sort banks
-        { $sort: { totalAmount: -1 } },
+        { $sort: { createdAt: -1 } },
     ]);
 };
 

@@ -40,7 +40,11 @@ router.get(
     purchaseControllers.getCommissionPurchase
 );
 
-router.get('/regular/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), purchaseControllers.getPurchaseById);
+router.get(
+    '/regular/:id',
+    // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    purchaseControllers.getPurchaseById
+);
 
 router.patch('/update/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),

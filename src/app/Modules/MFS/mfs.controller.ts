@@ -38,8 +38,20 @@ const updateMfsTxn = catchAsync(async (req, res) => {
     });
 });
 
+const deleteMfsTxn = catchAsync(async (req, res) => {
+    const { id } = req.params;
+    const result = await mfsTxnServices.deleteMfsTxnFromDB(id)
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Deleted',
+        data: result,
+    });
+});
+
 export const mfsTxnControllers = {
     mfstxnEntry,
     getMfsTxnData,
-    updateMfsTxn
+    updateMfsTxn,
+    deleteMfsTxn
 }

@@ -4,6 +4,7 @@ import { BrokerModel } from "./broker.model"
 import AppError from "../../errors/appErrors";
 import httpStatus from 'http-status'
 import { makeRegex } from "../../utils/makeRegex";
+import { BrokerTxnModel } from "../BrokerTxn/brokerTxn.model";
 
 const createBrokerInDB = async ({ brokerData }: { brokerData: TBroker }) => {
 
@@ -53,6 +54,11 @@ const brokerUpdateInDB = async (id: any, data: any) => {
 const brokerDeleteFromDB = async (id: any) => {
     const result = await BrokerModel.findByIdAndDelete(id);
     return result
+};
+
+const brokerTxnDeleteFromDB = async (id: any) => {
+    const result = await BrokerTxnModel.findByIdAndDelete(id);
+    return result
 }
 
 
@@ -61,5 +67,6 @@ export const brokerServices = {
     getAllBrokersFromDB,
     getBrokerByIdFromDB,
     brokerUpdateInDB,
-    brokerDeleteFromDB
+    brokerDeleteFromDB,
+    brokerTxnDeleteFromDB
 }

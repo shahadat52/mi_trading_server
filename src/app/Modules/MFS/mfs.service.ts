@@ -83,8 +83,14 @@ const updateMfsTxnInDB = async (id: any, data: any) => {
     return result
 }
 
+const deleteMfsTxnFromDB = async (id: any) => {
+    const result = await MfsTxnModel.findByIdAndDelete(id);
+    return result
+}
+
 export const mfsTxnServices = {
     mfsTxnEntryInDB,
     getMfsTxnDataFromDB,
-    updateMfsTxnInDB
+    updateMfsTxnInDB,
+    deleteMfsTxnFromDB
 }

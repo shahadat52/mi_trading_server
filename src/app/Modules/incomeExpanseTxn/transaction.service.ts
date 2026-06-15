@@ -30,7 +30,7 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
             { session }
         );
 
-        if (issueDate && postingDate && payload.paymentMethod === 'bank') {
+        if (payload.paymentMethod === 'bank') {
             const txnInfo = {
                 bankName,
                 amount: payload.amount,

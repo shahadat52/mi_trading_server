@@ -34,6 +34,14 @@ router.delete(
     brokerControllers.brokerDelete
 );
 
+router.delete(
+    '/brokerTxn/:id',
+    auth('admin', 'specialManager'),
+    brokerControllers.brokerTxnDelete
+);
+
+
+
 
 
 export const brokerRoutes = router

@@ -70,7 +70,7 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
         source: 'others',
         type: 'credit',
         amount: payload.amount,
-        note: payload.description,
+        note: `${customer?.name} (${payload.description})`,
         date: date,
         createdBy: user._id
       };

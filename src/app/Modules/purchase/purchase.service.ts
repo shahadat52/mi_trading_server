@@ -287,8 +287,7 @@ const getCommissionPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
 const getPurchaseByIdFromDB = async (id: any) => {
   const result = await PurchaseModel.findById(id).populate([
     { path: 'product' },
-    { path: 'supplier' },
-    { path: 'broker', select: 'name -_id' },
+    { path: 'supplier' }
   ]);
   return result;
 };

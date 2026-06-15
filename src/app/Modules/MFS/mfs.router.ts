@@ -23,5 +23,11 @@ router.patch(
     mfsTxnControllers.updateMfsTxn
 );
 
+router.delete(
+    '/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    mfsTxnControllers.deleteMfsTxn
+);
+
 
 export const mfstxnRoutes = router;
