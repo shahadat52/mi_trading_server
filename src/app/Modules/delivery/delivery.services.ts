@@ -46,7 +46,7 @@ const getAllDeliveriesFromDB = async (options: any) => {
   const result = await DeliveryModel.find(query).populate([
     {
       path: 'sales',
-      select: 'invoice'
+      select: 'items invoice'
     }
   ]).sort({ createdAt: -1 });
   return result
