@@ -26,7 +26,16 @@ router.get(
   customerTxnControllers.getUnApprovedCustomerTxn
 )
 
-router.get('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getCustomerTxnById);
+router.get(
+  '/:id',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getCustomerTxnById
+);
+
+router.get(
+  '/due/:id',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  customerTxnControllers.getCustomerDue
+);
 
 router.get('/orphan/txn', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getOrphanCustomerTxn);
 

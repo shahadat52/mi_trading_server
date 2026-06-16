@@ -151,6 +151,75 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
         };
         return result
     }
+    if (field === 'arot') {
+        const sales = await BothSalesModel.aggregate([
+            {
+                $match: {
+                    updatedAt: {
+                        $gte: startOfDay(new Date(startDate)),
+                        $lte: endOfDay(new Date(toDate)),
+                    },
+                },
+            },
+
+            // 👇 calculate total commission per sale
+            {
+                $addFields: {
+                    itemsCommissionTotal: {
+                        $sum: "$items.commission",
+                    },
+                },
+            },
+
+            {
+                $addFields: {
+                    arot: {
+                        $add: ["$customerCommission", "$itemsCommissionTotal"],
+                    },
+                },
+            },
+            {
+                $match: {
+                    arot: { $gt: 0 }
+                }
+            },
+
+            {
+                $project: {
+                    _id: 1,
+                    invoice: 1,
+                    arot: 1,
+                    createdAt: 1,
+                },
+            },
+
+            {
+                $sort: { createdAt: -1 },
+            },
+        ]);
+
+        const couthas = await BepariCouthaModel.aggregate([
+            {
+                $match: matchStage
+            },
+            {
+                $sort: { createdAt: -1 }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    invoice: 1,
+                    [field]: 1,
+                    updatedAt: 1
+                }
+            }
+        ]);
+
+        return {
+            couthas,
+            sales
+        }
+    }
 
     const couthas = await BepariCouthaModel.aggregate([
         {
@@ -181,7 +250,7 @@ const updateBepariCouthaFromDB = async (id: any, data: any) => {
     const subTotal = Number(brokary || 0) + Number(kuli || 0) + Number(transport_rent || 0) + Number(tohori || 0) + Number(haolat || 0) + Number(godi || 0) + Number(arot || 0);
     data.subTotal = subTotal
     data.joma = Number(totalSales) - Number(subTotal)
-    const customer = await BepariCouthaModel.findByIdAndUpdate(id, data, { new: true });
+    const customer = await BepariCouthaModel.findByIdAndUpdate(id, data, { new: true, runValidators: true });
     if (!customer) throw new AppError(httpStatus.NOT_FOUND, 'চৌথা পাওয়া যাচ্ছেনা');
     return customer;
 };
@@ -201,3 +270,75 @@ export const BepariCouthaServices = {
     updateBepariCouthaFromDB,
     deleteBepariCouthaFromDB
 };
+
+
+
+// if (field === 'arot') {
+//     const sales = await BothSalesModel.aggregate([
+//         {
+//             $match: {
+//                 isDeleted: false,
+//                 date: {
+//                     $gte: startOfDay(new Date(startDate)),
+//                     $lte: endOfDay(new Date(toDate)),
+//                 },
+//             },
+//         },
+
+//         // item commission calculate
+//         {
+//             $addFields: {
+//                 itemCommission: {
+//                     $sum: "$items.commission",
+//                 },
+//             },
+//         },
+
+//         // final commission per sale
+//         {
+//             $addFields: {
+//                 commission: {
+//                     $add: ["$customerCommission", "$itemCommission"],
+//                 },
+//             },
+//         },
+
+//         // projection (your required format)
+//         {
+//             $project: {
+//                 _id: 1,
+//                 invoice: 1,
+//                 commission: 1,
+//                 updatedAt: 1,
+//                 createdAt: 1, // sorting এর জন্য দরকার
+//             },
+//         },
+
+//         // sort
+//         {
+//             $sort: { createdAt: -1 },
+//         },
+//     ]);
+
+//     const couthas = await BepariCouthaModel.aggregate([
+//         {
+//             $match: matchStage
+//         },
+//         {
+//             $sort: { createdAt: -1 }
+//         },
+//         {
+//             $project: {
+//                 _id: 1,
+//                 invoice: 1,
+//                 [field]: 1,
+//                 updatedAt: 1
+//             }
+//         }
+//     ]);
+//     const result = {
+//         couthas,
+//         sales: sales[0]?.totalCommission || 0
+//     }
+//     return result
+// }

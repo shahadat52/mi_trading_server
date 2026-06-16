@@ -58,6 +58,18 @@ const getCustomerTxnById = catchAsync(async (req, res) => {
   });
 });
 
+const getCustomerDue = catchAsync(async (req, res) => {
+  const { id } = req.params
+  const result = await customerTxnServices.getCustomerDueFromDB(id);
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 // ✅ Transaction data update
 const updateById = catchAsync(async (req, res) => {
   const { id } = req.params
@@ -127,6 +139,7 @@ export const customerTxnControllers = {
   getAllCustomerTxn,
   getOutStandingCustomerTxn,
   getCustomerTxnById,
+  getCustomerDue,
   updateById,
   deleteCustomerTxn,
   getUnApprovedCustomerTxn,

@@ -125,18 +125,28 @@ const getCommissionSalesByIdFromDB = async (id: any) => {
   return result;
 };
 
-const commissionSalesUpdateInDB = async (id: any, data: any) => {
-  const result = await CommissionSalesModel.findByIdAndUpdate(id,
+const commissionSalesUpdateInDB = async (id: any, updateData: any) => {
+  const { productId, quantity, bosta, salePrice } = updateData;
+
+  const updatedSale = await CommissionSalesModel.findOneAndUpdate(
+    {
+      _id: id,
+      "items.product": productId,
+    },
     {
       $set: {
-        "items.0.salePrice": data.salePrice,
-        "items.0.quantity": data.quantity,
-        "items.0.bosta": data.bosta
+        "items.$.quantity": quantity,
+        "items.$.bosta": bosta,
+        "items.$.salePrice": salePrice
       },
     },
-    { new: true });
-  return result
-}
+    {
+      new: true,
+    }
+  );
+
+  return updatedSale;
+};
 
 export const commissionServices = {
   createCommissionSalesInDB,

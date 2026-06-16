@@ -300,7 +300,7 @@ const getAllBothSalesFromDB = async (options: any) => {
 
 
 const getAllDueSalesFromDB = async (options: any) => {
-  const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', search, broker, category, dateFrom, dateTo,
+  const { page = 1, limit, sortBy = 'createdAt', order = 'desc', search, broker, category, dateFrom, dateTo,
   } = options;
 
   const query: any = {};
@@ -341,7 +341,7 @@ const getAllDueSalesFromDB = async (options: any) => {
 
   const [total, data] = await Promise.all([
     BothSalesModel.countDocuments(query), // single DB count
-    BothSalesModel.find(query).sort(sortCriteria).skip(skip).limit(limit).populate([
+    BothSalesModel.find(query).sort(sortCriteria).skip(skip).limit(Number(limit)).populate([
       {
         path: 'items.product',
       },

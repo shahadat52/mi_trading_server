@@ -339,6 +339,53 @@ const getCustomerTxnByIdInDB = async (id: any) => {
   return data;
 };
 
+const getCustomerDueFromDB = async (id: any) => {
+  const customer = await CustomerModel.findById(id);
+  if (!customer) {
+    throw new AppError(httpStatus.NOT_FOUND, "Customer not found");
+  };
+  const data = await CustomerTxnModel.aggregate([
+    {
+      $match: {
+        party: new Types.ObjectId(id),
+      },
+    },
+
+    {
+      $group: {
+        _id: "$party",
+
+        totalDebit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+          },
+        },
+
+        totalCredit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+          },
+        },
+      },
+    },
+
+    {
+      $project: {
+        _id: 0,
+        totalDebit: 1,
+        totalCredit: 1,
+
+        balance: {
+          $subtract: ["$totalDebit", "$totalCredit"],
+        },
+      },
+    },
+  ]);
+
+
+  return data[0];
+};
+
 
 
 const updateByIdInDB = async (id: any, updateData: any) => {
@@ -414,6 +461,7 @@ export const customerTxnServices = {
   getAllCustomerTxnFromDB,
   getOutStandingCustomerTxnFromDB,
   getCustomerTxnByIdInDB,
+  getCustomerDueFromDB,
   updateByIdInDB,
   deleteCustomerTxnFromDB,
   getUnApprovedCustomerTxnFromDB,

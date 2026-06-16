@@ -13,7 +13,7 @@ const transactionEntryInDB = async (
 ) => {
     payload.createdBy = user._id;
 
-    payload.postingDate = startOfDay(new Date(payload.postingDate));
+    payload.postingDate = startOfDay(new Date(Date.now()));
 
     const result = await BankTxnModel.create(payload);
 
@@ -28,7 +28,7 @@ const getAllTransactionFromDB = async (options: any) => {
 
     // optional date filter (issueDate বা postingDate যেটা business logic)
     if (dateFrom && dateTo) {
-        matchStage.issueDate = {
+        matchStage.createtAt = {
             $gte: new Date(dateFrom),
             $lte: new Date(dateTo),
         };
@@ -123,7 +123,7 @@ const getBankWiseTransactionsFromDB = async ({
         { $match: matchStage },
 
         // 2️⃣ Sort
-        { $sort: { bankName: 1, postingDate: 1, _id: 1 } },
+        { $sort: { bankName: 1, createdAt: 1, _id: 1 } },
 
 
 
@@ -161,7 +161,6 @@ const getBankWiseTransactionsFromDB = async ({
                         _id: "$_id",
                         type: "$type",
                         amount: "$amount",
-                        postingDate: "$postingDate",
                         issueDate: "$issueDate",
                         status: "$status",
                         note: "$note",
@@ -197,12 +196,12 @@ const getAllOutstandingTxnFromDB = async () => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // time remove
 
-    query.postingDate = {
+    query.createdAt = {
         $gte: today, // date compare only
     };
 
     const result = await BankTxnModel.find(query)
-        .sort({ postingDate: 1 });
+        .sort({ createdAt: 1 });
 
     return result;
 };
