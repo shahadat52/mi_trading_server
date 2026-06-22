@@ -9,7 +9,7 @@ import { SupplierTxnModel } from '../Modules/supplierTxn/supplierTxn.model';
 export const startAttendanceCron = () => {
 
     cron.schedule(
-        '0 0 * * *',
+        '5 0 * * *',
         async () => {
 
             await attendanceServices.generateEmployeesAttendance()

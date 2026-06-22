@@ -1,8 +1,9 @@
-import { format } from "date-fns";
+import { format, getDaysInMonth } from "date-fns";
 import { UserModel } from "../User/user.model";
-import { AttendanceModel } from "./attendance.model";
 import mongoose from 'mongoose';
-import { startOfMonth, endOfMonth } from 'date-fns';
+import { startOfMonth, endOfMonth, subMonths } from "date-fns";
+import { AttendanceModel } from "./attendance.model";
+import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 import { EmployeeModel } from "../employee/employee.model";
 
 
@@ -38,8 +39,6 @@ const generateEmployeesAttendance = async () => {
     } catch (error) {
     }
 };
-
-
 
 const getAttendanceByIdFromDb = async ({ id, year, month }: any) => {
 
@@ -128,9 +127,140 @@ const updateBasicSalaryInDB = async ({ id, basicSalary }: any) => {
 
 
 
+
+const monthlyEmployeePayroll = async () => {
+    // const now = new Date();
+    // const lastMonth = subMonths(now, 1);
+
+    // const start = startOfMonth(lastMonth);
+    // const end = endOfMonth(lastMonth);
+
+    // const startDate = start.toISOString();
+    // const endDate = end.toISOString();
+    // const daysInMonth = getDaysInMonth(lastMonth);
+    // console.log(daysInMonth)
+
+
+    const now = new Date();
+
+    const start = startOfMonth(now);
+    const end = endOfMonth(now);
+
+    const startDate = start.toISOString();
+    const endDate = end.toISOString();
+
+    const daysInMonth = getDaysInMonth(now);
+
+    const attendanceSummary = await AttendanceModel.aggregate([
+        {
+            $match: {
+                date: {
+                    $gte: new Date(startDate),
+                    $lte: new Date(endDate),
+                },
+            },
+        },
+
+        {
+            $group: {
+                _id: "$employee",
+                present: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "present"] }, 1, 0],
+                    },
+                },
+                paid_leave: {
+                    $sum: {
+                        $cond: [{ $eq: ["$status", "half_day"] }, 1, 0],
+                    },
+                },
+            },
+        },
+
+        {
+            $lookup: {
+                from: "employees",
+                localField: "_id",
+                foreignField: "_id",
+                as: "employee",
+            },
+        },
+
+        { $unwind: "$employee" },
+
+        {
+            $match: {
+                "employee.status": "active",
+                "employee.isDeleted": false,
+            },
+        },
+
+        {
+            $project: {
+                employeeId: "$_id",
+                name: "$employee.name",
+                basicSalary: "$employee.basicSalary",
+                present: 1,
+                paid_leave: 1,
+
+                payableSalary: {
+                    $round: [
+                        {
+                            $add: [
+                                {
+                                    $multiply: [
+                                        { $divide: ["$employee.basicSalary", daysInMonth] },
+                                        "$present",
+                                    ],
+                                },
+                                {
+                                    $multiply: [
+                                        { $divide: ["$employee.basicSalary", daysInMonth] },
+                                        "$paid_leave",
+                                    ],
+                                },
+                            ],
+                        },
+                        0,
+                    ],
+                },
+            },
+        },
+    ]);
+
+    if (!attendanceSummary.length) return;
+    const transactions = attendanceSummary.map((emp) => ({
+        head: "income",
+        category: emp.name,
+        type: "credit",
+        paymentMethod: "cash",
+        amount: emp.payableSalary,
+        date: new Date().toISOString(),
+        note: `Salary for ${start.toLocaleString("default", {
+            month: "long",
+        })}`,
+        createdBy: "692eafd46849534f2a9da7f2"
+    }));
+
+    const monthKey = `${start.getFullYear()}-${start.getMonth() + 1}`;
+
+    const existing = await TxnModel.findOne({
+        head: "income",
+        note: new RegExp(monthKey),
+    });
+
+    if (existing) {
+        console.log("Payroll already generated for this month");
+        return;
+    }
+    const result = await TxnModel.insertMany(transactions);
+};
+
+
 export const attendanceServices = {
     generateEmployeesAttendance,
     getAttendanceByIdFromDb,
     updateEmployeeStatus,
-    updateBasicSalaryInDB
+    updateBasicSalaryInDB,
+    monthlyEmployeePayroll
 }

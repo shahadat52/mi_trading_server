@@ -46,8 +46,22 @@ const updateBasicSalary = catchAsync(async (req, res) => {
     return result;
 });
 
+const createMonthlyEmployeePayroll = catchAsync(async (req, res) => {
+
+    const result = await attendanceServices.monthlyEmployeePayroll()
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+});
+
+
 export const attendanceControllers = {
     getAttendanceById,
     updateEmployeeStatus,
-    updateBasicSalary
+    updateBasicSalary,
+    createMonthlyEmployeePayroll
 };

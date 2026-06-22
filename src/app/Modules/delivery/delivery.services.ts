@@ -43,12 +43,16 @@ const getAllDeliveriesFromDB = async (options: any) => {
       $lte: endOfDay(new Date(endDate)),
     };
   }
-  const result = await DeliveryModel.find(query).populate([
-    {
-      path: 'sales',
-      select: 'items invoice'
-    }
-  ]).sort({ createdAt: -1 });
+  const result = await DeliveryModel.find(query)
+    .populate({
+      path: "sales",
+      select: "items invoice customer",
+      populate: {
+        path: "customer",
+        select: "name phone address",
+      },
+    })
+    .sort({ createdAt: -1 });
   return result
 
 };
