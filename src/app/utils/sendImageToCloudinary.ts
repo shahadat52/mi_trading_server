@@ -57,7 +57,6 @@ export const sendImageToImgbb = (path: string, fileName: string) => {
 //           if (err) {
 //             reject(err);
 //           } else {
-//             console.log('File is deleted.');
 //           }
 //         });
 //       },

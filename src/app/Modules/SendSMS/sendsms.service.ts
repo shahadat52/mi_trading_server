@@ -1,34 +1,61 @@
-import FormData from "form-data";
+import httpStatus from 'http-status';
 import config from "../../config";
+import AppError from '../../errors/appErrors';
 
 const sendTxnSMSFromServer = async (
     phone: string,
     message: string
 ) => {
     try {
-        const formData = new FormData();
-
-        formData.append("token", config.sms_token as string);
-        formData.append("to", phone);
-        formData.append("message", message);
-
-        const response = await fetch(
-            `${config.send_sms_url}`,
+        const params = new URLSearchParams(
             {
-                method: "POST",
-                body: formData as any,
+                apikey: config.reve_api_key as string,
+                secretkey: config.reve_secret_key as string,
+                callerID: config.reve_sender_id as string,
+                toUser: phone,
+                messageContent: message,
             }
         );
 
-        const result = await response.json();
+        const response = await fetch(`${config.reve_url}?${params}`);
 
-        return result;
+        const data = await response.json();
+        if (data.Text === 'REJECTD') {
+            throw new AppError(httpStatus.FORBIDDEN, 'SMS not send');
+        }
+        return data;
     } catch (error) {
-        // console.error("SMS Error:", error);
-        throw error;
+        throw new AppError(httpStatus.FORBIDDEN, 'SMS not send');
+    }
+};
+
+const sendDueSMSFromServer = async (phone: string, message: string) => {
+
+
+    try {
+        const params = new URLSearchParams(
+            {
+                apikey: config.reve_api_key as string,
+                secretkey: config.reve_secret_key as string,
+                callerID: config.reve_sender_id as string,
+                toUser: phone,
+                messageContent: message,
+            }
+        );
+
+        const response = await fetch(`${config.reve_url}?${params}`);
+
+        const data = await response.json();
+        if (data.Text === 'REJECTD') {
+            throw new AppError(httpStatus.FORBIDDEN, 'SMS not send');
+        }
+        return data;
+    } catch (error) {
+        throw new AppError(httpStatus.FORBIDDEN, 'SMS not send');
     }
 };
 
 export const smsSendServices = {
-    sendTxnSMSFromServer
+    sendTxnSMSFromServer,
+    sendDueSMSFromServer
 }

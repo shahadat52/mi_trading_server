@@ -5,7 +5,7 @@ import config from '../../config';
 import { createToken } from './auth.utils';
 import { TLoginUser } from './auth.interface';
 import { generateOTP } from '../../utils/generateOTP';
-import sendSMS from '../../utils/sendSms';
+// import sendSMS from '../../utils/sendSms';
 import { sendEmail } from '../../utils/sendEmail';
 
 const userLogin = async (payload: TLoginUser) => {

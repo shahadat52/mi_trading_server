@@ -54,7 +54,7 @@ const getProductsStockFromDB = async (options: any) => {
       _id: "$sku",
       name: { $first: "$product" },
       price: { $first: "$purchasePrice" },
-      bag: { $first: "$bosta" },
+      bag: { $sum: "$bosta" },
       unit: { $first: "$unit" },
       totalStock: { $sum: "$quantity" },
     },

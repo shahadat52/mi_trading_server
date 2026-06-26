@@ -1,18 +1,20 @@
-export const createInvoiceSMS = (data: {
-    invoiceNo: string;
-    grandTotal: number;
-    paidAmount: number;
-    dueAmount: number;
-}) => {
-    return `
-  প্রিয় গ্রাহক,
+// export const createInvoiceSMS = (data: {
+//   invoiceNo: string;
+//   grandTotal: number;
+//   dueAmount: number;
+//   amount: number;
+//   type: String
+// }) => {
+//   return `
+//   প্রিয় গ্রাহক,
   
-  Invoice: ${data.invoiceNo}
-  মোট বিল: ${data.grandTotal} টাকা
-  পরিশোধ: ${data.paidAmount} টাকা
-  বাকি: ${data.dueAmount} টাকা
+//   আপনি ${dueAmount} ${type === "credit"
+//       ? "টাকা জমা দিয়েছেন"
+//       : "টাকার পণ্য নিয়েছেন"
+//     } বর্তমানে ${Math.abs(amount)} টাকা বকেয়া আছে
   
-  ধন্যবাদ।
-  M.I Trading
-    `.trim();
-};
+//   ধন্যবাদ।
+//   M.I Trading
+//     `.trim();
+// };
+

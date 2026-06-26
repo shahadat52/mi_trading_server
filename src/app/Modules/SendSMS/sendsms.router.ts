@@ -7,9 +7,15 @@ const router = express.Router();
 
 
 router.post(
-    "/invoice-sms",
-    auth(USER_ROLE.admin),
+    "/txn",
+    // auth(USER_ROLE.admin),
     sendSmsControllers.sendTxnSMS
+);
+
+router.post(
+    "/due",
+    // auth(USER_ROLE.admin),
+    sendSmsControllers.sendDueSMS
 );
 
 

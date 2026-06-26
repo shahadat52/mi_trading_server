@@ -29,10 +29,8 @@ export const sendEmail = async (
       `,
     });
 
-    // console.log("EMAIL RESPONSE:", response);
     return response;
   } catch (error) {
-    // console.error("EMAIL ERROR:", error);
     throw error;
   }
 };

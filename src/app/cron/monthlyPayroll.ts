@@ -4,8 +4,8 @@ import { attendanceServices } from '../Modules/Attendance/attendance.service';
 export const runMonthlyPayroll = () => {
 
     cron.schedule(
-        '49 18 * * *',
-        // "1 0 1 * *",
+        "10 0 1 * *",
+        // '20 0 * * *',
         async () => {
 
             console.log("Running payroll...");
@@ -17,9 +17,3 @@ export const runMonthlyPayroll = () => {
 
     );
 };
-
-
-cron.schedule("0 0 1 * *", async () => {
-    console.log("Running payroll...");
-    await runMonthlyPayroll();
-});

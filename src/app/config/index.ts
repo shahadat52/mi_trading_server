@@ -26,5 +26,9 @@ export default {
   sms_token: process.env.SMS_TOKEN,
   send_sms_url: process.env.SMS_URL,
   resend_api_key: process.env.RESEND_API_KEY,
-  imgbb_api_key: process.env.IMGBB_API_KEY
+  imgbb_api_key: process.env.IMGBB_API_KEY,
+  reve_url: process.env.REVE_SMS_URL,
+  reve_api_key: process.env.REVE_API_KEY,
+  reve_secret_key: process.env.REVE_SECRET_KEY,
+  reve_sender_id: process.env.REVE_SENDER_ID
 }
