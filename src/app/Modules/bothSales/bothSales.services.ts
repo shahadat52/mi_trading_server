@@ -237,64 +237,245 @@ const bothSalesEntryInDB = async (payload: any) => {
 };
 
 const getAllBothSalesFromDB = async (options: any) => {
-  const { page = 1, limit = 10, sortBy = 'createdAt', order = 'desc', search, broker, category, dateFrom, dateTo,
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = "createdAt",
+    order = "desc",
+    search,
+    broker,
+    category,
+    dateFrom,
+    dateTo,
   } = options;
 
-  const query: any = {};
+  const skip = (Number(page) - 1) * Number(limit);
+
+  const pipeline: any[] = [];
 
   if (search) {
-    query.$or = [
-      { invoice: makeRegex(search) },
-      { broker: makeRegex(search) },
-      { 'customer.name': makeRegex(search) },
-      { 'customer.phone': makeRegex(search) },
-      { 'customer.address': makeRegex(search) },
-    ];
-  }
-
-  if (broker) {
-    query.$or = [...(query?.$or ?? []), { broker: makeRegex(broker) }];
-  }
-
-  if (category) {
-    query['items.product.category'] = category;
-  }
-
-  if (dateFrom && dateTo) {
-    query.date = {
-      $gte: new Date(dateFrom),
-      $lte: new Date(dateTo),
-    };
-  }
-
-  const sortOrder = order === 'asc' ? 1 : -1;
-  const sortCriteria: any = { [sortBy]: sortOrder };
-
-  const skip = (page - 1) * limit;  // 6. Pagination
-
-  const [total, data] = await Promise.all([
-    BothSalesModel.countDocuments(query), // single DB count
-    BothSalesModel.find(query).sort(sortCriteria).skip(skip).limit(limit).populate([
+    pipeline.push(
       {
-        path: 'items.product',
+        $lookup: {
+          from: "customers",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customer",
+        },
       },
       {
-        path: 'customer',
+        $unwind: {
+          path: "$customer",
+          preserveNullAndEmptyArrays: true,
+        },
       },
       {
-        path: 'createdBy',
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+        },
+      },
+      {
+        $unwind: {
+          path: "$createdBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "products",
+        },
+      },
+      {
+        $addFields: {
+          items: {
+            $map: {
+              input: "$items",
+              as: "item",
+              in: {
+                $mergeObjects: [
+                  "$$item",
+                  {
+                    product: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$products",
+                            as: "p",
+                            cond: {
+                              $eq: ["$$p._id", "$$item.product"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          products: 0,
+        },
+      },
+      {
+        $match: {
+          $or: [
+            { invoice: makeRegex(search) },
+            { broker: makeRegex(search) },
+            { "customer.name": makeRegex(search) },
+            { "customer.phone": makeRegex(search) },
+            { "customer.address": makeRegex(search) },
+          ],
+        },
       }
-    ]),
-  ]);
+    );
+  }
+
+  // Filter Mode
+  else {
+    const match: any = {};
+
+    if (dateFrom && dateTo) {
+      match.date = {
+        $gte: new Date(dateFrom),
+        $lte: new Date(dateTo),
+      };
+    }
+
+    if (broker) {
+      match.broker = makeRegex(broker);
+    }
+
+    if (Object.keys(match).length) {
+      pipeline.push({ $match: match });
+    }
+
+    pipeline.push(
+      {
+        $lookup: {
+          from: "customers",
+          localField: "customer",
+          foreignField: "_id",
+          as: "customer",
+        },
+      },
+      {
+        $unwind: {
+          path: "$customer",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "createdBy",
+          foreignField: "_id",
+          as: "createdBy",
+        },
+      },
+      {
+        $unwind: {
+          path: "$createdBy",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $lookup: {
+          from: "products",
+          localField: "items.product",
+          foreignField: "_id",
+          as: "products",
+        },
+      },
+      {
+        $addFields: {
+          items: {
+            $map: {
+              input: "$items",
+              as: "item",
+              in: {
+                $mergeObjects: [
+                  "$$item",
+                  {
+                    product: {
+                      $arrayElemAt: [
+                        {
+                          $filter: {
+                            input: "$products",
+                            as: "p",
+                            cond: {
+                              $eq: ["$$p._id", "$$item.product"],
+                            },
+                          },
+                        },
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+      {
+        $project: {
+          products: 0,
+        },
+      }
+    );
+
+    if (category) {
+      pipeline.push({
+        $match: {
+          "items.product.category": category,
+        },
+      });
+    }
+  }
+
+  // Common Stages
+  pipeline.push(
+    {
+      $sort: {
+        [sortBy]: order === "asc" ? 1 : -1,
+      },
+    },
+    {
+      $facet: {
+        data: [
+          { $skip: skip },
+          { $limit: Number(limit) },
+        ],
+        totalCount: [
+          { $count: "count" },
+        ],
+      },
+    }
+  );
+
+  const result = await BothSalesModel.aggregate(pipeline);
+
+  const total = result[0]?.totalCount[0]?.count || 0;
 
   return {
     meta: {
-      page,
-      limit,
+      page: Number(page),
+      limit: Number(limit),
       total,
-      totalPages: Math.ceil(total / limit),
+      totalPages: Math.ceil(total / Number(limit)),
     },
-    data,
+    data: result[0]?.data || [],
   };
 };
 

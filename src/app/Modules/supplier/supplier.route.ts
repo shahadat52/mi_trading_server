@@ -14,13 +14,23 @@ router.post(
   supplierControllers.createSupplier
 );
 
-router.get('/', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
-  supplierControllers.getAllSuppliers);
+router.get(
+  '/',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  supplierControllers.getAllSuppliers
+);
 
-router.get('/names', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
-  supplierControllers.getSuppliersName);
+router.get(
+  '/names',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  supplierControllers.getSuppliersName
+);
 
-router.get('/:id', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), supplierControllers.getSupplier);
+router.get(
+  '/:id',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  supplierControllers.getSupplier
+);
 
 router.patch(
   '/:id',
@@ -29,6 +39,10 @@ router.patch(
 );
 
 
-router.delete('/:id', auth(USER_ROLE.admin), supplierControllers.deleteSupplier);
+router.delete(
+  '/:id',
+  auth(USER_ROLE.admin),
+  supplierControllers.deleteSupplier
+);
 
 export const supplierRoutes = router;

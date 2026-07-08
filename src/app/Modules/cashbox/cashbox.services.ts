@@ -357,7 +357,7 @@ const getTodayCashOutFromDB = async () => {
         },
 
 
-        // 4. Bank Txn
+        // 4. Bank Txn (CASH)
         {
             $unionWith: {
                 coll: "banktransactions",
@@ -389,6 +389,43 @@ const getTodayCashOutFromDB = async () => {
                             note: 1,
                             createdAt: 1,
                             postingDate: 1,
+                        },
+                    },
+                ],
+            },
+        },
+
+
+        // 5. MFS Txn (CASH)
+        {
+            $unionWith: {
+                coll: "mfstxns",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "credit",
+                            source: "cash",
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            head: 1,
+                            amount: { $ifNull: ["$amount", 0] },
+                            note: 1,
+                            createdAt: 1,
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 0,
+                            source: "$head",
+                            amount: 1,
+                            note: 1,
+                            createdAt: 1,
                         },
                     },
                 ],

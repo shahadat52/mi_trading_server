@@ -9,8 +9,7 @@ import { MfsTxnModel } from "../MFS/mfs.model";
 
 
 const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
-
-    const { bankName, issueDate, postingDate, ...txnData } = payload;
+    const { bankName, issueDate, postingDate, source, ...txnData } = payload;
     const session = await mongoose.startSession()
     try {
         session.startTransaction()
@@ -33,13 +32,10 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
         if (payload.paymentMethod === 'bank') {
             const txnInfo = {
                 bankName,
-                amount: payload.amount,
-                party: user._id,
-                partyModel: 'User',
+                source: source,
                 type: txnData.type,
+                amount: payload.amount,
                 createdBy: user._id,
-                issueDate,
-                postingDate,
                 note: txnData.note,
             };
 
@@ -68,7 +64,6 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
 
         return txn[0];
     } catch (error) {
-
         await session.abortTransaction()
         session.endSession()
         throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');

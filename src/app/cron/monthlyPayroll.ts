@@ -5,10 +5,9 @@ export const runMonthlyPayroll = () => {
 
     cron.schedule(
         "10 0 1 * *",
-        // '20 0 * * *',
         async () => {
 
-            console.log("Running payroll...");
+            console.log("Monthly payroll generated...");
             await attendanceServices.monthlyEmployeePayroll();
         },
         {

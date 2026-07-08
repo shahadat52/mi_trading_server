@@ -46,7 +46,7 @@ const getProductsStockFromDB = async (options: any) => {
         ],
       },
     });
-  }
+  } 
 
   // 📦 Group by SKU
   pipeline.push({

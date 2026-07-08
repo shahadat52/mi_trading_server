@@ -6,6 +6,11 @@ export enum TransactionType {
     CREDIT = "credit",
 }
 
+export enum TxnSources {
+    Cash = "cash",
+    Others = "others",
+}
+
 export enum Heads {
     Bkash = "bkash",
     Nagad = "nagad",
@@ -24,6 +29,12 @@ const mfxTxnSchema = new Schema<TMfsTxn>(
             type: String,
             enum: Object.values(TransactionType),
             required: [true, 'Transaction type is required'],
+        },
+        source: {
+            type: String,
+            trim: true,
+            enum: Object.values(TxnSources),
+            required: [true, 'Txn source is required'],
         },
 
         amount: {

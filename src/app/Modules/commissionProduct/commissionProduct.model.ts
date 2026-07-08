@@ -3,7 +3,7 @@ import { TCommissionProduct } from './commissionProduct.interface';
 
 const customerSchema = new Schema<TCommissionProduct>(
     {
-        name: { type: String, required: [true, 'Product name is required'] },
+        name: { type: String, trim: true, required: [true, 'Product name is required'] },
         imageurl: { type: String, default: "" },
         lot: { type: Number, required: [true, 'Lot is required'] },
         quantity: { type: Number, required: [true, 'Quantity is required'], default: 0 },

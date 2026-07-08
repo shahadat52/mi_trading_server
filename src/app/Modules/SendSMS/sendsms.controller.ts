@@ -9,16 +9,11 @@ import httpStatus from 'http-status'
 
 const sendTxnSMS = catchAsync(async (req, res) => {
     const { phone, amount, balance, type } = req.body;
-
     const message = `প্রিয় গ্রাহক,
-আপনি ${amount}${type === "credit" ? " টাকা জমা দিয়েছেন" : "টাকার পণ্য নিয়েছেন"}। বর্তমানে ${Math.abs(balance)} টাকা বকেয়া আছে।
+আপনি ${amount} ${type === "credit" ? "টাকা জমা দিয়েছেন" : "টাকার পণ্য নিয়েছেন"}। বর্তমানে ${Math.abs(balance)} টাকা বকেয়া আছে।
 ধন্যবাদ।
 M.I Trading`
-
-
     const result = await smsSendServices.sendTxnSMSFromServer(phone, message);
-
-
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -30,16 +25,11 @@ M.I Trading`
 
 const sendDueSMS = catchAsync(async (req, res) => {
     const { phone, due } = req.body;
-
     const message = `প্রিয় গ্রাহক,
-    আপনার কাছে ${due} টাকা বকেয়া আছে। দ্রুত পরিশোধ করুন।
-    ধন্যবাদ,
-    M.I TRADING`
-
-
+আপনার কাছে ${due} টাকা বকেয়া আছে। দ্রুত পরিশোধ করুন।
+ধন্যবাদ,
+M.I TRADING`
     const result = await smsSendServices.sendDueSMSFromServer(phone, message);
-
-
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
