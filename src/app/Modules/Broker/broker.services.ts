@@ -12,8 +12,6 @@ const createBrokerInDB = async ({ brokerData }: { brokerData: TBroker }) => {
     session.startTransaction();
     try {
         const result = await BrokerModel.create([brokerData], { session })
-
-
         await session.commitTransaction();
         session.endSession();
 

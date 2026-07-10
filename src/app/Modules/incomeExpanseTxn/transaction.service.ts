@@ -32,7 +32,7 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
         if (payload.paymentMethod === 'bank') {
             const txnInfo = {
                 bankName,
-                source: source,
+                source,
                 type: txnData.type,
                 amount: payload.amount,
                 createdBy: user._id,
@@ -47,6 +47,7 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
             const txnInfo = {
                 head: payload.paymentMethod,
                 type: txnData.type,
+                source: 'others',
                 amount: payload.amount,
                 note: `${payload.category}(${payload.note})`,
                 txnBy: user._id

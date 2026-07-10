@@ -54,6 +54,7 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
     if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
       const txnInfo = {
         head: payload.paymentMethod,
+        source: 'others',
         type: txnData.type,
         amount: payload.amount,
         note: payload.description,

@@ -77,8 +77,6 @@ const getTodayCashInFromDB = async () => {
                 },
             },
         },
-
-        // shape normalize
         {
             $project: {
                 _id: 1,
@@ -86,7 +84,6 @@ const getTodayCashInFromDB = async () => {
                 amount: 1,
                 note: "$note",
                 date: "$createdAt",
-                createdAt: 1,
             },
         },
 
@@ -121,7 +118,42 @@ const getTodayCashInFromDB = async () => {
                             amount: 1,
                             note: "$note",
                             date: "$createdAt",
-                            postingDate: 1,
+                        },
+                    },
+                ],
+            },
+        },
+
+        // MFS txn (cash)
+        {
+            $unionWith: {
+                coll: "mfstxns",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "debit",
+                            source: 'cash',
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            head: 1,
+                            amount: { $ifNull: ["$amount", 0] },
+                            note: 1,
+                            createdAt: 1,
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 0,
+                            source: "$head",
+                            amount: 1,
+                            note: "$note",
+                            date: "$createdAt",
                         },
                     },
                 ],
@@ -169,7 +201,6 @@ const getTodayCashInFromDB = async () => {
                             amount: 1,
                             note: "$description",
                             date: "$createdAt",
-                            createdAt: 1,
                         },
                     },
                 ],
@@ -178,9 +209,7 @@ const getTodayCashInFromDB = async () => {
 
         // latest first
         {
-            $sort: {
-                createdAt: -1,
-            },
+            $sort: { date: -1 },
         },
 
         // final response
@@ -226,7 +255,6 @@ const getTodayCashOutFromDB = async () => {
     const result = await TxnModel.aggregate([
 
         //  1. MAIN: Transaction (expense)
-
         {
             $match: {
                 head: "expense",

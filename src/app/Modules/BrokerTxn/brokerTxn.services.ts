@@ -20,27 +20,11 @@ const brokerTxnEntryInDB = async (txnData: TBrokerTxn) => {
             throw new AppError(httpStatus.NOT_FOUND, "Broker not found");
         }
 
-        const currentBal = broker.currentBalance || 0;
-
-        // 2️⃣ calculate new balance
-        let newBal = currentBal;
-
-        if (txnData.type === "credit") {
-            newBal = Number(currentBal) + Number(txnData.amount);
-        }
-
-        if (txnData.type === "debit") {
-            newBal = Number(currentBal) - Number(txnData.amount);
-
-
-        }
-
         // 3️⃣ create transaction
         const [createdTxn] = await BrokerTxnModel.create(
             [
                 {
                     ...txnData,
-                    runningBalance: newBal,
                 },
             ],
             { session }
@@ -50,7 +34,6 @@ const brokerTxnEntryInDB = async (txnData: TBrokerTxn) => {
         await BrokerModel.findByIdAndUpdate(
             txnData.broker,
             {
-                currentBalance: newBal,
                 lastTxnAt: new Date(Date.now()),
             },
             { new: true, session }
@@ -102,32 +85,12 @@ const updateBrokerTxnInDB = async (
             throw new AppError(httpStatus.NOT_FOUND, "Broker not found");
         }
 
-        let newCurrentBal = broker.currentBalance;
-
-        // 1️⃣ reverse old transaction
-        if (brokerTxn.type === "credit") {
-            newCurrentBal -= brokerTxn.amount;
-        } else {
-            newCurrentBal += brokerTxn.amount;
-        }
-
-        // 2️⃣ apply new transaction
-        const newAmount = payload.amount ?? brokerTxn.amount;
-        const newType = payload.type ?? brokerTxn.type;
-
-        if (newType === "credit") {
-            newCurrentBal += Number(newAmount);
-        } else {
-            newCurrentBal -= Number(newAmount);
-        }
-
         // 3️⃣ update transaction
         const updatedTxn = await BrokerTxnModel.findByIdAndUpdate(
             id,
             {
                 $set: {
                     ...payload,
-                    runningBalance: newCurrentBal,
                 },
             },
             {
@@ -141,7 +104,6 @@ const updateBrokerTxnInDB = async (
         await BrokerModel.findByIdAndUpdate(
             brokerTxn.broker,
             {
-                currentBalance: newCurrentBal,
                 lastTxnAt: new Date(Date.now()),
             },
             { session }

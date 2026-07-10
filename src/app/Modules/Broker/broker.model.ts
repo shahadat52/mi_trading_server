@@ -9,16 +9,6 @@ const brokerSchema = new Schema<TBroker>(
             required: [true, 'Broker name is required']
 
         },
-        currentBalance: {
-            type: Number,
-            default: 0,
-            required: [true, "Current Balance is required"],
-            validate: {
-                validator: Number.isFinite,
-                message: "Balance must be a valid number",
-            },
-
-        },
         phone: {
             type: String,
             trim: true,

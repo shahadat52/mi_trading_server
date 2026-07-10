@@ -29,22 +29,6 @@ const brokerTxnSchema = new Schema<TBrokerTxn>(
                 message: "Amount must be a valid number",
             },
         },
-
-        runningBalance: {
-            type: Number,
-            required: [true, "Running Balance is required"],
-            validate: {
-                validator: Number.isFinite,
-                message: "Balance must be a valid number",
-            },
-        },
-
-        date: {
-            type: Date,
-            required: [true, "Transaction date is required"],
-            default: Date.now,
-        },
-
         description: {
             type: String,
             trim: true,

@@ -158,7 +158,8 @@ const bothSalesEntryInDB = async (payload: any) => {
         broker: brokerData?._id,
         amount: brokerBill,
         type: 'credit',
-        description: `${salesResult[0].invoice} নং মেমো থেকে`
+        description: `${customer.name}
+        ${salesResult[0].invoice}  `
       };
 
       await CustomerModel.findByIdAndUpdate(
@@ -173,17 +174,11 @@ const bothSalesEntryInDB = async (payload: any) => {
         throw new AppError(httpStatus.NOT_FOUND, "Broker not found");
       }
 
-      const currentBal = brokerData?.currentBalance || 0;
-      let newBal = currentBal;
-      if (brokerTxnData.type === "credit") {
-        newBal = Number(currentBal) + Number(brokerTxnData.amount);
-      }
 
       const [createdTxn] = await BrokerTxnModel.create(
         [
           {
             ...brokerTxnData,
-            runningBalance: newBal,
           },
         ],
         { session }
@@ -192,7 +187,6 @@ const bothSalesEntryInDB = async (payload: any) => {
       await BrokerModel.findByIdAndUpdate(
         brokerTxnData.broker,
         {
-          currentBalance: newBal,
           lastTxnAt: new Date(Date.now()),
         },
         { new: true, session }
@@ -217,6 +211,7 @@ const bothSalesEntryInDB = async (payload: any) => {
     if (payload.paymentMethod === 'bkash' || payload.paymentMethod === 'nagad') {
       const txnInfo = {
         head: payload.paymentMethod,
+        source: 'others',
         type: 'credit',
         amount: payload.paidAmount,
         note: `${customer?.name}(${invoiceNumber})`,

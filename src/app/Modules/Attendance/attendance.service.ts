@@ -129,16 +129,6 @@ const updateBasicSalaryInDB = async ({ id, basicSalary }: any) => {
 
 
 const monthlyEmployeePayroll = async () => {
-    // const now = new Date();
-    // const lastMonth = subMonths(now, 1);
-
-    // const start = startOfMonth(lastMonth);
-    // const end = endOfMonth(lastMonth);
-
-    // const startDate = start.toISOString();
-    // const endDate = end.toISOString();
-    // const daysInMonth = getDaysInMonth(lastMonth);
-    // console.log(daysInMonth)
 
 
     const now = new Date();
