@@ -52,14 +52,14 @@ const brokerTxnEntryInDB = async (txnData: TBrokerTxn) => {
 
 const getAllBrokerTxnsFromDB = async () => {
 
-    const result = await BrokerTxnModel.find();
+    const result = await BrokerTxnModel.find().sort({ createdAt: -1 });
 
     return result
 };
 
 const getSpecificBrokerTxnsFromDB = async (broker: any) => {
 
-    const result = await BrokerTxnModel.find({ broker: broker }).sort({ date: -1 });
+    const result = await BrokerTxnModel.find({ broker: broker }).sort({ createdAt: -1 });
 
     return result
 };

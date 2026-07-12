@@ -20,6 +20,14 @@ const brokerTxnSchema = new Schema<TBrokerTxn>(
             trim: true,
         },
 
+        paymentMethod: {
+            type: String,
+            trim: true,
+            required: [true, "source is required"],
+            default: 'cash'
+
+        },
+
         amount: {
             type: Number,
             required: [true, "Transaction amount is required"],

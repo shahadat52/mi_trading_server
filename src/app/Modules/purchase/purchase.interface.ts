@@ -21,6 +21,7 @@ export interface TPurchase {
   unit: "কেজি" | "পিস" | "মণ" | "বস্তা" | "লিটার" | "বক্স" | "টন";
   supplier: Types.ObjectId; // Supplier name
   quantity: number;
+  paymentMethod?: string;
   purchaseQty: number;
   broker: string
   bosta: number;

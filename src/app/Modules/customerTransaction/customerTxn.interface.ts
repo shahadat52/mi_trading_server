@@ -8,6 +8,7 @@ export type TCustomerTxn = {
   description: string;
   date: Date
   paymentMethod?: string;
+  source: string;
   bankName?: string
   issueDate?: Date;
   postingDate?: Date;

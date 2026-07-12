@@ -66,6 +66,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       party: payload.supplier,
       amount,
       isApproved: !isCrossLimit,
+      paymentMethod: 'others',
       type: 'credit',
       description: `${payload?.invoice}`,
       txnBy: user._id
@@ -84,6 +85,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       const txnCreditData = {
         party: payload.supplier,
         amount: data.paidAmount,
+        paymentMethod: payload.paymentMethod,
         isApproved: !isCrossLimit,
         type: 'debit',
         description: `${payload?.invoice}`,

@@ -87,7 +87,7 @@ const getTodayCashInFromDB = async () => {
             },
         },
 
-
+        // Bank txn (debit)
         {
             $unionWith: {
                 coll: "banktransactions",
@@ -160,10 +160,10 @@ const getTodayCashInFromDB = async () => {
             },
         },
 
-        // merge customer transactions
+        // Customer txn (credit)
         {
             $unionWith: {
-                coll: "customertxns", // mongodb collection name
+                coll: "customertxns",
                 pipeline: [
                     {
                         $match: {
@@ -176,10 +176,55 @@ const getTodayCashInFromDB = async () => {
                         },
                     },
 
-                    // customer populate
                     {
                         $lookup: {
                             from: "customers",
+                            localField: "party",
+                            foreignField: "_id",
+                            as: "party",
+                        },
+                    },
+
+                    {
+                        $unwind: {
+                            path: "$party",
+                            preserveNullAndEmptyArrays: true,
+                        },
+                    },
+
+                    {
+                        $project: {
+                            _id: 1,
+                            source: "$party.name",
+                            type: 1,
+                            amount: 1,
+                            note: "$description",
+                            date: "$createdAt",
+                        },
+                    },
+                ],
+            },
+        },
+
+        // Supplier txn (credit)
+        {
+            $unionWith: {
+                coll: "suppliertxns",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "credit",
+                            paymentMethod: 'cash',
+                            createdAt: {
+                                $gte: startDate,
+                                $lte: endDate,
+                            },
+                        },
+                    },
+
+                    {
+                        $lookup: {
+                            from: "suppliers",
                             localField: "party",
                             foreignField: "_id",
                             as: "party",
@@ -307,8 +352,41 @@ const getTodayCashOutFromDB = async () => {
             },
         },
 
-        //    3. BROKER TXN (debit)
+        //  * 2. CUSTOMER TXN (debit)
+        {
+            $unionWith: {
+                coll: "customertxns",
+                pipeline: [
+                    {
+                        $match: {
+                            type: "debit",
+                            paymentMethod: "cash",
+                            createdAt: { $gte: startDate, $lte: endDate },
+                        },
+                    },
+                    {
+                        $lookup: {
+                            from: "customer",
+                            localField: "party",
+                            foreignField: "_id",
+                            as: "party",
+                        },
+                    },
+                    { $unwind: { path: "$party", preserveNullAndEmptyArrays: true } },
+                    {
+                        $project: {
+                            _id: 1,
+                            source: "$party.name",
+                            amount: 1,
+                            note: "$description",
+                            createdAt: 1,
+                        },
+                    },
+                ],
+            },
+        },
 
+        //    3. BROKER TXN (debit)
         {
             $unionWith: {
                 coll: "brokertxns",
@@ -316,6 +394,7 @@ const getTodayCashOutFromDB = async () => {
                     {
                         $match: {
                             type: "debit",
+                            paymentMethod: 'cash',
                             createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },
@@ -383,7 +462,6 @@ const getTodayCashOutFromDB = async () => {
                 ],
             },
         },
-
 
         // 4. Bank Txn (CASH)
         {
@@ -459,7 +537,6 @@ const getTodayCashOutFromDB = async () => {
                 ],
             },
         },
-
 
 
         // 4. Normal Purchase

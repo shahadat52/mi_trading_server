@@ -127,7 +127,7 @@ const bothSalesEntryInDB = async (payload: any) => {
     const customerDebitTxnPayload = {
       party: salesData.customer,
       type: 'debit',
-      paymentMethod: 'cash',
+      paymentMethod: 'others',
       isApproved: !isCrossLimitGT,
       amount: salesData.grandTotal,
       description: salesResult[0].invoice,
@@ -141,7 +141,7 @@ const bothSalesEntryInDB = async (payload: any) => {
       const customerCreditTxnPayload = {
         party: salesData.customer,
         type: 'credit',
-        paymentMethod: 'cash',
+        paymentMethod: payload.paymentMethod,
         amount: salesData.paidAmount,
         isApproved: !isCrossLimitPA,
         description: payload.description,
@@ -158,8 +158,8 @@ const bothSalesEntryInDB = async (payload: any) => {
         broker: brokerData?._id,
         amount: brokerBill,
         type: 'credit',
-        description: `${customer.name}
-        ${salesResult[0].invoice}  `
+        paymentMethod: 'others',
+        description: `${customer.name}-(${salesResult[0].invoice})  `
       };
 
       await CustomerModel.findByIdAndUpdate(
@@ -200,7 +200,7 @@ const bothSalesEntryInDB = async (payload: any) => {
         source: 'others',
         type: 'credit',
         amount: payload.paidAmount,
-        note: `${customer?.name}(${invoiceNumber})`,
+        note: `${customer?.name}-(${invoiceNumber})`,
         createdBy: payload.createdBy
 
       };

@@ -41,6 +41,7 @@ const purchaseSchema = new Schema<TPurchase>(
       required: [true, 'Purchase type is required'],
     },
     labour: { type: Number, default: 0, required: [true, 'Labour is missing'] },
+    paymentMethod: { type: String, default: 'cash' },
     commission: { type: Number, default: 0, required: [true, 'Commission is missing'] },
     others: { type: Number, default: 0, required: [true, 'Others is missing'] },
     othersField: { type: String, default: " ", required: [true, 'othersField is missing'] },

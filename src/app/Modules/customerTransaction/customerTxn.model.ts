@@ -2,6 +2,11 @@
 import { Schema, model, trusted } from 'mongoose';
 import { TCustomerTxn, TCustomerTxnModel } from './customerTxn.interface';
 
+
+export enum TxnSource {
+  Cash = "cash",
+  Others = "others",
+}
 const customerTxnSchema = new Schema<TCustomerTxn>(
   {
     party: {
@@ -22,7 +27,7 @@ const customerTxnSchema = new Schema<TCustomerTxn>(
     paymentMethod: {
       type: String,
       required: [true, 'Method is required'],
-      default: 'cash'
+      default: 'others'
     },
 
     amount: {

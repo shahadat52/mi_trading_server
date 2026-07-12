@@ -32,7 +32,7 @@ const supplierTxnSchema = new Schema<TSupplierTxn>(
     },
     paymentMethod: {
       type: String,
-      default: 'cash'
+      default: 'others'
     },
 
     date: {

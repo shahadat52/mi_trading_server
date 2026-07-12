@@ -27,6 +27,8 @@ const createSupplierInDB = async (payload: TSupplier, user: JwtPayload) => {
       );
     }
 
+
+
     const createdSuppliers = await SupplierModel.create([payload], {
       session,
     });
@@ -43,6 +45,7 @@ const createSupplierInDB = async (payload: TSupplier, user: JwtPayload) => {
     const txnData = {
       party: supplier._id,
       amount: 0,
+      paymentMethod: 'others',
       type: 'credit',
       txnBy: user?._id
     };

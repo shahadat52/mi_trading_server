@@ -4,7 +4,6 @@ import { CustomerTxnModel } from './customerTxn.model';
 import mongoose, { Types } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
 import { SupplierModel } from '../supplier/supplier.model';
-import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { formatDate } from 'date-fns';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
 import { MfsTxnModel } from '../MFS/mfs.model';

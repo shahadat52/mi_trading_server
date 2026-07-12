@@ -7,11 +7,8 @@ export type TSupplierTxn = {
   amount: number;
   description: string;
   date: Date
-  runningBalance: number;
   paymentMethod?: string;
   bankName?: string
-  issueDate?: Date;
-  postingDate?: Date;
   isApproved: boolean;
   imageurl: string;
   note?: string
