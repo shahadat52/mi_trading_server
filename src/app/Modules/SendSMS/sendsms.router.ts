@@ -18,5 +18,17 @@ router.post(
     sendSmsControllers.sendDueSMS
 );
 
+router.post(
+    "/supplier/due",
+    // auth(USER_ROLE.admin),
+    sendSmsControllers.sendSupplierDueSMS
+);
+
+router.post(
+    "/supplier/txn",
+    // auth(USER_ROLE.admin),
+    sendSmsControllers.sendSupplierTxnSMS
+);
+
 
 export const smsSendRoutes = router;

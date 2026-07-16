@@ -11,7 +11,6 @@ import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
 
-
   payload.purchaseQty = Number(payload.quantity)
   payload.labour = Number(payload.labour)
   payload.commission = Number(payload.commission)

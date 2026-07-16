@@ -7,4 +7,5 @@ export type TDelivery = {
   sales: Types.ObjectId;
   destination: string;
   phone: string;
+  imageurl: string;
 };

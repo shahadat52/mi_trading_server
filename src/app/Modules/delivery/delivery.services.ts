@@ -64,10 +64,7 @@ const updateDeliveryStatutsInDB = async ({ id, invoice, user, }: any) => {
 
   try {
     session.startTransaction();
-
-
     const sale = await BothSalesModel.findOne({ invoice }).session(session);
-
     if (!sale) {
       throw new AppError(httpStatus.NOT_FOUND, 'Sale not found');
     }
@@ -110,10 +107,15 @@ const updateDeliveryStatutsInDB = async ({ id, invoice, user, }: any) => {
   }
 };
 
+const uploadImageInDB = async (id: any, file: any) => {
+
+}
+
 export const deliveryServices = {
   deliveryEntryInDB,
   getAllDeliveriesFromDB,
-  updateDeliveryStatutsInDB
+  updateDeliveryStatutsInDB,
+  uploadImageInDB
 };
 
 

@@ -10,6 +10,7 @@ const deliverySchema = new Schema<TDelivery>(
     sales: { type: Schema.Types.ObjectId, ref: 'bothSale', required: [true, 'sales  required'] },
     destination: { type: String, required: [true, 'গন্তব্যের তথ্য প্রয়োজন'] },
     phone: { type: String, default: '' },
+    imageurl: { type: String, default: '' },
 
   },
   { timestamps: true, versionKey: false }

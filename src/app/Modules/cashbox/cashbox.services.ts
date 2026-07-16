@@ -96,7 +96,7 @@ const getTodayCashInFromDB = async () => {
                         $match: {
                             type: "debit",
                             source: 'cash',
-                            postingDate: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: startDate, $lte: endDate },
                         },
                     },
 

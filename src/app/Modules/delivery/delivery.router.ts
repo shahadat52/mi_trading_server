@@ -21,6 +21,12 @@ router.patch(
   '/:id',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   deliveryControllers.updateDeliveryStatuts
+);
+
+router.patch(
+  '/upload/:id',
+  // auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  deliveryControllers.uploadImage
 )
 
 export const deliveryRoutes = router;

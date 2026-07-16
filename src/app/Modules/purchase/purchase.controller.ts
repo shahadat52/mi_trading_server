@@ -6,7 +6,6 @@ import { purchaseServices } from './purchase.service';
 
 const createPurchase = catchAsync(async (req, res) => {
   const image = req.file as any;
-  const data = req.body
   const user = req.user;
   const result = await purchaseServices.createPurchaseInDB(req.body, user, image);
 
