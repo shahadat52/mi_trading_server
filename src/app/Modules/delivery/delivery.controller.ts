@@ -44,6 +44,18 @@ const getAllDeliveries = catchAsync(async (req, res) => {
   });
 });
 
+const getDelivery = catchAsync(async (req, res) => {
+  const { id } = req.params
+
+  const result = await deliveryServices.getDeliveryById(id);
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result
+  });
+});
+
 const updateDeliveryStatuts = catchAsync(async (req, res) => {
   const { id } = req.params;
   const { invoice } = req.body
@@ -60,8 +72,8 @@ const updateDeliveryStatuts = catchAsync(async (req, res) => {
 
 const uploadImage = catchAsync(async (req, res) => {
   const image = req.file as any;
-  const id = req.params;
-  const result = await deliveryServices.uploadImageInDB(image, id);
+  const { id } = req.params;
+  const result = await deliveryServices.uploadImageInDB(id, image);
 
   sendResponse(res, {
     success: true,
@@ -79,6 +91,7 @@ const uploadImage = catchAsync(async (req, res) => {
 export const deliveryControllers = {
   deliveryEntry,
   getAllDeliveries,
+  getDelivery,
   updateDeliveryStatuts,
   uploadImage
 };

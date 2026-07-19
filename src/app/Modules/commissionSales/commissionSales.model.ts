@@ -39,8 +39,8 @@ const commissionSalesSchema = new Schema<TCommissionSales>(
     },
     paymentMethod: {
       type: String,
-      enum: ['cash', 'bkash', 'nagad', 'rocket', 'card', 'bank'],
-      default: 'Cash',
+      enum: ['cash', 'bkash', 'nagad', 'rocket', 'others', 'bank'],
+      default: 'cash',
       required: [true, 'Payment method is required'],
     },
     salesBy: { type: Schema.Types.ObjectId, ref: 'User', required: [true, 'Saller is required'], },

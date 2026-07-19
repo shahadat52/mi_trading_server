@@ -36,35 +36,42 @@ const bothSalesEntryInDB = async (payload: any) => {
     salesData.invoice = invoiceNumber;
 
 
-    const commissionProd = salesData.items.filter((item: any) => item.commission)
+    const commissionProd = salesData.items.filter((item: any) => item.commission >= 0);
     const regularProd = salesData.items.filter((item: any) => !('commission' in item))
     // 2. Update PurchaseModel stock for each product
-
     if (regularProd) {
       for (const item of regularProd) {
         const { product, quantity, bosta, name } = item;
+        const availableProd = await PurchaseModel.findById(product)
+        if (!availableProd) {
+          throw new AppError(httpStatus.NOT_FOUND, `Regular ${name} Not Found`)
+        }
 
-        const updated = (await PurchaseModel.findByIdAndUpdate(
-          product,
+        if (availableProd && availableProd.quantity < quantity) {
+          throw new AppError(httpStatus.NOT_FOUND, `Insufficient stock of C ${name}`)
+        }
+        const updated = await PurchaseModel.findByIdAndUpdate(
+          {
+            _id: product,
+            quantity: { $lte: quantity }
+          },
           {
             $inc: {
               quantity: -quantity,
               bosta: -bosta
             }
-          }, // reduce stock
-          { new: true, session }
+          },
+          {
+            new: true,
+            session
+          }
         )
-          .lean()
-          .exec()) as { quantity: number } | null;
 
         if (!updated) {
-          throw new Error(`Product not found in product collection: ${name}`);
+          throw new AppError(httpStatus.FAILED_DEPENDENCY, "Stock not updated")
         }
 
-        // stock cannot go negative
-        if (updated?.quantity < 0) {
-          throw new Error(`Not enough stock for ${name}`);
-        }
+
       };
     }
 
@@ -93,22 +100,34 @@ const bothSalesEntryInDB = async (payload: any) => {
 
       for (const item of commissionProd) {
         const { product, quantity, bosta, name } = item;
+        const availableProd = await CommissionProductModel.findById(product)
+        if (!availableProd) {
+          throw new AppError(httpStatus.NOT_FOUND, `Commission ${name} Not Found`)
+        };
 
-        const updated = (await CommissionProductModel.findByIdAndUpdate(
-          product,
-          { $inc: { quantity: -quantity, bosta: -bosta } }, // reduce stock
-          { new: true, session }
-        )
-          .lean()
-          .exec()) as { quantity: number } | null;
+        if (availableProd && availableProd.quantity < quantity) {
+          throw new AppError(httpStatus.NOT_FOUND, `Insufficient stock of ${name}`)
+        }
+        const updated = await CommissionProductModel.findByIdAndUpdate(
+          {
+            _id: product,
+            quantity: { $lte: quantity }
+          },
+          {
+            $inc: {
+              quantity: -quantity,
+              bosta: -bosta
+            }
+          },
+          {
+            new: true,
+            session
+          }
+        );
+
 
         if (!updated) {
-          throw new Error(`Product not found in product collection: ${name}`);
-        }
-
-        // stock cannot go negative
-        if (updated?.quantity < 0) {
-          throw new Error(`Not enough stock for product: ${name}`);
+          throw new AppError(httpStatus.FAILED_DEPENDENCY, "Stock not updated")
         }
       };
     }

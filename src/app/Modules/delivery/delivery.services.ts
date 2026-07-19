@@ -7,6 +7,7 @@ import mongoose from 'mongoose';
 import AppError from '../../errors/appErrors';
 import { BothSalesModel } from '../bothSales/bothSales.model';
 import { endOfDay, startOfDay } from 'date-fns';
+import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 
 const deliveryEntryInDB = async (payload: TDelivery, user: JwtPayload) => {
   const alreadyDelivered = await DeliveryModel.findOne({ sales: payload.sales });
@@ -56,6 +57,12 @@ const getAllDeliveriesFromDB = async (options: any) => {
   return result
 
 };
+
+const getDeliveryById = async (id: any) => {
+  const result = await DeliveryModel.findById(id);
+  return result
+
+}
 
 
 
@@ -107,13 +114,25 @@ const updateDeliveryStatutsInDB = async ({ id, invoice, user, }: any) => {
   }
 };
 
-const uploadImageInDB = async (id: any, file: any) => {
-
+const uploadImageInDB = async (id: any, image: any) => {
+  let imageurl = ''
+  if (image?.path) {
+    const fileName = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;;
+    const { data } = await sendImageToImgbb(image?.path, fileName) as any;
+    imageurl = data?.url;
+  }
+  const result = await DeliveryModel.findByIdAndUpdate(
+    id,
+    { imageurl },
+    { new: true }
+  );
+  return result
 }
 
 export const deliveryServices = {
   deliveryEntryInDB,
   getAllDeliveriesFromDB,
+  getDeliveryById,
   updateDeliveryStatutsInDB,
   uploadImageInDB
 };

@@ -66,30 +66,32 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
         throw new Error("Invalid field name");
     }
 
-
     const matchStage: any = {
         [field]: { $gte: 1 }
     };
 
-    if (startDate && toDate) {
-        matchStage.createdAt = {
+    if (startDate && toDate && field === 'kuli' || 'tohori' || 'godi') {
+
+        matchStage.updatedAt = {
             $gte: startOfDay(new Date(startDate)),
             $lte: endOfDay(new Date(toDate)),
         };
     }
+
+
     if (field === 'kuli') {
         const sales = await BothSalesModel.aggregate([
             {
                 $match: {
                     labour: { $gte: 1 },
-                    createdAt: {
+                    updatedAt: {
                         $gte: startOfDay(new Date(startDate)),
                         $lte: endOfDay(new Date(toDate)),
                     }
                 }
             },
             {
-                $sort: { createdAt: -1 }
+                $sort: { updatedAt: -1 }
             },
             {
                 $project: {
@@ -101,28 +103,28 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
             }
         ]);
 
-        const purchases = await PurchaseModel.aggregate([
-            {
-                $match: {
-                    createdAt: {
-                        $gte: startOfDay(new Date(startDate)),
-                        $lte: endOfDay(new Date(toDate)),
-                    },
-                    labour: { $gte: 1 }
-                }
-            },
-            {
-                $sort: { createdAt: -1 }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    invoice: 1,
-                    labour: 1,
-                    updatedAt: 1
-                }
-            }
-        ]);
+        // const purchases = await PurchaseModel.aggregate([
+        //     {
+        //         $match: {
+        //             createdAt: {
+        //                 $gte: startOfDay(new Date(startDate)),
+        //                 $lte: endOfDay(new Date(toDate)),
+        //             },
+        //             labour: { $gte: 1 }
+        //         }
+        //     },
+        //     {
+        //         $sort: { createdAt: -1 }
+        //     },
+        //     {
+        //         $project: {
+        //             _id: 1,
+        //             invoice: 1,
+        //             labour: 1,
+        //             updatedAt: 1
+        //         }
+        //     }
+        // ]);
 
         const couthas = await BepariCouthaModel.aggregate([
             {
@@ -146,7 +148,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
 
         const result = {
             sales,
-            purchases,
+            // purchases,
             couthas
         };
         return result
@@ -190,11 +192,12 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
                     invoice: 1,
                     arot: 1,
                     createdAt: 1,
+                    updatedAt: 1
                 },
             },
 
             {
-                $sort: { createdAt: -1 },
+                $sort: { updatedAt: -1 },
             },
         ]);
 
@@ -203,7 +206,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
                 $match: matchStage
             },
             {
-                $sort: { createdAt: -1 }
+                $sort: { updatedAt: -1 }
             },
             {
                 $project: {

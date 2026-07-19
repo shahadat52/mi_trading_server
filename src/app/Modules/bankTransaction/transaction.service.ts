@@ -153,9 +153,16 @@ const getBankWiseTransactionsFromDB = async ({
         {
             $group: {
                 _id: "$bankName",
-                totalAmount: { $sum: "$amount" },
                 count: { $sum: 1 },
-
+                currentBalance: {
+                    $sum: {
+                        $cond: [
+                            { $eq: ["$type", "credit"] },
+                            "$amount",
+                            { $multiply: ["$amount", -1] }
+                        ]
+                    }
+                },
                 transactions: {
                     $push: {
                         _id: "$_id",
@@ -176,7 +183,7 @@ const getBankWiseTransactionsFromDB = async ({
             $project: {
                 _id: 0,
                 bankName: "$_id",
-                totalAmount: 1,
+                currentBalance: 1,
                 count: 1,
                 transactions: {
                     $slice: ["$transactions", Number(limit)],

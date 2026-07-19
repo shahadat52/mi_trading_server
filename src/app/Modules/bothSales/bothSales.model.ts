@@ -109,7 +109,7 @@ const bothSalesSchema = new Schema<TBothSales>(
 
     paymentMethod: {
       type: String,
-      enum: ['cash', 'bkash', 'nagad', 'rocket', 'card', 'bank'],
+      enum: ['cash', 'bkash', 'nagad', 'rocket', 'others', 'bank'],
       required: [true, 'Payment method is required'],
     },
 

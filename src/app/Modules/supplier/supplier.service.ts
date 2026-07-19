@@ -117,7 +117,9 @@ const getSuppliersNameFromDB = async (options: any) => {
   }
 
   if (type) {
-    query.type = type;
+    query.type = {
+      $in: [type, "common"]
+    };
   }
 
   const suppliers = await SupplierModel.find(query)
