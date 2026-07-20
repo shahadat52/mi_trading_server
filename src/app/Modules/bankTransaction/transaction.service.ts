@@ -100,8 +100,9 @@ const getBankWiseTransactionsFromDB = async ({
     fromDate,
     toDate,
     bankName,
-    limit = 10,
+    limit,
 }: any) => {
+
 
     const matchStage: any = {
         isDeleted: false,
@@ -119,19 +120,17 @@ const getBankWiseTransactionsFromDB = async ({
     }
 
     return BankTxnModel.aggregate([
-        // 1️⃣ Match
+        // 1️⃣ Match Stage
         { $match: matchStage },
 
-        // 2️⃣ Sort
-        { $sort: { bankName: 1, createdAt: 1, _id: 1 } },
+        // 2️⃣ Sort by date descending (latest first for running balance & pagination)
+        { $sort: { createdAt: 1, _id: 1 } },
 
-
-
-        // 7️⃣ Running balance
+        // 3️⃣ Running Balance using $setWindowFields
         {
             $setWindowFields: {
                 partitionBy: "$bankName",
-                sortBy: { createdAt: -1, _id: 1 },
+                sortBy: { createdAt: 1, _id: 1 },
                 output: {
                     balance: {
                         $sum: {
@@ -148,12 +147,14 @@ const getBankWiseTransactionsFromDB = async ({
                 },
             },
         },
+        { $sort: { createdAt: -1, _id: -1 } },
 
-        // 8️⃣ Group by bank
+        // 4️⃣ Group by Bank Name
         {
             $group: {
                 _id: "$bankName",
                 count: { $sum: 1 },
+                // টোটাল ব্যালেন্সের সঠিক হিসাবের জন্য সমস্ত ট্রানজেকশনের পরিমাণ যোগ করা
                 currentBalance: {
                     $sum: {
                         $cond: [
@@ -172,27 +173,25 @@ const getBankWiseTransactionsFromDB = async ({
                         status: "$status",
                         note: "$note",
                         createdAt: "$createdAt",
+                        updatedAt: "$updatedAt",
                         balance: "$balance",
                     },
                 },
             },
         },
 
-        // 9️⃣ Limit
+        // 5️⃣ Project and Slice transactions according to limit
         {
             $project: {
                 _id: 0,
                 bankName: "$_id",
                 currentBalance: 1,
                 count: 1,
-                transactions: {
-                    $slice: ["$transactions", Number(limit)],
-                },
+                transactions: limit
+                    ? { $slice: ["$transactions", Number(limit)] }
+                    : "$transactions",
             },
-        },
-
-        // 🔟 Sort banks
-        { $sort: { createdAt: -1 } },
+        }
     ]);
 };
 

@@ -23,6 +23,12 @@ router.get(
 );
 
 router.get(
+    '/product/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    bepariCouthaControllers.getCouthaByProductIdFromDB
+);
+
+router.get(
     '/invoice/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     bepariCouthaControllers.getCouthaByInvoice

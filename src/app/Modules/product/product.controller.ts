@@ -17,9 +17,9 @@ const createProduct = catchAsync(async (req, res) => {
 });
 
 const getAllProducts = catchAsync(async (req, res) => {
-  const { sortBy = 'createdAt', order, searchTerm, category } = req.query;
+  const { sortBy = 'createdAt', order, searchTerm, category, limit } = req.query;
 
-  const result = await ProductService.getAllProductsFromDB({ sortBy, order, searchTerm, category });
+  const result = await ProductService.getAllProductsFromDB({ searchTerm, limit, sortBy, order, category });
 
   sendResponse(res, {
     success: true,

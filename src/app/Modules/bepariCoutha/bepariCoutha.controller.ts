@@ -43,6 +43,19 @@ const getCouthaByIdFromDB = catchAsync(async (req, res) => {
     return result;
 });
 
+const getCouthaByProductIdFromDB = catchAsync(async (req, res) => {
+    const { id } = req.params
+    const result = await BepariCouthaServices.getCouthaByProductIdFromDB(id);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+    return result;
+});
+
 const getCouthaByInvoice = catchAsync(async (req, res) => {
     const { id } = req.params
     const result = await BepariCouthaServices.getCouthaByInvoiceFromDB(id);
@@ -97,6 +110,7 @@ const deleteBepariCoutha = catchAsync(async (req, res) => {
 export const bepariCouthaControllers = {
     createSettlementTxn,
     getCouthaByIdFromDB,
+    getCouthaByProductIdFromDB,
     getCouthaByInvoice,
     getSettlementsOfSupplier,
     getFieldsWiseData,

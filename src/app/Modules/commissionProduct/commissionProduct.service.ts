@@ -43,18 +43,18 @@ const createCommissionProductInDB = async (data: TCommissionProduct, image: any)
 
 };
 
-const getAllCommissionProductsFromDB = async (options: any) => {
+const getAllCommissionProductsFromDB = async ({ searchTerm, limit }: any) => {
     const matchStage: any = {};
-    if (options.searchTerm) {
+    if (searchTerm) {
         matchStage.$or = [
-            { name: makeRegex(options.searchTerm) },
+            { name: makeRegex(searchTerm) },
         ];
     }
 
     const result = await CommissionProductModel.aggregate([
         {
             $lookup: {
-                from: 'suppliers', // collection name (plural)
+                from: 'suppliers',
                 localField: 'supplier',
                 foreignField: '_id',
                 as: 'supplier',
@@ -65,10 +65,10 @@ const getAllCommissionProductsFromDB = async (options: any) => {
         },
         {
             $match: {
-                ...(options.searchTerm && {
+                ...(searchTerm && {
                     $or: [
-                        { name: makeRegex(options.searchTerm) },
-                        { 'supplier.name': makeRegex(options.searchTerm) }
+                        { name: makeRegex(searchTerm) },
+                        { 'supplier.name': makeRegex(searchTerm) }
                     ],
                 }),
             },
@@ -76,6 +76,7 @@ const getAllCommissionProductsFromDB = async (options: any) => {
         {
             $sort: { createdAt: -1 },
         },
+        ...(limit ? [{ $limit: Number(limit) }] : []),
     ]);
 
     return result;

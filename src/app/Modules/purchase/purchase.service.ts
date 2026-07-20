@@ -119,9 +119,8 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   }
 };
 
-export const getAllPurchasesFromDB = async (options: TGetAllPurchasesOptions) => {
-  const { page, limit, sortBy, order, search, category, purchaseType } = options;
-
+export const getAllPurchasesFromDB = async (options: any) => {
+  const { page, limit, searchTerm, sortBy, order, category, purchaseType } = options;
   const matchStage: any = {
     isDeleted: { $ne: true },
   };
@@ -160,14 +159,14 @@ export const getAllPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
   ];
 
   // Search
-  if (search) {
+  if (searchTerm) {
     pipeline.push({
       $match: {
         $or: [
-          { 'product.name': { $regex: search, $options: 'i' } },
-          { 'supplier.name': { $regex: search, $options: 'i' } },
-          { 'product.sku': { $regex: search, $options: 'i' } },
-          { invoice: { $regex: search, $options: 'i' } },
+          { 'product.name': { $regex: searchTerm, $options: 'i' } },
+          { 'supplier.name': { $regex: searchTerm, $options: 'i' } },
+          { 'product.sku': { $regex: searchTerm, $options: 'i' } },
+          { invoice: { $regex: searchTerm, $options: 'i' } },
         ],
       },
     });

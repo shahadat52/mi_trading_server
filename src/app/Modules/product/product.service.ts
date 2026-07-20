@@ -16,18 +16,43 @@ const createProductInDB = async (payload: TProductName) => {
 };
 
 const getAllProductsFromDB = async (options: any) => {
-  const { sortBy, order, searchTerm, category } = options;
+  const { searchTerm, limit } = options;
 
-  const query: any = {};
+  const matchStage: any = {};
+
   // Search by product name or SKU
   if (searchTerm) {
-    query.$or = [
+    matchStage.$or = [
       { product: makeRegex(searchTerm) },
       { sku: makeRegex(searchTerm) },
     ];
   }
 
-  const data = await PurchaseModel.find(query).sort({ createdAt: -1 });
+  const pipeline: any[] = [];
+
+  // Match
+  if (Object.keys(matchStage).length) {
+    pipeline.push({
+      $match: matchStage,
+    });
+  }
+
+  // Sort
+  pipeline.push({
+    $sort: {
+      createdAt: -1,
+    },
+  });
+
+  // Limit (only if provided)
+  if (limit) {
+    pipeline.push({
+      $limit: Number(limit),
+    });
+  }
+
+  const data = await PurchaseModel.aggregate(pipeline);
+
   return data;
 };
 
@@ -46,7 +71,7 @@ const getProductsStockFromDB = async (options: any) => {
         ],
       },
     });
-  } 
+  }
 
   // 📦 Group by SKU
   pipeline.push({

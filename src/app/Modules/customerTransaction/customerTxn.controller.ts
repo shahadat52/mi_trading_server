@@ -48,7 +48,8 @@ const getOutStandingCustomerTxn = catchAsync(async (req, res) => {
 
 const getCustomerTxnById = catchAsync(async (req, res) => {
   const { id } = req.params
-  const result = await customerTxnServices.getCustomerTxnByIdInDB(id);
+  const { startDate, endDate, limit } = req.query
+  const result = await customerTxnServices.getCustomerTxnByIdInDB({ id, startDate, endDate, limit });
 
   sendResponse(res, {
     success: true,

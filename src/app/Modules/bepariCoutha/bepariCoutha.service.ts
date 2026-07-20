@@ -46,6 +46,21 @@ const getCouthaByIdFromDB = async (id: any) => {
 
 };
 
+const getCouthaByProductIdFromDB = async (id: any) => {
+    const result = await BepariCouthaModel.findOne({ couthaOf: id }).populate([
+        {
+            path: 'supplier',
+            select: 'name address -_id'
+        },
+        {
+            path: 'createdBy',
+            select: 'name -_id'
+        }
+    ])
+    return result
+
+};
+
 const getCouthaByInvoiceFromDB = async (id: any) => {
     const result = await BepariCouthaModel.findOne({ invoice: id }).populate([
         {
@@ -267,6 +282,7 @@ const deleteBepariCouthaFromDB = async (id: any) => {
 export const BepariCouthaServices = {
     createSettlementTxnDInDB,
     getCouthaByIdFromDB,
+    getCouthaByProductIdFromDB,
     getCouthaByInvoiceFromDB,
     getSettlementsOfSupplierFromDb,
     getFieldsWiseDataFromDb,

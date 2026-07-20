@@ -4,7 +4,7 @@ import { CustomerTxnModel } from './customerTxn.model';
 import mongoose, { Types } from 'mongoose';
 import { CustomerModel } from '../customer/customer.model';
 import { SupplierModel } from '../supplier/supplier.model';
-import { formatDate } from 'date-fns';
+import { endOfDay, formatDate, startOfDay } from 'date-fns';
 import { BankTxnModel } from '../bankTransaction/transaction.model';
 import { MfsTxnModel } from '../MFS/mfs.model';
 
@@ -228,7 +228,7 @@ const getOutStandingCustomerTxnFromDB = async ({ searchTerm, limit, category }: 
 
 
 // ✅ Get Customer Txn by ID 
-const getCustomerTxnByIdInDB = async (id: any) => {
+const getCustomerTxnByIdInDB = async ({ id, startDate, endDate, limit }: any) => {
   const customerId = new Types.ObjectId(id);
   const customer = await CustomerModel.findById(customerId);
   if (!customer) {
@@ -240,12 +240,19 @@ const getCustomerTxnByIdInDB = async (id: any) => {
   });
 
   const supplierId = supplier?._id;
+  const matchStage: any = {
+    party: customerId,
+  };
 
+  if (startDate && endDate) {
+    matchStage.createdAt = {
+      $gte: startOfDay(new Date(startDate)),
+      $lte: endOfDay(new Date(endDate)),
+    };
+  }
   const data = await CustomerTxnModel.aggregate([
     {
-      $match: {
-        party: customerId,
-      },
+      $match: matchStage
     },
     {
       $project: {
