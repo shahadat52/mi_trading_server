@@ -19,9 +19,26 @@ const createPurchase = catchAsync(async (req, res) => {
 });
 
 const getAllPurchases = catchAsync(async (req, res) => {
-  const { searchTerm, limit } = req.query
+  const {
+    page = 1,
+    limit = 10,
+    sortBy = 'createdAt',
+    order = 'desc',
+    search,
+    category = 'all',
+    purchaseType,
+  } = req.query;
+  const options = {
+    page: parseInt(page as string, 10),
+    limit: parseInt(limit as string, 10),
+    sortBy: sortBy as string,
+    order: (order === 'asc' ? 1 : -1) as 1 | -1,
+    search: search as string,
+    category: category as string | undefined,
+    purchaseType: purchaseType as string,
+  };
 
-  const result = await purchaseServices.getAllPurchasesFromDB({ searchTerm, limit });
+  const result = await purchaseServices.getAllPurchasesFromDB(options);
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
