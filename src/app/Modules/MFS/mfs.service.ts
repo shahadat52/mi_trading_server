@@ -3,6 +3,7 @@ import AppError from "../../errors/appErrors";
 import { JwtPayload } from "jsonwebtoken";
 import { MfsTxnModel } from "./mfs.model";
 import httpStatus from "http-status"
+import { endOfDay, startOfDay } from "date-fns";
 
 const mfsTxnEntryInDB = async (payload: any, user: JwtPayload) => {
     const session = await mongoose.startSession()
@@ -24,6 +25,25 @@ const mfsTxnEntryInDB = async (payload: any, user: JwtPayload) => {
         throw new AppError(httpStatus.NOT_ACCEPTABLE, 'ট্রান্সেকসন হয়নি');
 
     }
+};
+
+const getAllMfsTxnsFromDB = async ({ dateFrom, dateTo }: any) => {
+
+    const matchStage: any = {};
+    if (dateFrom && dateTo) {
+        matchStage.createdAt = {
+            $gte: startOfDay(new Date(dateFrom)),
+            $lte: endOfDay(new Date(dateTo)),
+        };
+    }
+    const result = await MfsTxnModel.aggregate([
+        { $match: matchStage },
+        {
+            $sort: { createdAt: -1 },
+        },
+    ]);
+
+    return result;
 };
 
 const getMfsTxnDataFromDB = async (query: any) => {
@@ -90,6 +110,7 @@ const deleteMfsTxnFromDB = async (id: any) => {
 
 export const mfsTxnServices = {
     mfsTxnEntryInDB,
+    getAllMfsTxnsFromDB,
     getMfsTxnDataFromDB,
     updateMfsTxnInDB,
     deleteMfsTxnFromDB

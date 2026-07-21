@@ -15,6 +15,19 @@ const mfstxnEntry = catchAsync(async (req, res) => {
     return result;
 });
 
+const getAllMfsTxns = catchAsync(async (req, res) => {
+    const { dateFrom, dateTo } = req.query;
+    const result = await mfsTxnServices.getAllMfsTxnsFromDB({ dateFrom, dateTo });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+    return result;
+});
+
 const getMfsTxnData = catchAsync(async (req, res) => {
     const result = await mfsTxnServices.getMfsTxnDataFromDB(req.query);
 
@@ -51,6 +64,7 @@ const deleteMfsTxn = catchAsync(async (req, res) => {
 
 export const mfsTxnControllers = {
     mfstxnEntry,
+    getAllMfsTxns,
     getMfsTxnData,
     updateMfsTxn,
     deleteMfsTxn

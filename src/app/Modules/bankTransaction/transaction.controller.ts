@@ -15,13 +15,25 @@ const transactionEntry = catchAsync(async (req, res) => {
     return result;
 });
 
+const getAllBankTransactions = catchAsync(async (req, res) => {
+    const { dateFrom, dateTo } = req.query;
+    const result = await transactionServices.getAllBankTransactionsFromDB({ dateFrom, dateTo });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+    return result;
+});
 const getAllTransaction = catchAsync(async (req, res) => {
     const result = await transactionServices.getAllTransactionFromDB(req.query);
 
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: 'All transaction data retrieved',
+        message: '',
         data: result,
     });
     return result;
@@ -103,6 +115,7 @@ const deleteBankTxn = catchAsync(async (req, res) => {
 export const transactionControllers = {
     transactionEntry,
     getAllTransaction,
+    getAllBankTransactions,
     getBankWiseTransactions,
     getAllOutstandingTxn,
     updateTxnStatus,

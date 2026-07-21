@@ -18,7 +18,7 @@ const bothSalesEntry = catchAsync(async (req, res) => {
 const getAllBothSales = catchAsync(async (req, res) => {
   const {
     page = 1,
-    limit = 10,
+    limit,
     dateFrom,
     dateTo,
     sortBy = 'createdAt',
@@ -30,7 +30,7 @@ const getAllBothSales = catchAsync(async (req, res) => {
 
   const result = await bothSalesServices.getAllBothSalesFromDB({
     page,
-    limit,
+    limit: Number(limit),
     sortBy,
     order,
     search,
@@ -44,6 +44,19 @@ const getAllBothSales = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Sales data retrieved successfully',
+    data: result,
+  });
+});
+
+const getProductWiseSales = catchAsync(async (req, res) => {
+  const { dateFrom, dateTo } = req.query;
+
+  const result = await bothSalesServices.getProductWiseSalesFromDB({ dateFrom, dateTo });
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
     data: result,
   });
 });
@@ -135,6 +148,7 @@ export const bothSalesControllers = {
   bothSalesEntry,
   getAllBothSales,
   getAllDueSales,
+  getProductWiseSales,
   getBothSaleById,
   getBothSaleByInvoice,
   getBothSalesReport,

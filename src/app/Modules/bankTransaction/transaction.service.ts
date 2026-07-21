@@ -19,6 +19,28 @@ const transactionEntryInDB = async (
 
     return result;
 };
+
+const getAllBankTransactionsFromDB = async ({ dateFrom, dateTo }: any) => {
+
+    const matchStage: any = {
+        isDeleted: false,
+    };
+
+    if (dateFrom && dateTo) {
+        matchStage.createdAt = {
+            $gte: startOfDay(new Date(dateFrom)),
+            $lte: endOfDay(new Date(dateTo)),
+        };
+    }
+    const result = await BankTxnModel.aggregate([
+        { $match: matchStage },
+        {
+            $sort: { createdAt: -1 },
+        },
+    ]);
+
+    return result;
+};
 const getAllTransactionFromDB = async (options: any) => {
     const { dateFrom, dateTo } = options;
 
@@ -26,9 +48,8 @@ const getAllTransactionFromDB = async (options: any) => {
         isDeleted: false,
     };
 
-    // optional date filter (issueDate বা postingDate যেটা business logic)
     if (dateFrom && dateTo) {
-        matchStage.createtAt = {
+        matchStage.createdAt = {
             $gte: new Date(dateFrom),
             $lte: new Date(dateTo),
         };
@@ -91,9 +112,6 @@ const getAllTransactionFromDB = async (options: any) => {
 
     return result;
 };
-
-
-
 
 
 const getBankWiseTransactionsFromDB = async ({
@@ -234,9 +252,6 @@ const updateByIdInDB = async (id: any, updateData: any) => {
     }
 };
 
-
-
-// ✅ Delete Supplier
 const deleteBankTxnFromDB = async (id: any) => {
     const supplier = await BankTxnModel.findByIdAndDelete(id);
     if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Transaction not found');
@@ -246,6 +261,7 @@ const deleteBankTxnFromDB = async (id: any) => {
 
 export const transactionServices = {
     transactionEntryInDB,
+    getAllBankTransactionsFromDB,
     getAllTransactionFromDB,
     getBankWiseTransactionsFromDB,
     getAllOutstandingTxnFromDB,

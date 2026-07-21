@@ -16,6 +16,11 @@ router.get(
     auth(USER_ROLE.admin, USER_ROLE.specialManager),
     transactionControllers.getBankWiseTransactions
 );
+router.get(
+    '/txns',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    transactionControllers.getAllBankTransactions
+);
 
 router.get(
     '/',

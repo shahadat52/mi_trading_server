@@ -13,11 +13,21 @@ router.post(
 
 );
 
-router.get('/', auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager), customerTxnControllers.getAllCustomerTxn);
+router.get(
+  '/',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  customerTxnControllers.getAllCustomerTxn
+);
+
 router.get(
   '/outStanding',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   customerTxnControllers.getOutStandingCustomerTxn
+);
+
+router.get(
+  '/totaldue',
+  customerTxnControllers.getTotalDueFromAllCustomers
 );
 
 router.get(

@@ -20,6 +20,11 @@ router.get(
   auth('admin', 'manager', 'specialManager',),
   bothSalesControllers.getAllDueSales
 );
+router.get(
+  '/productwise/sales',
+  // auth('admin', 'manager', 'specialManager',),
+  bothSalesControllers.getProductWiseSales
+);
 
 router.get(
   '/:id',

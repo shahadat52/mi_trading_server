@@ -93,9 +93,45 @@ const customerTxnEntryInDB = async (payload: any, user: any) => {
 };
 
 // ✅ Get All Suppliers
-const getAllCustomerTxnFromDB = async () => {
+const getAllCustomerTxnFromDB = async ({ startDate, endDate }: any) => {
+  const matchStage: any = {};
 
-  const result = await CustomerTxnModel.find().populate('party')
+  if (startDate || endDate) {
+    matchStage.createdAt = {};
+
+    if (startDate) {
+      matchStage.createdAt.$gte = startOfDay(new Date(startDate));
+    }
+
+    if (endDate) {
+      matchStage.createdAt.$lte = endOfDay(new Date(endDate));
+    }
+  }
+
+  const result = await CustomerTxnModel.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $lookup: {
+        from: "customers", // collection name
+        localField: "party",
+        foreignField: "_id",
+        as: "party",
+      },
+    },
+    {
+      $unwind: {
+        path: "$party",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+  ]);
 
   return result;
 };
@@ -463,6 +499,38 @@ const getOrphanCustomerTxnsFromDB = async () => {
   return orphanTxns;
 };
 
+// ✅ সকল customers দের কাছে মোট কত টাকা পাবো
+const getTotalDueFromAllCustomersFromDB = async () => {
+  const [result] = await CustomerTxnModel.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalDebit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+          },
+        },
+        totalCredit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalDebit: 1,
+        totalCredit: 1,
+        totalReceivable: {
+          $subtract: ["$totalDebit", "$totalCredit"],
+        },
+      },
+    },
+  ]);
+  return result
+}
+
 export const customerTxnServices = {
   customerTxnEntryInDB,
   getAllCustomerTxnFromDB,
@@ -473,6 +541,7 @@ export const customerTxnServices = {
   deleteCustomerTxnFromDB,
   getUnApprovedCustomerTxnFromDB,
   getOrphanCustomerTxnsFromDB,
-  makeApproveCustomerTxnInDB
+  makeApproveCustomerTxnInDB,
+  getTotalDueFromAllCustomersFromDB
 
 };

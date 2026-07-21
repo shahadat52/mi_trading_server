@@ -12,6 +12,12 @@ router.post(
 );
 
 router.get(
+    '/txns',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    mfsTxnControllers.getAllMfsTxns
+);
+
+router.get(
     '/',
     auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     mfsTxnControllers.getMfsTxnData

@@ -2,11 +2,6 @@
 import multer from 'multer';
 import fs from 'fs';
 import config from '../config';
-// cloudinary.config({
-//   cloud_name: 'daahwsoyo',
-//   api_key: '191141413514713',
-//   api_secret: 'tMKFXSv5Wcwb9jGCZyUw7owwljg',
-// });
 
 
 export const sendImageToImgbb = (path: string, fileName: string) => {

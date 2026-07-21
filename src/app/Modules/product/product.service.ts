@@ -2,6 +2,7 @@ import { ProductNameModel } from './product.model';
 import { TProductName } from './product.interface';
 import { PurchaseModel } from '../purchase/purchase.model';
 import { makeRegex } from '../../utils/makeRegex';
+import { endOfDay, startOfDay } from 'date-fns';
 
 const createProductInDB = async (payload: TProductName) => {
   const existing = await ProductNameModel.findOne({
@@ -16,7 +17,7 @@ const createProductInDB = async (payload: TProductName) => {
 };
 
 const getAllProductsFromDB = async (options: any) => {
-  const { searchTerm, limit } = options;
+  const { searchTerm, limit, startDate, endDate } = options;
 
   const matchStage: any = {};
 
@@ -28,6 +29,19 @@ const getAllProductsFromDB = async (options: any) => {
     ];
   }
 
+  // Date Range Filter
+  if (startDate || endDate) {
+    matchStage.createdAt = {};
+
+    if (startDate) {
+      matchStage.createdAt.$gte = startOfDay(new Date(startDate));
+    }
+
+    if (endDate) {
+      matchStage.createdAt.$lte = endOfDay(new Date(endDate));
+    }
+  }
+
   const pipeline: any[] = [];
 
   // Match
@@ -36,6 +50,24 @@ const getAllProductsFromDB = async (options: any) => {
       $match: matchStage,
     });
   }
+
+  // Lookup Supplier
+  pipeline.push({
+    $lookup: {
+      from: "suppliers",
+      localField: "supplier",
+      foreignField: "_id",
+      as: "supplier",
+    },
+  });
+
+  // Convert supplier array to object
+  pipeline.push({
+    $unwind: {
+      path: "$supplier",
+      preserveNullAndEmptyArrays: true,
+    },
+  });
 
   // Sort
   pipeline.push({

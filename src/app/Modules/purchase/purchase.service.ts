@@ -7,6 +7,7 @@ import { getPurchaseInvoiceNumber } from './purchase.utils';
 import AppError from '../../errors/appErrors';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
+import { endOfDay, startOfDay } from 'date-fns';
 
 const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
@@ -119,14 +120,26 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   }
 };
 
-export const getAllPurchasesFromDB = async (options: any) => {
-  const { page, limit, searchTerm, sortBy, order, category, purchaseType } = options;
+const getAllPurchasesFromDB = async (options: any) => {
+  const { page, limit, searchTerm, sortBy, order, category, purchaseType, startDate, endDate } = options;
   const matchStage: any = {
     isDeleted: { $ne: true },
   };
 
   if (purchaseType) {
     matchStage.purchaseType = purchaseType;
+  }
+  // Date Range Filter
+  if (startDate || endDate) {
+    matchStage.createdAt = {};
+
+    if (startDate) {
+      matchStage.createdAt.$gte = startOfDay(new Date(startDate));
+    }
+
+    if (endDate) {
+      matchStage.createdAt.$lte = endOfDay(new Date(endDate));
+    }
   }
 
   const skip = (page - 1) * limit;

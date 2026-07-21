@@ -12,6 +12,7 @@ import { BankTxnModel } from '../bankTransaction/transaction.model';
 import { formatDate } from 'date-fns';
 import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { MfsTxnModel } from '../MFS/mfs.model';
+import { startOfDay, endOfDay } from "date-fns";
 
 //✅ Create Supplier
 const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
@@ -141,9 +142,22 @@ const bepariTxnEntryInDB = async (payload: any, user: JwtPayload) => {
 };
 
 // ✅ Get All Suppliers
-const getAllSupplierTxnFromDB = async () => {
+const getAllSupplierTxnFromDB = async ({ startDate, endDate }: any) => {
+  const filter: any = {};
 
-  const result = await SupplierTxnModel.find().populate('party')
+  if (startDate || endDate) {
+    filter.createdAt = {};
+
+    if (startDate) {
+      filter.createdAt.$gte = startOfDay(new Date(startDate));
+    }
+
+    if (endDate) {
+      filter.createdAt.$lte = endOfDay(new Date(endDate));
+    }
+  }
+
+  const result = await SupplierTxnModel.find(filter).populate("party");
 
   return result;
 };
@@ -419,6 +433,37 @@ const makeApproveSupplierTxnInDB = async (id: any) => {
   return txn;
 };
 
+const getTotalPayableToSupplierFromDB = async () => {
+  const [result] = await SupplierTxnModel.aggregate([
+    {
+      $group: {
+        _id: null,
+        totalDebit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+          },
+        },
+        totalCredit: {
+          $sum: {
+            $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+          },
+        },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        totalDebit: 1,
+        totalCredit: 1,
+        totalPayable: {
+          $subtract: ["$totalCredit", "$totalDebit",],
+        },
+      },
+    },
+  ]);
+  return result
+}
+
 export const supplierTxnServices = {
   supplierTxnEntryInDB,
   bepariTxnEntryInDB,
@@ -428,5 +473,6 @@ export const supplierTxnServices = {
   updateByIdInDB,
   deleteSupplierTxnFromDB,
   getUnApprovedSupplierTxnFromDB,
-  makeApproveSupplierTxnInDB
+  makeApproveSupplierTxnInDB,
+  getTotalPayableToSupplierFromDB
 };

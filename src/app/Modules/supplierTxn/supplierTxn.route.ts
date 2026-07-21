@@ -23,6 +23,10 @@ router.get(
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   supplierTxnControllers.getAllSupplierTxn
 );
+router.get(
+  '/totalpayable',
+  supplierTxnControllers.getTotalPayableToSupplier
+);
 
 router.get(
   '/outStanding',
@@ -50,7 +54,7 @@ router.patch(
 );
 router.patch(
   '/update/:id',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
   supplierTxnControllers.updateById
 );
 
@@ -60,5 +64,7 @@ router.delete(
   auth(USER_ROLE.admin, USER_ROLE.specialManager),
   supplierTxnControllers.deleteSupplierTxn
 );
+
+
 
 export const supplierTxnRoutes = router;

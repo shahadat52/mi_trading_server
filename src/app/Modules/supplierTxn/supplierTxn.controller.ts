@@ -33,12 +33,13 @@ const bepariTxnEntry = catchAsync(async (req, res) => {
 
 //✅ Get all
 const getAllSupplierTxn = catchAsync(async (req, res) => {
-  const result = await supplierTxnServices.getAllSupplierTxnFromDB();
+  const { startDate, endDate } = req.query;
+  const result = await supplierTxnServices.getAllSupplierTxnFromDB({ startDate, endDate });
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'All transaction data retrieved',
+    message: '',
     data: result,
   });
   return result;
@@ -123,6 +124,18 @@ const makeApproveSupplierTxn = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalPayableToSupplier = catchAsync(async (req, res) => {
+  const result = await supplierTxnServices.getTotalPayableToSupplierFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+  return result;
+});
+
 
 export const supplierTxnControllers = {
   supplierTxnEntry,
@@ -133,5 +146,6 @@ export const supplierTxnControllers = {
   updateById,
   deleteSupplierTxn,
   getUnApprovedSupplierTxn,
-  makeApproveSupplierTxn
+  makeApproveSupplierTxn,
+  getTotalPayableToSupplier
 };

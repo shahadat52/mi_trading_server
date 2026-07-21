@@ -22,6 +22,8 @@ const getAllPurchases = catchAsync(async (req, res) => {
   const {
     page = 1,
     limit = 10,
+    startDate,
+    endDate,
     sortBy = 'createdAt',
     order = 'desc',
     search,
@@ -36,6 +38,8 @@ const getAllPurchases = catchAsync(async (req, res) => {
     search: search as string,
     category: category as string | undefined,
     purchaseType: purchaseType as string,
+    startDate,
+    endDate
   };
 
   const result = await purchaseServices.getAllPurchasesFromDB(options);

@@ -14,6 +14,7 @@ import { PurchaseModel } from '../purchase/purchase.model';
 import { makeRegex } from '../../utils/makeRegex';
 import { CustomerModel } from '../customer/customer.model';
 import { MfsTxnModel } from '../MFS/mfs.model';
+import { endOfDay, startOfDay } from 'date-fns';
 
 const bothSalesEntryInDB = async (payload: any) => {
   const { broker, brokerBill, bankName, ...salesData } = payload;
@@ -253,7 +254,7 @@ const bothSalesEntryInDB = async (payload: any) => {
 const getAllBothSalesFromDB = async (options: any) => {
   const {
     page = 1,
-    limit = 10,
+    limit,
     sortBy = "createdAt",
     order = "desc",
     search,
@@ -262,8 +263,6 @@ const getAllBothSalesFromDB = async (options: any) => {
     dateFrom,
     dateTo,
   } = options;
-
-  const skip = (Number(page) - 1) * Number(limit);
 
   const pipeline: any[] = [];
 
@@ -468,8 +467,7 @@ const getAllBothSalesFromDB = async (options: any) => {
     {
       $facet: {
         data: [
-          { $skip: skip },
-          { $limit: Number(limit) },
+          ...(limit ? [{ $limit: Number(limit) }] : []),
         ],
         totalCount: [
           { $count: "count" },
@@ -492,6 +490,73 @@ const getAllBothSalesFromDB = async (options: any) => {
     data: result[0]?.data || [],
   };
 };
+
+const getProductWiseSalesFromDB = async ({ dateFrom, dateTo }: any) => {
+  const result = await BothSalesModel.aggregate([
+    {
+      $match: {
+        date: {
+          $gte: startOfDay(new Date(dateFrom)),
+          $lte: endOfDay(new Date(dateTo)),
+        },
+      },
+    },
+    {
+      $unwind: "$items",
+    },
+    {
+      $group: {
+        _id: "$items.name",
+        productName: {
+          $first: "$items.name",
+        },
+
+        unit: {
+          $first: "$items.unit",
+        },
+
+        totalQuantity: {
+          $sum: "$items.quantity",
+        },
+
+        totalAmount: {
+          $sum: {
+            $multiply: ["$items.quantity", "$items.salePrice"],
+          },
+        },
+
+        salesHistory: {
+          $push: {
+            invoice: "$invoice",
+            date: "$date",
+            customer: "$customer.name",
+            quantity: "$items.quantity",
+            bosta: "$items.bosta",
+            salePrice: "$items.salePrice",
+            amount: {
+              $multiply: ["$items.quantity", "$items.salePrice"],
+            },
+            commission: {
+              $cond: {
+                if: { $ne: ["$items.commission", null] },
+                then: "$items.commission",
+                else: "$$REMOVE",
+              },
+            },
+          },
+        }
+      },
+    },
+    {
+      $sort: {
+        productName: 1,
+      },
+    },
+  ]);
+
+  return result;
+};
+
 
 
 const getAllDueSalesFromDB = async (options: any) => {
@@ -733,6 +798,7 @@ const deleteBothSaleByIdFromDB = async (id: any) => {
 export const bothSalesServices = {
   bothSalesEntryInDB,
   getAllBothSalesFromDB,
+  getProductWiseSalesFromDB,
   getAllDueSalesFromDB,
   getBothSaleByIdFromDB,
   getBothSaleByInvoiceFromDB,

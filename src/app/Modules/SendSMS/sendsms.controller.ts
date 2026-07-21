@@ -8,11 +8,7 @@ import httpStatus from 'http-status'
 
 
 const sendTxnSMS = catchAsync(async (req, res) => {
-    const { phone, amount, balance, type } = req.body;
-    const message = `প্রিয় গ্রাহক,
-আপনি ${amount} ${type === "credit" ? "টাকা জমা দিয়েছেন" : "টাকার পণ্য নিয়েছেন"}। বর্তমানে ${Math.abs(balance)} টাকা বকেয়া আছে।
-ধন্যবাদ।
-M.I Trading`
+    const { phone, message } = req.body;
     const result = await smsSendServices.sendTxnSMSFromServer(phone, message);
     sendResponse(res, {
         success: true,

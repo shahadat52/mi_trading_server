@@ -19,12 +19,13 @@ const customerTxnEntry = catchAsync(async (req, res) => {
 
 //✅ Get all
 const getAllCustomerTxn = catchAsync(async (req, res) => {
-  const result = await customerTxnServices.getAllCustomerTxnFromDB();
+  const { startDate, endDate } = req.query
+  const result = await customerTxnServices.getAllCustomerTxnFromDB({ startDate, endDate });
 
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
-    message: 'All transaction data retrieved',
+    message: '',
     data: result,
   });
   return result;
@@ -134,6 +135,17 @@ const makeApproveCustomerTxn = catchAsync(async (req, res) => {
   });
 });
 
+const getTotalDueFromAllCustomers = catchAsync(async (req, res) => {
+  const result = await customerTxnServices.getTotalDueFromAllCustomersFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 
 export const customerTxnControllers = {
   customerTxnEntry,
@@ -145,5 +157,6 @@ export const customerTxnControllers = {
   deleteCustomerTxn,
   getUnApprovedCustomerTxn,
   getOrphanCustomerTxn,
-  makeApproveCustomerTxn
+  makeApproveCustomerTxn,
+  getTotalDueFromAllCustomers
 };
