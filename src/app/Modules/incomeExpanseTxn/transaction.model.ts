@@ -44,6 +44,10 @@ const transactionSchema = new Schema<TTransaction>(
             type: String,
             default: ''
         },
+        imgurl: {
+            type: String,
+            default: ''
+        },
 
         createdBy: {
             type: Schema.Types.ObjectId,

@@ -76,12 +76,41 @@ const deleteProduct = catchAsync(async (req, res) => {
     });
 });
 
+const addProfit = catchAsync(async (req, res) => {
+    const { id } = req.params
+    const data = req.body;
+    const result = await commissionProductServices.addProfitForCommissionPurchaseInDB({ id, data })
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Updated',
+        data: result,
+    });
+    return result;
+
+});
+
+const getTotalProfitCommissionProducts = catchAsync(async (req, res) => {
+    const { startDate, endDate, limit } = req.query;
+    const result = await commissionProductServices.getProfitFromCommissionProductFromDB(startDate, endDate, limit)
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+    return result;
+
+});
+
 export const commissionProductControllers = {
     createCommissionProduct,
     getAllCommissionProducts,
     getProductDetails,
     supplierWiseSupply,
     updateProductData,
-    deleteProduct
+    deleteProduct,
+    addProfit,
+    getTotalProfitCommissionProducts
 
 }

@@ -125,7 +125,8 @@ const makeApproveSupplierTxn = catchAsync(async (req, res) => {
 });
 
 const getTotalPayableToSupplier = catchAsync(async (req, res) => {
-  const result = await supplierTxnServices.getTotalPayableToSupplierFromDB();
+  const { supplierType } = req.query;
+  const result = await supplierTxnServices.getTotalPayableToSupplierFromDB(supplierType);
 
   sendResponse(res, {
     success: true,

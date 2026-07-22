@@ -168,6 +168,33 @@ const getPurchaseByInvoice = catchAsync(async (req, res) => {
   });
 });
 
+const addProfit = catchAsync(async (req, res) => {
+  const { id } = req.params
+  const data = req.body;
+  const result = await purchaseServices.addProfitForThisPurchaseInDB({ id, data })
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+  return result;
+
+});
+
+const getTotalProfitNormalProducts = catchAsync(async (req, res) => {
+  const { startDate, endDate, limit } = req.query;
+  const result = await purchaseServices.getProfitFromNormalProductFromDB(startDate, endDate, limit)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+  return result;
+
+});
+
 export const purchaseControllers = {
   createPurchase,
   getAllPurchases,
@@ -178,5 +205,7 @@ export const purchaseControllers = {
   updatePurchaseData,
   deletePurchase,
   getPurchaseReport,
-  getPurchaseByInvoice
+  getPurchaseByInvoice,
+  addProfit,
+  getTotalProfitNormalProducts
 };

@@ -6,9 +6,10 @@ import AppError from "../../errors/appErrors";
 import httpStatus from 'http-status'
 import { BankTxnModel } from "../bankTransaction/transaction.model";
 import { MfsTxnModel } from "../MFS/mfs.model";
+import { sendImageToImgbb } from "../../utils/sendImageToCloudinary";
 
 
-const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
+const transactionEntryInDB = async (payload: any, user: JwtPayload, image: any) => {
     const { bankName, issueDate, postingDate, source, ...txnData } = payload;
     const session = await mongoose.startSession()
     try {
@@ -19,6 +20,15 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload) => {
         if (user) {
             txnData.createdBy = user
         }
+
+        let imgUrl = ''
+        if (image?.path) {
+            const fileName = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;;
+            const { data } = await sendImageToImgbb(image?.path, fileName) as any;
+            imgUrl = data?.url;
+        }
+        txnData.imageurl = imgUrl || ''
+        txnData.amount = Number(payload.amount)
         // 3️⃣ create transaction
         const txn = await TxnModel.create(
             [

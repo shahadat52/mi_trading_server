@@ -52,7 +52,7 @@ router.get(
 
 router.patch(
   '/:id',
-  auth('admin', 'specialManager',),
+  auth('admin', 'specialManager', 'manager'),
   bothSalesControllers.updateInvoice
 );
 

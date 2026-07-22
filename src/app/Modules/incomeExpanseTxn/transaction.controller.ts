@@ -4,7 +4,8 @@ import httpStatus from 'http-status';
 import { transactionServices } from './transaction.service';
 
 const transactionEntry = catchAsync(async (req, res) => {
-    const result = await transactionServices.transactionEntryInDB(req.body, req.user);
+    const image = req.file as any;
+    const result = await transactionServices.transactionEntryInDB(req.body, req.user, image);
 
     sendResponse(res, {
         success: true,

@@ -2,11 +2,13 @@ import express from 'express';
 import { transactionControllers } from './transaction.controller';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from '../User/user.constant';
+import { upload } from '../../utils/sendImageToCloudinary';
 
 const router = express.Router();
 
 router.post(
     '/entry',
+    upload.single("image"),
     auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
     transactionControllers.transactionEntry
 );

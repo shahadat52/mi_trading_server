@@ -8,6 +8,7 @@ export type TTransaction = {
     amount: number;
     date: string;
     note: string;
+    imgurl: string
     createdBy: Types.ObjectId;
     createdAt: Date
 }

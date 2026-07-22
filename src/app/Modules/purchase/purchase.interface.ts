@@ -23,6 +23,7 @@ export interface TPurchase {
   quantity: number;
   paymentMethod?: string;
   purchaseQty: number;
+  purchaseBosta: number;
   broker: string
   bosta: number;
   lot: string;
@@ -36,7 +37,8 @@ export interface TPurchase {
   purchaseDate?: Date;
   purchasePrice: number;
   reorderLevel: number;
-  isPaid: boolean;
+  isSettelment: boolean;
+  profit: number;
   isVerified: boolean;
   isDeleted?: boolean;
   paidAmount: number;

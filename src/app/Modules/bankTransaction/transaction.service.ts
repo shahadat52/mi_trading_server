@@ -5,14 +5,11 @@ import { endOfDay, startOfDay } from "date-fns";
 import AppError from "../../errors/appErrors";
 import mongoose from "mongoose";
 import httpStatus from 'http-status'
+import { sendImageToImgbb } from "../../utils/sendImageToCloudinary";
 
 
-const transactionEntryInDB = async (
-    payload: TTransaction,
-    user: JwtPayload
-) => {
+const transactionEntryInDB = async (payload: TTransaction, user: JwtPayload) => {
     payload.createdBy = user._id;
-
     payload.postingDate = startOfDay(new Date(Date.now()));
 
     const result = await BankTxnModel.create(payload);

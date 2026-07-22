@@ -54,7 +54,7 @@ router.patch(
 );
 router.patch(
   '/update/:id',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+  auth(USER_ROLE.admin, USER_ROLE.specialManager),
   supplierTxnControllers.updateById
 );
 

@@ -17,6 +17,11 @@ router.get(
 );
 
 router.get(
+    '/totalProfit',
+    auth('admin', 'manager', 'specialManager',),
+    commissionProductControllers.getTotalProfitCommissionProducts
+);
+router.get(
     '/productDetails/:id',
     auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.getProductDetails
@@ -26,6 +31,12 @@ router.get(
     '/update/:id',
     auth('admin', 'manager', 'specialManager',),
     commissionProductControllers.getProductDetails
+);
+
+router.patch(
+    '/addProfit/:id',
+    auth('admin', 'specialManager',),
+    commissionProductControllers.addProfit
 );
 
 router.get(

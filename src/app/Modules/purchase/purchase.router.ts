@@ -29,6 +29,11 @@ router.get(
 );
 
 router.get(
+    '/totalProfit',
+    purchaseControllers.getTotalProfitNormalProducts
+);
+
+router.get(
     '/invoice/:id',
     purchaseControllers.getPurchaseByInvoice
 );
@@ -49,6 +54,10 @@ router.get(
 router.patch('/update/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),
     purchaseControllers.updatePurchaseData
+);
+router.patch('/addProfit/:id',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    purchaseControllers.addProfit
 );
 router.delete('/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),

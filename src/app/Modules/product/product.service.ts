@@ -19,7 +19,9 @@ const createProductInDB = async (payload: TProductName) => {
 const getAllProductsFromDB = async (options: any) => {
   const { searchTerm, limit, startDate, endDate } = options;
 
-  const matchStage: any = {};
+  const matchStage: any = {
+    isSettelment: false
+  };
 
   // Search by product name or SKU
   if (searchTerm) {

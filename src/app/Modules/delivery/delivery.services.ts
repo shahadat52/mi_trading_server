@@ -117,7 +117,7 @@ const updateDeliveryStatutsInDB = async ({ id, invoice, user, }: any) => {
 const uploadImageInDB = async (id: any, image: any) => {
   let imageurl = ''
   if (image?.path) {
-    const fileName = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;;
+    const fileName = `${Date.now()}${Math.random().toString(36).slice(2, 8)}`;
     const { data } = await sendImageToImgbb(image?.path, fileName) as any;
     imageurl = data?.url;
   }

@@ -18,6 +18,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   payload.others = Number(payload.others);
   payload.quantity = Number(payload.quantity)
   payload.bosta = Number(payload.bosta)
+  payload.purchaseBosta = Number(payload.bosta)
   payload.purchasePrice = Number(payload.purchasePrice)
   payload.paidAmount = Number(payload.paidAmount)
   const session = await mongoose.startSession();
@@ -33,7 +34,6 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
       throw new AppError(httpStatus.BAD_REQUEST, 'Failed to generate invoice number');
     }
     payload.invoice = invoiceNumber;
-
 
     let imgUrl = ''
     if (image?.path) {
@@ -366,13 +366,87 @@ const getPurchaseReportFromDB = async (options: any) => {
 
 const getPurchaseByInvoiceFromDB = async (invoice: any) => {
   const sale = await PurchaseModel.findOne({ invoice: invoice }).populate([
-
     {
       path: 'supplier',
       select: 'name phone -_id'
     }
   ]);
   return sale;
+};
+
+const addProfitForThisPurchaseInDB = async ({ id, data }: any) => {
+  const result = await PurchaseModel.findByIdAndUpdate(
+    id,
+    data,
+    { new: true }
+  )
+
+  return result
+}
+
+const getProfitFromNormalProductFromDB = async (
+  startDate: any,
+  endDate: any,
+  limit: any
+) => {
+  const matchStage: any = {};
+
+  if (startDate && endDate) {
+    matchStage.updatedAt = {
+      $gte: startOfDay(new Date(startDate)),
+      $lte: endOfDay(new Date(endDate)),
+    };
+  }
+
+  const [result] = await PurchaseModel.aggregate([
+    {
+      $match: matchStage,
+    },
+    {
+      $facet: {
+        products: [
+          { $sort: { createdAt: -1 } }, // optional
+          { $limit: Number(limit) },    // শুধু products limit হবে
+          {
+            $project: {
+              _id: 0,
+              product: 1,
+              purchaseQty: 1,
+              purchaseBosta: 1,
+              profit: 1,
+            },
+          },
+        ],
+        summary: [
+          {
+            $group: {
+              _id: null,
+              totalProfit: { $sum: "$profit" },
+            },
+          },
+          {
+            $project: {
+              _id: 0,
+              totalProfit: 1,
+            },
+          },
+        ],
+      },
+    },
+    {
+      $project: {
+        products: 1,
+        totalProfit: {
+          $ifNull: [
+            { $arrayElemAt: ["$summary.totalProfit", 0] },
+            0,
+          ],
+        },
+      },
+    },
+  ]);
+
+  return result;
 };
 
 export const purchaseServices = {
@@ -383,5 +457,7 @@ export const purchaseServices = {
   updatePurchaseDataInDB,
   deletePurchaseDataInDB,
   getPurchaseReportFromDB,
-  getPurchaseByInvoiceFromDB
+  getPurchaseByInvoiceFromDB,
+  addProfitForThisPurchaseInDB,
+  getProfitFromNormalProductFromDB
 };

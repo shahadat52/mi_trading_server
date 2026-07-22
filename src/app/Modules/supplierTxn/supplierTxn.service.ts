@@ -433,8 +433,24 @@ const makeApproveSupplierTxnInDB = async (id: any) => {
   return txn;
 };
 
-const getTotalPayableToSupplierFromDB = async () => {
+const getTotalPayableToSupplierFromDB = async (supplierType: any) => {
   const [result] = await SupplierTxnModel.aggregate([
+    {
+      $lookup: {
+        from: "suppliers",
+        localField: "party",
+        foreignField: "_id",
+        as: "supplier",
+      },
+    },
+    {
+      $unwind: "$supplier",
+    },
+    {
+      $match: {
+        "supplier.type": supplierType,
+      },
+    },
     {
       $group: {
         _id: null,
@@ -456,13 +472,14 @@ const getTotalPayableToSupplierFromDB = async () => {
         totalDebit: 1,
         totalCredit: 1,
         totalPayable: {
-          $subtract: ["$totalCredit", "$totalDebit",],
+          $subtract: ["$totalCredit", "$totalDebit"],
         },
       },
     },
   ]);
-  return result
-}
+
+  return result;
+};
 
 export const supplierTxnServices = {
   supplierTxnEntryInDB,

@@ -164,7 +164,7 @@ const bothSalesEntryInDB = async (payload: any) => {
         paymentMethod: payload.paymentMethod,
         amount: salesData.paidAmount,
         isApproved: !isCrossLimitPA,
-        description: payload.description,
+        description: salesData.grandTotal === salesData.paidAmount ? 'নগদ পরিশোধ' : 'নগদ জমা',
         date: salesData.date,
         txnBy: payload.createdBy
       }

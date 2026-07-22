@@ -1,3 +1,4 @@
+import { endOfDay, startOfDay } from "date-fns";
 import AppError from "../../errors/appErrors";
 import { makeRegex } from "../../utils/makeRegex";
 import { sendImageToImgbb } from "../../utils/sendImageToCloudinary";
@@ -9,6 +10,8 @@ import httpStatus from "http-status"
 
 const createCommissionProductInDB = async (data: TCommissionProduct, image: any) => {
     data.quantity = Number(data.quantity)
+    data.supplyQty = Number(data.quantity)
+    data.supplyBosta = Number(data.bosta)
     data.bosta = Number(data.bosta)
     data.lot = Number(data.lot)
     data.commissionRate = Number(data.commissionRate)
@@ -44,7 +47,9 @@ const createCommissionProductInDB = async (data: TCommissionProduct, image: any)
 };
 
 const getAllCommissionProductsFromDB = async ({ searchTerm, limit }: any) => {
-    const matchStage: any = {};
+    const matchStage: any = {
+        isSettelment: false
+    };
     if (searchTerm) {
         matchStage.$or = [
             { name: makeRegex(searchTerm) },
@@ -103,6 +108,81 @@ const deleteProductInDB = async (id: any) => {
     return result;
 };
 
+const addProfitForCommissionPurchaseInDB = async ({ id, data }: any) => {
+    const result = await CommissionProductModel.findByIdAndUpdate(
+        id,
+        data,
+        { new: true }
+    )
+
+    return result
+}
+
+const getProfitFromCommissionProductFromDB = async (
+    startDate: any,
+    endDate: any,
+    limit: any
+) => {
+    const matchStage: any = {};
+
+    if (startDate && endDate) {
+        matchStage.updatedAt = {
+            $gte: startOfDay(new Date(startDate)),
+            $lte: endOfDay(new Date(endDate)),
+        };
+    }
+
+    const [result] = await CommissionProductModel.aggregate([
+        {
+            $match: matchStage,
+        },
+        {
+            $facet: {
+                products: [
+                    { $sort: { createdAt: -1 } }, // optional
+                    { $limit: Number(limit) },    // শুধু products limit হবে
+                    {
+                        $project: {
+                            _id: 0,
+                            name: 1,
+                            supplyQty: 1,
+                            supplyBosta: 1,
+                            profit: 1,
+                        },
+                    },
+                ],
+                summary: [
+                    {
+                        $group: {
+                            _id: null,
+                            totalProfit: { $sum: "$profit" },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            totalProfit: 1,
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                products: 1,
+                totalProfit: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$summary.totalProfit", 0] },
+                        0,
+                    ],
+                },
+            },
+        },
+    ]);
+
+    return result;
+};
+
 
 
 export const commissionProductServices = {
@@ -111,5 +191,7 @@ export const commissionProductServices = {
     getProductDetailsFromDB,
     supplierWiseSupplyInDB,
     updateProductInDB,
-    deleteProductInDB
+    deleteProductInDB,
+    addProfitForCommissionPurchaseInDB,
+    getProfitFromCommissionProductFromDB
 };
