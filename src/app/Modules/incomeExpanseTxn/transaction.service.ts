@@ -27,7 +27,7 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload, image: any) 
             const { data } = await sendImageToImgbb(image?.path, fileName) as any;
             imgUrl = data?.url;
         }
-        txnData.imageurl = imgUrl || ''
+        txnData.imgurl = imgUrl || ''
         txnData.amount = Number(payload.amount)
         // 3️⃣ create transaction
         const txn = await TxnModel.create(

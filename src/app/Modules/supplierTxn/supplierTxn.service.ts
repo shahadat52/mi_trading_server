@@ -446,11 +446,11 @@ const getTotalPayableToSupplierFromDB = async (supplierType: any) => {
     {
       $unwind: "$supplier",
     },
-    {
-      $match: {
-        "supplier.type": supplierType,
-      },
-    },
+    // {
+    //   $match: {
+    //     "supplier.type": supplierType,
+    //   },
+    // },
     {
       $group: {
         _id: null,

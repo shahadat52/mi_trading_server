@@ -1,3 +1,4 @@
+import { startOfDay, endOfDay } from "date-fns";
 import mongoose from "mongoose";
 import { TBrokerTxn } from "./brokerTxn.interface";
 import { BrokerTxnModel } from "./brokerTxn.model";
@@ -57,11 +58,88 @@ const getAllBrokerTxnsFromDB = async () => {
     return result
 };
 
-const getSpecificBrokerTxnsFromDB = async (broker: any) => {
 
-    const result = await BrokerTxnModel.find({ broker: broker }).sort({ createdAt: -1 });
 
-    return result
+const getSpecificBrokerTxnsFromDB = async ({
+    startDate,
+    endDate,
+    id,
+}: any) => {
+    const matchStage: any = {
+        broker: new mongoose.Types.ObjectId(id),
+    };
+
+    if (startDate || endDate) {
+        matchStage.createdAt = {};
+
+        if (startDate) {
+            matchStage.createdAt.$gte = startOfDay(new Date(startDate));
+        }
+
+        if (endDate) {
+            matchStage.createdAt.$lte = endOfDay(new Date(endDate));
+        }
+    }
+
+    const [result] = await BrokerTxnModel.aggregate([
+        {
+            $match: matchStage,
+        },
+        {
+            $facet: {
+                transactions: [
+                    { $sort: { createdAt: -1 } },
+                ],
+
+                summary: [
+                    {
+                        $group: {
+                            _id: null,
+
+                            totalDebit: {
+                                $sum: {
+                                    $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+                                },
+                            },
+
+                            totalCredit: {
+                                $sum: {
+                                    $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            totalDebit: 1,
+                            totalCredit: 1,
+                            currentBalance: {
+                                $subtract: ["$totalDebit", "$totalCredit"],
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                transactions: 1,
+                summary: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$summary", 0] },
+                        {
+                            totalDebit: 0,
+                            totalCredit: 0,
+                            currentBalance: 0,
+                        },
+                    ],
+                },
+            },
+        },
+    ]);
+
+    return result;
 };
 
 const updateBrokerTxnInDB = async (

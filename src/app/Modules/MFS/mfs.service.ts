@@ -27,19 +27,86 @@ const mfsTxnEntryInDB = async (payload: any, user: JwtPayload) => {
     }
 };
 
-const getAllMfsTxnsFromDB = async ({ dateFrom, dateTo }: any) => {
 
+const getAllMfsTxnsFromDB = async ({ dateFrom, dateTo }: any) => {
     const matchStage: any = {};
+
     if (dateFrom && dateTo) {
         matchStage.createdAt = {
             $gte: startOfDay(new Date(dateFrom)),
             $lte: endOfDay(new Date(dateTo)),
         };
     }
-    const result = await MfsTxnModel.aggregate([
-        { $match: matchStage },
+
+    const [result] = await MfsTxnModel.aggregate([
         {
-            $sort: { createdAt: -1 },
+            $match: matchStage,
+        },
+        {
+            $facet: {
+                transactions: [
+                    { $sort: { createdAt: -1 } },
+                ],
+
+                summary: [
+                    {
+                        $group: {
+                            _id: null,
+                            totalCredit: {
+                                $sum: {
+                                    $cond: [
+                                        { $eq: ["$type", "credit"] },
+                                        "$amount",
+                                        0,
+                                    ],
+                                },
+                            },
+                            totalDebit: {
+                                $sum: {
+                                    $cond: [
+                                        { $eq: ["$type", "debit"] },
+                                        "$amount",
+                                        0,
+                                    ],
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            totalCredit: 1,
+                            totalDebit: 1,
+                            balance: {
+                                $subtract: ["$totalCredit", "$totalDebit"],
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                transactions: 1,
+                totalCredit: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$summary.totalCredit", 0] },
+                        0,
+                    ],
+                },
+                totalDebit: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$summary.totalDebit", 0] },
+                        0,
+                    ],
+                },
+                currentBalance: {
+                    $ifNull: [
+                        { $arrayElemAt: ["$summary.balance", 0] },
+                        0,
+                    ],
+                },
+            },
         },
     ]);
 

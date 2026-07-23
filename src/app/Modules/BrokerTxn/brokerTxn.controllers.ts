@@ -25,7 +25,8 @@ const getAllBrokerTxns = catchAsync(async (req, res) => {
 
 const getSpecificBrokerTxns = catchAsync(async (req, res) => {
     const { id } = req.params
-    const result = await brokerTxnServices.getSpecificBrokerTxnsFromDB(id)
+    const { startDate, endDate } = req.query;
+    const result = await brokerTxnServices.getSpecificBrokerTxnsFromDB({ startDate, endDate, id })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
