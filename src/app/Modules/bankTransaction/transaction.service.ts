@@ -19,18 +19,17 @@ const transactionEntryInDB = async (payload: TTransaction, user: JwtPayload) => 
 
 
 
-const getAllBankTransactionsFromDB = async ({ dateFrom, dateTo }: any) => {
+const getAllBankTransactionsFromDB = async ({ dateFrom, dateTo, limit }: any) => {
     const matchStage: any = {
         isDeleted: false,
     };
-
     if (dateFrom && dateTo) {
         matchStage.createdAt = {
             $gte: startOfDay(new Date(dateFrom)),
             $lte: endOfDay(new Date(dateTo)),
         };
     }
-
+    const txnLimit = Number(limit) || 0;
     const [result] = await BankTxnModel.aggregate([
         {
             $match: matchStage,
@@ -43,6 +42,7 @@ const getAllBankTransactionsFromDB = async ({ dateFrom, dateTo }: any) => {
                             createdAt: -1,
                         },
                     },
+                    ...(txnLimit > 0 ? [{ $limit: txnLimit }] : []),
                 ],
 
                 summary: [

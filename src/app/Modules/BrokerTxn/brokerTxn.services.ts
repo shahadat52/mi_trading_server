@@ -51,11 +51,120 @@ const brokerTxnEntryInDB = async (txnData: TBrokerTxn) => {
     }
 };
 
-const getAllBrokerTxnsFromDB = async () => {
 
-    const result = await BrokerTxnModel.find().sort({ createdAt: -1 });
+const getAllBrokerTxnsFromDB = async ({
+    startDate,
+    endDate,
+    limit,
+}: any) => {
+    const matchStage: Record<string, any> = {};
 
-    return result
+    if (startDate || endDate) {
+        matchStage.createdAt = {};
+
+        if (startDate) {
+            matchStage.createdAt.$gte = startOfDay(new Date(startDate));
+        }
+
+        if (endDate) {
+            matchStage.createdAt.$lte = endOfDay(new Date(endDate));
+        }
+    }
+
+    const txnLimit = Number(limit) || 0;
+
+    const [result] = await BrokerTxnModel.aggregate([
+        {
+            $match: matchStage,
+        },
+        {
+            $facet: {
+                // Only transactions are limited
+                transactions: [
+                    {
+                        $lookup: {
+                            from: "brokers",
+                            localField: "broker",
+                            foreignField: "_id",
+                            as: "broker",
+                            pipeline: [
+                                {
+                                    $project: {
+                                        _id: 1,
+                                        name: 1,
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                    {
+                        $unwind: {
+                            path: "$broker",
+                            preserveNullAndEmptyArrays: true,
+                        },
+                    },
+                    {
+                        $sort: {
+                            createdAt: -1,
+                        },
+                    },
+                    ...(txnLimit > 0 ? [{ $limit: txnLimit }] : []),
+                ],
+
+                // Summary uses all matched documents (date range only)
+                summary: [
+                    {
+                        $group: {
+                            _id: null,
+                            totalDebit: {
+                                $sum: {
+                                    $cond: [{ $eq: ["$type", "debit"] }, "$amount", 0],
+                                },
+                            },
+                            totalCredit: {
+                                $sum: {
+                                    $cond: [{ $eq: ["$type", "credit"] }, "$amount", 0],
+                                },
+                            },
+                        },
+                    },
+                    {
+                        $project: {
+                            _id: 0,
+                            totalDebit: 1,
+                            totalCredit: 1,
+                            currentBalance: {
+                                $subtract: ["$totalCredit", "$totalDebit"],
+                            },
+                        },
+                    },
+                ],
+            },
+        },
+        {
+            $project: {
+                transactions: 1,
+                totalDebit: {
+                    $ifNull: [{ $arrayElemAt: ["$summary.totalDebit", 0] }, 0],
+                },
+                totalCredit: {
+                    $ifNull: [{ $arrayElemAt: ["$summary.totalCredit", 0] }, 0],
+                },
+                currentBalance: {
+                    $ifNull: [{ $arrayElemAt: ["$summary.currentBalance", 0] }, 0],
+                },
+            },
+        },
+    ]);
+
+    return (
+        result || {
+            transactions: [],
+            totalDebit: 0,
+            totalCredit: 0,
+            currentBalance: 0,
+        }
+    );
 };
 
 
@@ -63,7 +172,7 @@ const getAllBrokerTxnsFromDB = async () => {
 const getSpecificBrokerTxnsFromDB = async ({
     startDate,
     endDate,
-    id,
+    id
 }: any) => {
     const matchStage: any = {
         broker: new mongoose.Types.ObjectId(id),
@@ -119,6 +228,7 @@ const getSpecificBrokerTxnsFromDB = async ({
                             },
                         },
                     },
+
                 ],
             },
         },
@@ -136,7 +246,7 @@ const getSpecificBrokerTxnsFromDB = async ({
                     ],
                 },
             },
-        },
+        }
     ]);
 
     return result;

@@ -18,6 +18,12 @@ router.get(
   employeeControllers.getAllEmployees
 );
 
+router.post(
+  '/monthly/payroll',
+  auth(USER_ROLE.admin),
+  employeeControllers.generateMonthlyEmployeePayroll
+)
+
 router.get(
   '/me',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager, USER_ROLE.employee),

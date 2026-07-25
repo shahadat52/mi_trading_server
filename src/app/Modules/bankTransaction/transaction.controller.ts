@@ -16,8 +16,8 @@ const transactionEntry = catchAsync(async (req, res) => {
 });
 
 const getAllBankTransactions = catchAsync(async (req, res) => {
-    const { dateFrom, dateTo } = req.query;
-    const result = await transactionServices.getAllBankTransactionsFromDB({ dateFrom, dateTo });
+    const { dateFrom, dateTo, limit } = req.query;
+    const result = await transactionServices.getAllBankTransactionsFromDB({ dateFrom, dateTo, limit });
 
     sendResponse(res, {
         success: true,
@@ -40,7 +40,6 @@ const getAllTransaction = catchAsync(async (req, res) => {
 });
 
 const getBankWiseTransactions = catchAsync(async (req, res) => {
-
     const query = req.query
     const result = await transactionServices.getBankWiseTransactionsFromDB(query);
 

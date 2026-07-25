@@ -14,11 +14,12 @@ const brokerTxnEntry = catchAsync(async (req, res) => {
 });
 
 const getAllBrokerTxns = catchAsync(async (req, res) => {
-    const result = await brokerTxnServices.getAllBrokerTxnsFromDB()
+    const { startDate, endDate, limit } = req.query
+    const result = await brokerTxnServices.getAllBrokerTxnsFromDB({ startDate, endDate, limit })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: 'Successfully retrived',
+        message: '',
         data: result,
     });
 });

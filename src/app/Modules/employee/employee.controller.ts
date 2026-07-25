@@ -87,6 +87,19 @@ const deleteEmployee = catchAsync(async (req, res) => {
   });
 });
 
+const generateMonthlyEmployeePayroll = catchAsync(async (req, res) => {
+  const user = req.user;
+  const result = await employeeServices.monthlyEmployeePayroll(user)
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
+
 export const employeeControllers = {
   createEmployee,
   getAllEmployees,
@@ -94,5 +107,6 @@ export const employeeControllers = {
   updateEmployeeData,
   updateEmployeeRole,
   updateEmployeeStatus,
-  deleteEmployee
+  deleteEmployee,
+  generateMonthlyEmployeePayroll
 };
