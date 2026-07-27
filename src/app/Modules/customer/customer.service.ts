@@ -23,7 +23,7 @@ const createCustomerInBD = async (customerData: TCustomer) => {
     if (isCustomerExists) {
       throw new AppError(
         httpStatus.ALREADY_REPORTED,
-        'This customer already exists'
+        'This CUSTOMER NUMBER already exists'
       );
     }
 
