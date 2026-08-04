@@ -3,7 +3,6 @@ import { UserModel } from "../User/user.model";
 import mongoose from 'mongoose';
 import { startOfMonth, endOfMonth, subMonths } from "date-fns";
 import { AttendanceModel } from "./attendance.model";
-import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 import { EmployeeModel } from "../employee/employee.model";
 
 

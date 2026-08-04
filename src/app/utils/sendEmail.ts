@@ -11,22 +11,23 @@ export const sendEmail = async (
   otp: string,
   html: string
 ) => {
+
   try {
     const response = await resend.emails.send({
       from: 'M.I Trading <noreply@mitrading.shop>',
       to,
-      subject: 'Submit your OTP within 4 minutes',
+      subject: 'Submit your OTP within 2 minutes',
       html: `
-        <div>
-          <p>Your OTP is: <strong>${otp}</strong></p>
-
-          <p>
-            Submit your OTP within 4 minutes.
+      <div>
+      <p>Your OTP is: <strong>${otp}</strong></p>
+      
+      <p>
+            Submit your OTP within 2 minutes.
             Click here
             <a href="${html}">Verify OTP</a>
-          </p>
-        </div>
-      `,
+            </p>
+            </div>
+            `,
     });
 
     return response;

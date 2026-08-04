@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import { endOfMonth, format, getDaysInMonth, startOfMonth, subMonths } from 'date-fns';
+import { endOfMonth, format, getDaysInMonth, set, startOfMonth, subMonths } from 'date-fns';
 import config from '../../config';
 import AppError from '../../errors/appErrors';
 import { generateEmployeeId, uniqueId } from '../../utils/uniqueIdGenerator';
@@ -94,12 +94,20 @@ const deleteEmployeeFromDB = async (id: any) => {
 
 
 const monthlyEmployeePayroll = async (createdBy: any) => {
-  const now = new Date();
+  const previousMonthStart = set(
+    startOfMonth(subMonths(new Date(), 1)),
+    {
+      hours: 0,
+      minutes: 1,
+      seconds: 0,
+      milliseconds: 0,
+    }
+  );
 
-  const start = startOfMonth(now);
-  const end = endOfMonth(now);
+  const start = startOfMonth(previousMonthStart);
+  const end = endOfMonth(previousMonthStart);
 
-  const daysInMonth = getDaysInMonth(now);
+  const daysInMonth = getDaysInMonth(previousMonthStart);
   const monthName = start.toLocaleString("default", { month: "long" });
 
   // Prevent duplicate payroll generation
@@ -134,7 +142,7 @@ const monthlyEmployeePayroll = async (createdBy: any) => {
         },
         paid_leave: {
           $sum: {
-            $cond: [{ $eq: ["$status", "half_day"] }, 1, 0],
+            $cond: [{ $eq: ["$status", "paid_leave"] }, 1, 0],
           },
         },
       },
