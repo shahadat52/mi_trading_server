@@ -235,7 +235,7 @@ const monthlyEmployeePayroll = async (createdBy: any) => {
     console.log("No payable salary found.");
     return;
   }
-  const result = await TxnModel.insertMany(transactions);
+  await TxnModel.insertMany(transactions);
   return {
     message: `Salery generated for ${transactions?.length} employees`
   }

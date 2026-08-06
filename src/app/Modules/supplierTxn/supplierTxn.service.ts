@@ -70,7 +70,7 @@ const supplierTxnEntryInDB = async (payload: TSupplierTxn, user: any) => {
       const bankTxnData = {
         bankName,
         source: 'others',
-        type: 'debit',
+        type: txnData.type,
         amount: payload.amount,
         note: `${supplier?.name}`,
         date: date,

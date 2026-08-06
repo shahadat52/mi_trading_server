@@ -15,6 +15,7 @@ import { makeRegex } from '../../utils/makeRegex';
 import { CustomerModel } from '../customer/customer.model';
 import { MfsTxnModel } from '../MFS/mfs.model';
 import { endOfDay, startOfDay } from 'date-fns';
+import { SalesModel } from '../sales/sales.model';
 
 const bothSalesEntryInDB = async (payload: any) => {
   const { broker, brokerBill, bankName, ...salesData } = payload;
@@ -790,10 +791,72 @@ const updateInvoiceInDB = async ({ id, data }: any) => {
   return result
 };
 
+
 const deleteBothSaleByIdFromDB = async (id: any) => {
-  const result = await BothSalesModel.findByIdAndDelete(id);
-  return result
-}
+  const session = await mongoose.startSession();
+
+  try {
+    session.startTransaction();
+
+    const saleData = await BothSalesModel.findById(id).session(session);
+    if (!saleData) {
+      throw new Error("Sale not found");
+    };
+
+    const commissionProd = saleData.items.filter((item: any) => item.commission >= 0);
+    const regularProd = saleData.items.filter(
+      (item: any) => item.commission === undefined
+    );
+
+
+    // Regular Products এ quantity restore 
+    if (regularProd) {
+      for (const item of regularProd) {
+        await PurchaseModel.findByIdAndUpdate(
+          item.product,
+          {
+            $inc: {
+              quantity: item.quantity,
+              bosta: item.bosta
+            },
+          },
+          { session }
+        );
+      }
+    }
+
+    // Commission Products এ quantity restore 
+    if (commissionProd) {
+      for (const item of commissionProd) {
+        await CommissionProductModel.findByIdAndUpdate(
+          item.product,
+          {
+            $inc: {
+              quantity: item.quantity,
+              bosta: item.bosta
+            },
+          },
+          { session }
+        );
+      }
+    }
+
+    // Sale delete করা
+    await BothSalesModel.findByIdAndDelete(id).session(session);
+
+    await session.commitTransaction();
+
+    return {
+      success: true,
+      message: "Sale deleted successfully",
+    };
+  } catch (error) {
+    await session.abortTransaction();
+    throw error;
+  } finally {
+    session.endSession();
+  }
+};
 
 export const bothSalesServices = {
   bothSalesEntryInDB,
