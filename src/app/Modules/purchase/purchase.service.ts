@@ -389,7 +389,9 @@ const getProfitFromNormalProductFromDB = async (
   endDate: any,
   limit: any
 ) => {
-  const matchStage: any = {};
+  const matchStage: any = {
+    profit: { $gt: 0 }
+  };
 
   if (startDate && endDate) {
     matchStage.updatedAt = {

@@ -48,7 +48,7 @@ const createCommissionProductInDB = async (data: TCommissionProduct, image: any)
 
 const getAllCommissionProductsFromDB = async ({ searchTerm, limit }: any) => {
     const matchStage: any = {
-        isSettelment: false
+        isSettelment: true
     };
     if (searchTerm) {
         matchStage.$or = [
@@ -123,7 +123,9 @@ const getProfitFromCommissionProductFromDB = async (
     endDate: any,
     limit: any
 ) => {
-    const matchStage: any = {};
+    const matchStage: any = {
+        profit: { $gt: 0 }
+    };
 
     if (startDate && endDate) {
         matchStage.updatedAt = {
@@ -139,7 +141,7 @@ const getProfitFromCommissionProductFromDB = async (
         {
             $facet: {
                 products: [
-                    { $sort: { createdAt: -1 } }, // optional
+                    { $sort: { updatedAt: -1 } }, // optional
                     { $limit: Number(limit) },    // শুধু products limit হবে
                     {
                         $project: {
