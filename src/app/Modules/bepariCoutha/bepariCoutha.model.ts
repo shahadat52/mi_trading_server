@@ -2,6 +2,25 @@ import { Schema, model } from 'mongoose';
 import { TBepariCoutha } from './bepariCoutha.interface';
 
 
+const salesSchema = new Schema<any>(
+    {
+        quantity: {
+            type: String,
+            required: [true, 'product name is required']
+        },
+        bosta: {
+            type: Number,
+            required: [true, 'Bosta is required']
+        },
+        price: {
+            type: Number,
+            required: [true, 'Sale price per unit is required'],
+            min: [0, 'Price cannot be negative']
+        }
+    },
+    { _id: false }
+);
+
 
 const bepariCouthaSchema = new Schema<TBepariCoutha>(
     {
@@ -25,6 +44,7 @@ const bepariCouthaSchema = new Schema<TBepariCoutha>(
         haolat: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'হাওলাত খরচ নেই'] },
         godi: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'গদি খরচ নেই'] },
         tohori: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'তহরী খরচ নেই'] },
+        sales: { type: [salesSchema] },
         subTotal: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Sub total is required'] },
         joma: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Joma is required'] },
         grandTotal: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Grand total is required'] },

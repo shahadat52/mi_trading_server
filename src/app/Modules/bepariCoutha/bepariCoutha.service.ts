@@ -273,6 +273,16 @@ const updateBepariCouthaFromDB = async (id: any, data: any) => {
     return customer;
 };
 
+const addSalesHistoryInDB = async ({ id, salesData }: any) => {
+    const result = await BepariCouthaModel.findByIdAndUpdate(
+        id,
+        { sales: salesData },
+        { new: true }
+    );
+
+    return result;
+};
+
 const deleteBepariCouthaFromDB = async (id: any) => {
     const customer = await BepariCouthaModel.findByIdAndDelete(id);
     if (!customer) throw new AppError(httpStatus.NOT_FOUND, 'চৌথা পাওয়া যাচ্ছেনা');
@@ -287,6 +297,7 @@ export const BepariCouthaServices = {
     getSettlementsOfSupplierFromDb,
     getFieldsWiseDataFromDb,
     updateBepariCouthaFromDB,
+    addSalesHistoryInDB,
     deleteBepariCouthaFromDB
 };
 

@@ -48,6 +48,12 @@ router.patch(
     bepariCouthaControllers.updateBepariCoutha
 );
 
+router.patch(
+    '/addSales/:id',
+    // auth(USER_ROLE.admin, USER_ROLE.manager, USER_ROLE.specialManager),
+    bepariCouthaControllers.addSalesHistory
+);
+
 router.delete(
     '/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),

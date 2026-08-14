@@ -7,6 +7,7 @@ import { SupplierModel } from "../supplier/supplier.model";
 import { TCommissionProduct } from "./commissionProduct.interface";
 import { CommissionProductModel } from "./commissionProduct.model";
 import httpStatus from "http-status"
+import mongoose from "mongoose";
 
 const createCommissionProductInDB = async (data: TCommissionProduct, image: any) => {
     data.quantity = Number(data.quantity)
@@ -48,11 +49,12 @@ const createCommissionProductInDB = async (data: TCommissionProduct, image: any)
 
 const getAllCommissionProductsFromDB = async ({ searchTerm, limit }: any) => {
     const matchStage: any = {
-        isSettelment: true
+        isSettelment: false
     };
     if (searchTerm) {
         matchStage.$or = [
             { name: makeRegex(searchTerm) },
+            { 'supplier.name': makeRegex(searchTerm) }
         ];
     }
 
@@ -69,14 +71,7 @@ const getAllCommissionProductsFromDB = async ({ searchTerm, limit }: any) => {
             $unwind: '$supplier',
         },
         {
-            $match: {
-                ...(searchTerm && {
-                    $or: [
-                        { name: makeRegex(searchTerm) },
-                        { 'supplier.name': makeRegex(searchTerm) }
-                    ],
-                }),
-            },
+            $match: matchStage,
         },
         {
             $sort: { createdAt: -1 },
@@ -94,7 +89,29 @@ const getProductDetailsFromDB = async (id: any) => {
 
 
 const supplierWiseSupplyInDB = async (id: any) => {
-    const result = await CommissionProductModel.find({ supplier: id }).populate('supplier').sort({ createdAt: -1 });
+    const result = await CommissionProductModel.aggregate([
+        {
+            $match: {
+                supplier: new mongoose.Types.ObjectId(id),
+                isSettelment: false,
+            },
+        },
+        {
+            $lookup: {
+                from: 'suppliers',
+                localField: 'supplier',
+                foreignField: '_id',
+                as: 'supplier',
+            },
+        },
+        {
+            $unwind: '$supplier',
+        },
+        {
+            $sort: { createdAt: -1 },
+        },
+    ]);
+
     return result;
 };
 

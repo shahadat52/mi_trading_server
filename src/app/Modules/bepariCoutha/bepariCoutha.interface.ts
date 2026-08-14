@@ -9,6 +9,7 @@ export type TBepariCoutha = {
     description: string;
     invoice: string;
     transport_rent?: number;
+    sales: any;
     kuli: number;
     brokary: number;
     arot?: number;

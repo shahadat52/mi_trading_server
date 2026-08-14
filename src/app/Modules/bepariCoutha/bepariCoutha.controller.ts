@@ -95,6 +95,19 @@ const updateBepariCoutha = catchAsync(async (req, res) => {
     });
 });
 
+const addSalesHistory = catchAsync(async (req, res) => {
+    const { id } = req.params
+    const salesData = req.body
+    const result = await BepariCouthaServices.addSalesHistoryInDB({ id, salesData });
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Added',
+        data: result,
+    });
+});
+
 const deleteBepariCoutha = catchAsync(async (req, res) => {
     const { id } = req.params
     const result = await BepariCouthaServices.deleteBepariCouthaFromDB(id);
@@ -115,5 +128,6 @@ export const bepariCouthaControllers = {
     getSettlementsOfSupplier,
     getFieldsWiseData,
     updateBepariCoutha,
+    addSalesHistory,
     deleteBepariCoutha
 };
