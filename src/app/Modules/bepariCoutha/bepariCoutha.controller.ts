@@ -103,7 +103,7 @@ const addSalesHistory = catchAsync(async (req, res) => {
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
-        message: 'Added',
+        message: 'নতুন দাগ সেভ হয়েছে',
         data: result,
     });
 });
