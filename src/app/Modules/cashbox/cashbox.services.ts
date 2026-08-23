@@ -1,5 +1,11 @@
 import AppError from "../../errors/appErrors";
+import { MfsTxnModel } from "../MFS/mfs.model";
+import { BankTxnModel } from "../bankTransaction/transaction.model";
+import { CustomerTxnModel } from "../customerTransaction/customerTxn.model";
+
 import { TxnModel } from "../incomeExpanseTxn/transaction.model";
+import { PurchaseModel } from "../purchase/purchase.model";
+import { SupplierTxnModel } from "../supplierTxn/supplierTxn.model";
 import { TCashbox } from "./cashbox.interface";
 import { CashboxModel } from "./cashbox.model";
 import { startOfDay, endOfDay, subDays } from "date-fns";
@@ -611,6 +617,231 @@ const getTodayCashOutFromDB = async () => {
     };
 };
 
+const getCurrentCashboxBalanceFromDB = async () => {
+    const cashIn = (await getTodayCashInFromDB()).totalCashIn;
+    const cashOut = (await getTodayCashOutFromDB()).totalCashOut;
+    const cashboxBalance = cashIn - cashOut;
+    return cashboxBalance
+
+}
+
+
+const getBusinessPositionFromDB = async () => {
+    const [
+        stockResult,
+        customerResult,
+        supplierResult,
+        bankResult,
+        mfsResult,
+    ] = await Promise.all([
+        // 1. STOCK VALUE
+        PurchaseModel.aggregate([
+            {
+                $match: {
+                    isSettelment: false
+                },
+            },
+            {
+                $group: {
+                    _id: null,
+                    stockValue: {
+                        $sum: {
+                            $multiply: [
+                                "$quantity",
+                                "$purchasePrice",
+                            ],
+                        },
+                    },
+                },
+            },
+        ]),
+
+        // 2. CUSTOMER RECEIVABLE
+        // debit  = customer owes us
+        // credit = customer paid us
+        CustomerTxnModel.aggregate([
+            // {
+            //     $match: {
+            //         isApproved: true,
+            //     },
+            // },
+            {
+                $group: {
+                    _id: "$type",
+
+                    total: {
+                        $sum: "$amount",
+                    },
+                },
+            },
+        ]),
+
+        // 3. SUPPLIER PAYABLE
+        // credit = we owe supplier
+        // debit  = payment/adjustment
+        SupplierTxnModel.aggregate([
+            // {
+            //     $match: {
+            //         isApproved: true,
+            //     },
+            // },
+            {
+                $group: {
+                    _id: "$type",
+
+                    total: {
+                        $sum: "$amount",
+                    },
+                },
+            },
+        ]),
+
+        // 4. BANK BALANCE (credit - debit)
+
+        BankTxnModel.aggregate([
+            {
+                $match: {
+                    isDeleted: false,
+                    // status: "posted",
+                },
+            },
+            {
+                $group: {
+                    _id: "$type",
+
+                    total: {
+                        $sum: "$amount",
+                    },
+                },
+            },
+        ]),
+
+        // 5. MFS BALANCE
+        MfsTxnModel.aggregate([
+            {
+                $group: {
+                    _id: "$type",
+
+                    total: {
+                        $sum: "$amount",
+                    },
+                },
+            },
+        ]),
+    ]);
+
+
+    const stockValue =
+        stockResult[0]?.stockValue || 0;
+
+
+    const customerDebit =
+        customerResult.find(
+            (item) => item._id === "debit"
+        )?.total || 0;
+
+    const customerCredit =
+        customerResult.find(
+            (item) => item._id === "credit"
+        )?.total || 0;
+
+    const customerReceivable =
+        customerDebit - customerCredit;
+
+
+
+    const supplierDebit =
+        supplierResult.find(
+            (item) => item._id === "debit"
+        )?.total || 0;
+
+    const supplierCredit =
+        supplierResult.find(
+            (item) => item._id === "credit"
+        )?.total || 0;
+
+    const supplierPayable =
+        supplierCredit - supplierDebit;
+
+
+
+    const bankDebit =
+        bankResult.find(
+            (item) => item._id === "debit"
+        )?.total || 0;
+
+    const bankCredit =
+        bankResult.find(
+            (item) => item._id === "credit"
+        )?.total || 0;
+
+    const bankBalance =
+        bankCredit - bankDebit;
+
+
+    const mfsDebit =
+        mfsResult.find(
+            (item) => item._id === "debit"
+        )?.total || 0;
+
+    const mfsCredit =
+        mfsResult.find(
+            (item) => item._id === "credit"
+        )?.total || 0;
+
+    const mfsBalance =
+        mfsCredit - mfsDebit;
+
+    const cashboxBalance = await getCurrentCashboxBalanceFromDB()
+
+    const totalAssets =
+        stockValue +
+        bankBalance +
+        mfsBalance +
+        cashboxBalance +
+        customerReceivable;
+
+    const totalLiabilities =
+        supplierPayable;
+
+    const netPosition =
+        totalAssets - totalLiabilities;
+
+    const liquidAssets =
+        bankBalance +
+        mfsBalance +
+        cashboxBalance;
+
+
+    const liquidPosition =
+        liquidAssets - supplierPayable;
+
+
+    return {
+        assets: {
+            stockValue,
+            bankBalance,
+            mfsBalance,
+            cashboxBalance,
+            customerReceivable,
+            totalAssets,
+        },
+
+        liabilities: {
+            supplierPayable,
+            totalLiabilities,
+        },
+
+        liquidAssets,
+
+        liquidPosition,
+
+        netPosition,
+    };
+};
+
+
+
 
 
 export const cashboxServices = {
@@ -619,5 +850,6 @@ export const cashboxServices = {
     getYesterdayClosingBalFromDB,
     getTodayOpeningBalFromDB,
     getTodayCashInFromDB,
-    getTodayCashOutFromDB
+    getTodayCashOutFromDB,
+    getBusinessPositionFromDB
 }

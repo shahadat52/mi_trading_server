@@ -46,7 +46,7 @@ const bepariCouthaSchema = new Schema<TBepariCoutha>(
         tohori: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'তহরী খরচ নেই'] },
         sales: { type: [salesSchema] },
         subTotal: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Sub total is required'] },
-        joma: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Joma is required'] },
+        joma: { type: Number, default: 0, required: [true, 'Joma is required'] },
         grandTotal: { type: Number, min: [0, 'নেগেটিভ মান গ্রহনযোগ্য নয়'], default: 0, required: [true, 'Grand total is required'] },
         isPaid: { type: Boolean, default: false },
         isTransfared: { type: Boolean, default: false },

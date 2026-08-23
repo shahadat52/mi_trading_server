@@ -33,6 +33,11 @@ router.get(
     '/cashOut',
     auth('admin', 'manager', 'specialManager',),
     cashboxControllers.getTodayCashOut
+);
+
+router.get(
+    '/businessState',
+    cashboxControllers.getBusinessPosition
 )
 
 

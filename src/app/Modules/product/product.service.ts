@@ -95,7 +95,14 @@ const getProductsStockFromDB = async (options: any) => {
 
   const pipeline: any[] = [];
 
-  // 🔍 Search filter
+  // 1. BASE FILTER
+  pipeline.push({
+    $match: {
+      isSettelment: false,
+    },
+  });
+
+  // 2. SEARCH FILTER
   if (searchTerm) {
     pipeline.push({
       $match: {
@@ -107,32 +114,69 @@ const getProductsStockFromDB = async (options: any) => {
     });
   }
 
-  // 📦 Group by SKU
+  // 3. GROUP BY SKU
   pipeline.push({
     $group: {
       _id: "$sku",
-      name: { $first: "$product" },
-      price: { $first: "$purchasePrice" },
-      bag: { $sum: "$bosta" },
-      unit: { $first: "$unit" },
-      totalStock: { $sum: "$quantity" },
-    },
-  });
 
-  pipeline.push({
-    $addFields: {
+      name: {
+        $first: "$product",
+      },
+
+      unit: {
+        $first: "$unit",
+      },
+
+      bag: {
+        $sum: "$bosta",
+      },
+
+      totalStock: {
+        $sum: "$quantity",
+      },
+
+      // প্রতিটি purchase-এর
+      // quantity × purchasePrice
       totalAmount: {
-        $multiply: ["$totalStock", "$price"],
+        $sum: {
+          $multiply: [
+            "$quantity",
+            "$purchasePrice",
+          ],
+        },
       },
     },
   });
 
-  // 🔽 Sort
+  // 4. AVERAGE PURCHASE PRICE
   pipeline.push({
-    $sort: { totalStock: -1 },
+    $addFields: {
+      price: {
+        $cond: [
+          {
+            $ne: ["$totalStock", 0],
+          },
+          {
+            $divide: [
+              "$totalAmount",
+              "$totalStock",
+            ],
+          },
+          0,
+        ],
+      },
+    },
+  });
+
+  // 5. SORT
+  pipeline.push({
+    $sort: {
+      totalStock: -1,
+    },
   });
 
   const data = await PurchaseModel.aggregate(pipeline);
+
   return data;
 };
 

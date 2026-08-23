@@ -53,10 +53,21 @@ const getTodayCashOut = catchAsync(async (req, res) => {
     });
 });
 
+const getBusinessPosition = catchAsync(async (req, res) => {
+    const result = await cashboxServices.getBusinessPositionFromDB()
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: '',
+        data: result,
+    });
+});
+
 export const cashboxControllers = {
     cashboxEntry,
     getYesterdayClosingBal,
     getTodayOpeningBal,
     getTodayCashIn,
-    getTodayCashOut
+    getTodayCashOut,
+    getBusinessPosition
 }
