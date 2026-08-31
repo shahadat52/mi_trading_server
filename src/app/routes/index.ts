@@ -25,6 +25,7 @@ import { employeeRoutes } from '../Modules/employee/employee.route';
 import { smsSendRoutes } from '../Modules/SendSMS/sendsms.router';
 import { mfstxnRoutes } from '../Modules/MFS/mfs.router';
 import { backupRoutes } from '../Modules/backup/backup.router';
+import { reportRoutes } from '../Modules/reports/reports.router';
 
 const router = Router();
 
@@ -132,6 +133,10 @@ const moduleRoutes = [
   {
     path: '/backup',
     router: backupRoutes
+  },
+  {
+    path: '/reports',
+    router: reportRoutes
   }
 ];
 
