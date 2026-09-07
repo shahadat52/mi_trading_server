@@ -85,8 +85,6 @@ const transactionEntryInDB = async (payload: any, user: JwtPayload, image: any) 
 };
 
 
-
-
 const getAllTransactionFromDB = async (options: any) => {
     const {
         category,
@@ -147,6 +145,11 @@ const getAllTransactionFromDB = async (options: any) => {
                 localField: "createdBy",
                 foreignField: "_id",
                 as: "createdBy",
+            },
+        },
+        {
+            $project: {
+                "createdBy.password": 0,
             },
         },
 
@@ -319,7 +322,7 @@ const getAllOutstandingTxnFromDB = async () => {
     const result = await TxnModel.find(query)
         .populate([
             { path: 'party' },
-            { path: 'createdBy' },
+            { path: 'createdBy', select: '-password' },
         ])
         .sort({ postingDate: 1 });
 
