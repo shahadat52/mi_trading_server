@@ -506,8 +506,27 @@ const getProductWiseSalesFromDB = async ({ dateFrom, dateTo }: any) => {
       $unwind: "$items",
     },
     {
+      $addFields: {
+        reportName: {
+          $cond: [
+            {
+              $ne: [
+                { $type: '$items.commission' },
+                'missing'
+              ]
+            },
+            {
+              $concat: ['$items.name', ' (Commission)']
+            },
+            '$items.name'
+          ]
+        }
+      }
+    },
+
+    {
       $group: {
-        _id: "$items.name",
+        _id: '$reportName',
         productName: {
           $first: "$items.name",
         },
@@ -549,7 +568,15 @@ const getProductWiseSalesFromDB = async ({ dateFrom, dateTo }: any) => {
       },
     },
     {
+      $addFields: {
+        salesHistoryCount: {
+          $size: "$salesHistory",
+        },
+      },
+    },
+    {
       $sort: {
+        salesHistoryCount: -1,
         productName: 1,
       },
     },
