@@ -232,7 +232,6 @@ const monthlyEmployeePayroll = async (createdBy: any) => {
     }));
 
   if (!transactions.length) {
-    console.log("No payable salary found.");
     return;
   }
   await TxnModel.insertMany(transactions);

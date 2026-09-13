@@ -360,7 +360,7 @@ const getAllBothSalesFromDB = async (options: any) => {
     const match: any = {};
 
     if (dateFrom && dateTo) {
-      match.date = {
+      match.createdAt = {
         $gte: new Date(dateFrom),
         $lte: new Date(dateTo),
       };
