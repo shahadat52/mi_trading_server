@@ -1,20 +1,26 @@
 import mongoose from "mongoose";
-import { TBroker } from "./broker.interface"
 import { BrokerModel } from "./broker.model"
 import AppError from "../../errors/appErrors";
 import httpStatus from 'http-status'
 import { makeRegex } from "../../utils/makeRegex";
 import { BrokerTxnModel } from "../BrokerTxn/brokerTxn.model";
+import { sendImageToImgbb } from "../../utils/sendImageToCloudinary";
 
-const createBrokerInDB = async ({ brokerData }: { brokerData: TBroker }) => {
-
+const createBrokerInDB = async ({ brokerData, image }: any) => {
+    const { name, phone } = brokerData
     const session = await mongoose.startSession();
     session.startTransaction();
     try {
-        const result = await BrokerModel.create([brokerData], { session })
+        let imgUrl = ''
+        if (image?.path) {
+            const fileName = `${brokerData?.name}`;
+            const { data } = await sendImageToImgbb(image?.path, fileName) as any;
+            imgUrl = data?.url;
+        }
+        const dataWithImg = { name, phone, imageurl: imgUrl || '' }
+        const result = await BrokerModel.create([dataWithImg], { session })
         await session.commitTransaction();
         session.endSession();
-
         return result;
     } catch (error: any) {
         await session.abortTransaction();

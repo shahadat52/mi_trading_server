@@ -19,7 +19,8 @@ const brokerSchema = new Schema<TBroker>(
             type: Date,
             required: [true, 'Last txn time is required'],
             default: new Date
-        }
+        },
+        imageurl: { type: String, default: '' },
     }
 );
 

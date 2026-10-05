@@ -15,7 +15,6 @@ import { makeRegex } from '../../utils/makeRegex';
 import { CustomerModel } from '../customer/customer.model';
 import { MfsTxnModel } from '../MFS/mfs.model';
 import { endOfDay, startOfDay } from 'date-fns';
-import { SalesModel } from '../sales/sales.model';
 
 const bothSalesEntryInDB = async (payload: any) => {
   const { broker, brokerBill, bankName, ...salesData } = payload;
@@ -180,7 +179,7 @@ const bothSalesEntryInDB = async (payload: any) => {
         amount: brokerBill,
         type: 'credit',
         paymentMethod: 'others',
-        description: `${customer.name}-(${salesResult[0].invoice})  `
+        description: `${customer.name} -${salesResult[0].invoice}`
       };
 
       await CustomerModel.findByIdAndUpdate(

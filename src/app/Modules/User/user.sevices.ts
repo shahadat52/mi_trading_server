@@ -27,7 +27,7 @@ const getAllUsersFromDB = async () => {
 
 const getSpecificUserInfoFromDB = async (id: string) => {
 
-  const user = await UserModel.findById(id).select('+password');
+  const user = await UserModel.findById(id).select('-password');
   if (!user) {
     throw new AppError(httpStatus.FORBIDDEN, 'User not Exists')
   }

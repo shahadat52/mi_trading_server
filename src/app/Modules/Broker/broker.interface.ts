@@ -3,4 +3,5 @@ export type TBroker = {
     phone: string;
     currentBalance: number;
     lastTxnAt: Date
+    imageurl: string
 }

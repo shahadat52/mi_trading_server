@@ -120,9 +120,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
         ]);
 
         const couthas = await BepariCouthaModel.aggregate([
-            {
-                $match: { isTransfared: false }
-            },
+
             {
                 $match: matchStage,
             },
@@ -149,7 +147,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
         const sales = await BothSalesModel.aggregate([
             {
                 $match: {
-                    createdAt: {
+                    updatedAt: {
                         $gte: startOfDay(new Date(startDate)),
                         $lte: endOfDay(new Date(toDate)),
                     },
@@ -209,6 +207,8 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
                 }
             }
         ]);
+
+
 
         return {
             couthas,

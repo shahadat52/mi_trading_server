@@ -2,7 +2,6 @@ import { endOfDay, startOfDay } from "date-fns";
 import AppError from "../../errors/appErrors";
 import { makeRegex } from "../../utils/makeRegex";
 import { sendImageToImgbb } from "../../utils/sendImageToCloudinary";
-import { CommissionSalesModel } from "../commissionSales/commissionSales.model";
 import { SupplierModel } from "../supplier/supplier.model";
 import { TCommissionProduct } from "./commissionProduct.interface";
 import { CommissionProductModel } from "./commissionProduct.model";

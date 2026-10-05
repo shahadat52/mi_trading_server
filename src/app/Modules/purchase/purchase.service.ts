@@ -25,8 +25,6 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   session.startTransaction();
 
   try {
-    // const productName = await ProductNameModel.findById(product).select("name sku -_id");
-
     const supplier = await SupplierModel.findById(payload.supplier).session(session);
     const supplierProd = await PurchaseModel.find({ supplier: payload.supplier });
     const invoiceNumber = await getPurchaseInvoiceNumber();

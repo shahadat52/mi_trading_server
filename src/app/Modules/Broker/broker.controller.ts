@@ -4,7 +4,9 @@ import { brokerServices } from "./broker.services";
 import httpStatus from 'http-status';
 
 const createBroker = catchAsync(async (req, res) => {
-    const result = await brokerServices.createBrokerInDB(req.body)
+    const image = req.file as any;
+    const brokerData = req.body
+    const result = await brokerServices.createBrokerInDB({ brokerData, image })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,

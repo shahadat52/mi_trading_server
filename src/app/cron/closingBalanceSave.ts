@@ -25,7 +25,6 @@ export const closingBalanceSaveCron = () => {
                     upsert: true
                 }
             );
-            console.log('Closing balance saved')
 
 
         },
