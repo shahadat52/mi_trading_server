@@ -6,8 +6,12 @@ import { TEmployee } from './employee.interface';
 const employeeSchema = new Schema<TEmployee>(
   {
     id: { type: String, required: true, unique: true },
+    nid: { type: String, default: '' },
     name: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, unique: true, trim: true },
+    father: { type: String, default: '' },
+    mother: { type: String, default: '' },
+    address: { type: String, default: '' },
+    phone: { type: String, required: true, unique: true },
     role: {
       type: String,
       enum: ['specialManager', 'manager', 'employee'],
@@ -24,6 +28,8 @@ const employeeSchema = new Schema<TEmployee>(
       required: [true, 'Basic salary is required']
     },
     isDeleted: { type: Boolean, default: false },
+    imageurl: { type: String, default: '' },
+
   },
   {
     timestamps: true,

@@ -29,8 +29,8 @@ const getAllEmployees = catchAsync(async (req, res) => {
 
 
 const getSpecificEmployeeInfo = catchAsync(async (req, res) => {
-  const { _id } = req.user
-  const user = await employeeServices.getSpecificEmployeeInfoFromDB(_id)
+  const { id } = req.params
+  const user = await employeeServices.getSpecificEmployeeInfoFromDB(id)
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -40,14 +40,14 @@ const getSpecificEmployeeInfo = catchAsync(async (req, res) => {
 });
 
 const updateEmployeeData = catchAsync(async (req, res) => {
-  const userId = req.user._id;
-  // eslint-disable-next-line no-unused-vars
-  const { email, password, id, ...userData } = req.body;
-  const result = await employeeServices.updateEmployeeDataInDB(userId, userData);
+  const image = req.file as any;
+  const { id } = req.params;
+  const employeeData = { ...req.body };
+  const result = await employeeServices.updateEmployeeDataInDB(id, employeeData, image);
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
-    message: 'User data is updated successfully',
+    message: 'Updated',
     data: result,
   });
 });

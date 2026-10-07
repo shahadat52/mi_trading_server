@@ -235,7 +235,75 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
 };
 
 
+const getKuliDataFromDb = async (startDate: any, toDate: any) => {
+    // if (!allowedFields.includes(field)) {
+    //     throw new Error("Invalid field name");
+    // }
 
+    const matchStage: any = {
+        kuli: { $gte: 1 }
+    };
+
+    if (startDate && toDate) {
+
+        matchStage.createdAt = {
+            $gte: startOfDay(new Date(startDate)),
+            $lte: endOfDay(new Date(toDate)),
+        };
+    }
+
+
+    const sales = await BothSalesModel.aggregate([
+        {
+            $match: {
+
+                labour: { $gte: 1 },
+                createdAt: {
+                    $gte: startOfDay(new Date(startDate)),
+                    $lte: endOfDay(new Date(toDate)),
+                }
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $project: {
+                _id: 1,
+                invoice: 1,
+                labour: 1,
+                createdAt: 1
+            }
+        }
+    ]);
+
+    const couthas = await BepariCouthaModel.aggregate([
+
+        {
+            $match: matchStage,
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $project: {
+                _id: 1,
+                invoice: 1,
+                kuli: 1,
+                createdAt: 1
+            }
+        }
+    ]);
+
+    const result = {
+        sales,
+        couthas
+    };
+    return result
+
+
+
+};
 
 
 
@@ -272,6 +340,7 @@ export const BepariCouthaServices = {
     getCouthaByInvoiceFromDB,
     getSettlementsOfSupplierFromDb,
     getFieldsWiseDataFromDb,
+    getKuliDataFromDb,
     updateBepariCouthaFromDB,
     addSalesHistoryInDB,
     deleteBepariCouthaFromDB

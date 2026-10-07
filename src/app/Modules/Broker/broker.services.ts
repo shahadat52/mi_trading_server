@@ -30,6 +30,58 @@ const createBrokerInDB = async ({ brokerData, image }: any) => {
 
 };
 
+const brokerUpdateInDB = async (id: any, name: string, phone: string, image: Express.Multer.File) => {
+
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const updateData = { name, phone, imageurl: '' };
+
+        // New image থাকলে upload করে URL update হবে
+        if (image?.path) {
+            const fileName = `${name || 'broker'}`;
+
+            const imageResponse = await sendImageToImgbb(
+                image.path,
+                fileName
+            ) as any;
+
+            updateData.imageurl = imageResponse?.data?.url;
+        }
+
+        const result = await BrokerModel.findByIdAndUpdate(
+            id,
+            updateData,
+            {
+                new: true,
+                session,
+                runValidators: true,
+            }
+        );
+
+        if (!result) {
+            throw new AppError(
+                httpStatus.NOT_FOUND,
+                'Broker not found'
+            );
+        }
+
+        await session.commitTransaction();
+        session.endSession();
+
+        return result;
+    } catch (error: any) {
+        await session.abortTransaction();
+        session.endSession();
+
+        throw new AppError(
+            httpStatus.BAD_REQUEST,
+            error.message
+        );
+    }
+};
+
 const getAllBrokersFromDB = async ({ limit, searchTerm }: any) => {
     let query = {};
 
@@ -51,10 +103,7 @@ const getBrokerByIdFromDB = async (id: any) => {
     return result
 };
 
-const brokerUpdateInDB = async (id: any, data: any) => {
-    const result = await BrokerModel.findByIdAndUpdate(id, data, { new: true });
-    return result
-}
+
 const brokerDeleteFromDB = async (id: any) => {
     const result = await BrokerModel.findByIdAndDelete(id);
     return result

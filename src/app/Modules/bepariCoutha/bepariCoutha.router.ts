@@ -10,6 +10,12 @@ router.get(
     bepariCouthaControllers.getFieldsWiseData
 );
 
+router.get(
+    '/field/kuli',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),
+    bepariCouthaControllers.getKuliData
+);
+
 router.post(
     '/',
     auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager),

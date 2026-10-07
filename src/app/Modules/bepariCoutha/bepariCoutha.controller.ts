@@ -83,6 +83,19 @@ const getFieldsWiseData = catchAsync(async (req, res) => {
     return result;
 });
 
+const getKuliData = catchAsync(async (req, res) => {
+    const { startDate, toDate } = req.query
+    const result = await BepariCouthaServices.getKuliDataFromDb(startDate, toDate);
+
+    sendResponse(res, {
+        success: true,
+        statusCode: httpStatus.OK,
+        message: 'Successful',
+        data: result,
+    });
+    return result;
+});
+
 const updateBepariCoutha = catchAsync(async (req, res) => {
     const { id } = req.params
     const result = await BepariCouthaServices.updateBepariCouthaFromDB(id, req.body);
@@ -127,6 +140,7 @@ export const bepariCouthaControllers = {
     getCouthaByInvoice,
     getSettlementsOfSupplier,
     getFieldsWiseData,
+    getKuliData,
     updateBepariCoutha,
     addSalesHistory,
     deleteBepariCoutha

@@ -26,6 +26,7 @@ router.get(
 
 router.patch(
     '/update/:id',
+    upload.single("image"),
     auth('admin', 'specialManager'),
     brokerControllers.brokerUpdate
 );

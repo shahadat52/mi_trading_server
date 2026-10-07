@@ -9,7 +9,8 @@ import { TxnModel } from '../incomeExpanseTxn/transaction.model';
 import { TEmployee } from './employee.interface';
 import { EmployeeModel } from './employee.model';
 import httpStatus from 'http-status'
-import { Types } from 'mongoose';
+import mongoose, { Types } from 'mongoose';
+import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 
 const createEmployeeInDB = async (user: TEmployee) => {
   const isExist = await EmployeeModel.findOne({ phone: user.phone, isDeleted: true });
@@ -28,9 +29,9 @@ const getAllEmployeesFromDB = async () => {
   return employees;
 };
 
-const getSpecificEmployeeInfoFromDB = async (id: string) => {
+const getSpecificEmployeeInfoFromDB = async (id: any) => {
 
-  const user = await EmployeeModel.findById(id).select('+password');
+  const user = await EmployeeModel.findById(id).select('-password');
   if (!user) {
     throw new AppError(httpStatus.FORBIDDEN, 'User not Exists')
   }
@@ -39,36 +40,7 @@ const getSpecificEmployeeInfoFromDB = async (id: string) => {
 
 
 
-const updateEmployeeDataInDB = async (id: string, user: Partial<TEmployee>) => {
-  const { phone, ...employeeData } = user;
 
-  const isExist = await EmployeeModel.findById(id);
-  if (!isExist) {
-    throw new AppError(404, 'User does not exist');
-  }
-
-  delete employeeData.role;
-  delete employeeData._id;
-  delete employeeData.isDeleted;
-
-  // Whitelist allowed fields (optional but safe)
-  const allowedFields = ['name', 'address'];
-  Object.keys(employeeData).forEach(key => {
-    if (!allowedFields.includes(key)) delete (employeeData as any)[key];
-  });
-
-  const updatedEmployee = await EmployeeModel.findByIdAndUpdate(id, employeeData, {
-    new: true,
-    runValidators: true,
-  });
-
-  if (!updatedEmployee) {
-    throw new AppError(500, "Failed to update user");
-  }
-
-  return updatedEmployee
-
-};
 
 const updateEmployeeRoleInDB = async (id: any, role: any) => {
   const result = await EmployeeModel.findByIdAndUpdate(
@@ -78,6 +50,65 @@ const updateEmployeeRoleInDB = async (id: any, role: any) => {
   );
   return result
 }
+
+const updateEmployeeDataInDB = async (
+  id: any,
+  employeeData: any,
+  image?: Express.Multer.File
+) => {
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+
+    if (image?.path) {
+      const fileName = `${employeeData?.name || 'employee'}`;
+
+      const imageResponse = await sendImageToImgbb(image.path, fileName) as any;
+      employeeData.imageurl = imageResponse?.data?.url;
+    }
+
+    const finalData = {
+      nid: employeeData?.nid,
+      name: employeeData?.name,
+      father: employeeData?.father,
+      mother: employeeData?.mother,
+      address: employeeData?.address,
+      imageurl: employeeData.imageurl
+    }
+    const result = await EmployeeModel.findByIdAndUpdate(
+      id,
+      {
+        $set: employeeData
+      },
+      {
+        new: true,
+        session,
+        runValidators: true,
+      }
+    );
+
+    if (!result) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Employee not found'
+      );
+    }
+
+    await session.commitTransaction();
+
+    return result;
+
+  } catch (error: any) {
+    await session.abortTransaction();
+
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      error.message
+    );
+  } finally {
+    await session.endSession();
+  }
+};
 
 const updateEmployeeStatusInDB = async (id: any, status: string) => {
   const result = await EmployeeModel.findByIdAndUpdate(

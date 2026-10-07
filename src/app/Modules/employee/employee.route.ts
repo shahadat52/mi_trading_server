@@ -2,6 +2,7 @@ import express from 'express';
 import { employeeControllers } from './employee.controller';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from './employee.constant';
+import { upload } from '../../utils/sendImageToCloudinary';
 
 const router = express.Router();
 
@@ -25,13 +26,14 @@ router.post(
 )
 
 router.get(
-  '/me',
+  '/me/:id',
   auth(USER_ROLE.admin, USER_ROLE.specialManager, USER_ROLE.manager, USER_ROLE.employee),
   employeeControllers.getSpecificEmployeeInfo
 )
 
 router.patch(
-  '/update-employee',
+  '/update/:id',
+  upload.single("image"),
   auth(USER_ROLE.admin, USER_ROLE.specialManager),
   employeeControllers.updateEmployeeData
 );

@@ -15,6 +15,8 @@ const createBroker = catchAsync(async (req, res) => {
     });
 });
 
+
+
 const getAllBrokers = catchAsync(async (req, res) => {
     const result = await brokerServices.getAllBrokersFromDB(req.query)
     sendResponse(res, {
@@ -37,8 +39,10 @@ const getBrokerById = catchAsync(async (req, res) => {
 });
 
 const brokerUpdate = catchAsync(async (req, res) => {
+    const image = req.file as any;
     const { id } = req.params;
-    const result = await brokerServices.brokerUpdateInDB(id, req.body)
+    const { name, phone } = req.body
+    const result = await brokerServices.brokerUpdateInDB(id, name, phone, image)
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
