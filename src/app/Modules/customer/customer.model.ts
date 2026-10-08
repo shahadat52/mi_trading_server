@@ -29,6 +29,7 @@ const customerSchema = new Schema<TCustomer>(
       type: Date,
       default: Date.now()
     },
+    imageurl: { type: String, default: '' },
     status: { type: Boolean, default: false },
   },
   { timestamps: true }

@@ -62,7 +62,7 @@ const bothSalesSchema = new Schema<TBothSales>(
 
     date: {
       type: Date,
-      default: Date.now,
+      default: Date.now(),
     },
     labour: {
       type: Number,

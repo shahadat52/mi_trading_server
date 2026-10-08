@@ -1,6 +1,7 @@
 import express from 'express';
 import auth from '../../middlewares/auth';
 import { customerControllers } from './customer.controller';
+import { upload } from '../../utils/sendImageToCloudinary';
 const router = express.Router();
 
 router.post(
@@ -23,6 +24,7 @@ router.get(
 
 router.patch(
     '/:id',
+    upload.single("image"),
     auth('admin', 'specialManager',),
     customerControllers.updateCustomer
 )

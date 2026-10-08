@@ -1,5 +1,6 @@
 import AppError from '../../errors/appErrors';
 import { makeRegex } from '../../utils/makeRegex';
+import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 import { TCustomerTxn } from '../customerTransaction/customerTxn.interface';
 import { CustomerTxnModel } from '../customerTransaction/customerTxn.model';
 import { TCustomer } from './customer.interface';
@@ -98,10 +99,55 @@ const getCustomerByIdFromDB = async (id: any) => {
   return result;
 };
 
-const updateCustomerFromDB = async (id: any, data: any) => {
-  const customer = await CustomerModel.findByIdAndUpdate(id, data, { new: true });
-  if (!customer) throw new AppError(httpStatus.NOT_FOUND, 'Customer  found');
-  return customer;
+const updateCustomerFromDB = async (id: any, data: any, image: Express.Multer.File) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const updateData = data;
+
+    // New image থাকলে upload করে URL update হবে
+    if (image?.path) {
+      const fileName = `${data.name || 'customer'}`;
+
+      const imageResponse = await sendImageToImgbb(
+        image.path,
+        fileName
+      ) as any;
+
+      updateData.imageurl = imageResponse?.data?.url;
+    }
+
+    const result = await CustomerModel.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        session,
+        runValidators: true,
+      }
+    );
+
+    if (!result) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Customer not found'
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return result;
+  } catch (error: any) {
+    await session.abortTransaction();
+    session.endSession();
+
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      error.message
+    );
+  }
 };
 const deleteCustomerFromDB = async (id: any) => {
   const session = await mongoose.startSession();

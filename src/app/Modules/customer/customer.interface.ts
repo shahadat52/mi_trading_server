@@ -6,5 +6,6 @@ export type TCustomer = {
   type?: string
   lastTxnAt: Date;
   status: boolean;
-  txnBy?: string
+  txnBy?: string;
+  imageurl: string
 };

@@ -25,7 +25,6 @@ export const sendImageToImgbb = (path: string, fileName: string) => {
 
             fs.unlink(path, (err) => {
                 if (err) {
-                    // console.error("Delete Error:", err);
                 } else {
                 }
             });

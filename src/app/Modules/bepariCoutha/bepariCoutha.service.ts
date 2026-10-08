@@ -6,6 +6,7 @@ import { allowedFields, getSettlementInvoiceNumber } from "./bepariCoutha.utils"
 import httpStatus from 'http-status'
 import { BothSalesModel } from "../bothSales/bothSales.model";
 import { PurchaseModel } from "../purchase/purchase.model";
+import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 
 const createSettlementTxnDInDB = async (payload: TBepariCoutha): Promise<any> => {
     const isExistCoutha = await BepariCouthaModel.find({ supplier: payload?.supplier, lot: payload?.lot?.lot });
@@ -94,55 +95,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
     }
 
 
-    if (field === 'kuli') {
-        const sales = await BothSalesModel.aggregate([
-            {
-                $match: {
 
-                    labour: { $gte: 1 },
-                    createdAt: {
-                        $gte: startOfDay(new Date(startDate)),
-                        $lte: endOfDay(new Date(toDate)),
-                    }
-                }
-            },
-            {
-                $sort: { createdAt: -1 }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    invoice: 1,
-                    labour: 1,
-                    createdAt: 1
-                }
-            }
-        ]);
-
-        const couthas = await BepariCouthaModel.aggregate([
-
-            {
-                $match: matchStage,
-            },
-            {
-                $sort: { createdAt: -1 }
-            },
-            {
-                $project: {
-                    _id: 1,
-                    invoice: 1,
-                    [field]: 1,
-                    updatedAt: 1
-                }
-            }
-        ]);
-
-        const result = {
-            sales,
-            couthas
-        };
-        return result
-    }
     if (field === 'arot') {
         const sales = await BothSalesModel.aggregate([
             {
@@ -236,10 +189,6 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
 
 
 const getKuliDataFromDb = async (startDate: any, toDate: any) => {
-    // if (!allowedFields.includes(field)) {
-    //     throw new Error("Invalid field name");
-    // }
-
     const matchStage: any = {
         kuli: { $gte: 1 }
     };
@@ -277,6 +226,32 @@ const getKuliDataFromDb = async (startDate: any, toDate: any) => {
         }
     ]);
 
+    const others = await TxnModel.aggregate([
+        {
+            $match: {
+
+                category: 'kuli',
+                head: 'income',
+                type: 'credit',
+                createdAt: {
+                    $gte: startOfDay(new Date(startDate)),
+                    $lte: endOfDay(new Date(toDate)),
+                }
+            }
+        },
+        {
+            $sort: { createdAt: -1 }
+        },
+        {
+            $project: {
+                _id: 1,
+                note: 1,
+                amount: 1,
+                createdAt: 1
+            }
+        }
+    ]);
+
     const couthas = await BepariCouthaModel.aggregate([
 
         {
@@ -296,6 +271,7 @@ const getKuliDataFromDb = async (startDate: any, toDate: any) => {
     ]);
 
     const result = {
+        others,
         sales,
         couthas
     };

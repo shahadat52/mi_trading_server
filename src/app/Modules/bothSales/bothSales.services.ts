@@ -495,7 +495,7 @@ const getProductWiseSalesFromDB = async ({ dateFrom, dateTo }: any) => {
   const result = await BothSalesModel.aggregate([
     {
       $match: {
-        date: {
+        createdAt: {
           $gte: startOfDay(new Date(dateFrom)),
           $lte: endOfDay(new Date(dateTo)),
         },

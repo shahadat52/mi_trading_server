@@ -55,8 +55,9 @@ const deleteCustomer = catchAsync(async (req, res) => {
     });
 });
 const updateCustomer = catchAsync(async (req, res) => {
-    const { id } = req.params
-    const result = await customerServices.updateCustomerFromDB(id, req.body);
+    const image = req.file as any;
+    const { id } = req.params;
+    const result = await customerServices.updateCustomerFromDB(id, req.body, image);
 
     sendResponse(res, {
         success: true,
