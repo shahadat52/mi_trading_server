@@ -1,7 +1,7 @@
 import { Schema, model } from 'mongoose';
 import { TPurchase } from './purchase.interface';
 
-const UNIT_VALUES = ["কেজি", "পিস", "মণ", "বস্তা", "লিটার", "বক্স", "টন"] as const;
+const UNIT_VALUES = ["কেজি", "পিস", "মণ", "বস্তা", "লিটার", "বক্স", "টন", "কার্টুন"] as const;
 
 export type TUnit = typeof UNIT_VALUES[number];
 
@@ -44,7 +44,7 @@ const purchaseSchema = new Schema<TPurchase>(
     paymentMethod: { type: String, default: 'cash' },
     commission: { type: Number, default: 0, required: [true, 'Commission is missing'] },
     others: { type: Number, default: 0, required: [true, 'Others is missing'] },
-    othersField: { type: String, default: " ", required: [true, 'othersField is missing'] },
+    othersField: { type: String, default: '' },
     quantity: { type: Number, required: [true, 'Quantity is required'] },
     purchaseQty: { type: Number, required: [true, 'PurchaseQty is required'] },
     purchaseBosta: { type: Number, required: [true, 'PurchaseBosta is required'] },
