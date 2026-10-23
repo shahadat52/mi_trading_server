@@ -6,6 +6,7 @@ import httpStatus from 'http-status';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 import { makeRegex } from '../../utils/makeRegex';
 import { JwtPayload } from 'jsonwebtoken';
+import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 
 // ✅ Create Supplier
 const createSupplierInDB = async (payload: TSupplier, user: JwtPayload) => {
@@ -137,10 +138,59 @@ const getSupplierByIdInDB = async (id: any) => {
 };
 
 // ✅ Update Supplier
-const updateSupplierInDB = async (id: any, payload: Partial<TSupplier>) => {
-  const supplier = await SupplierModel.findByIdAndUpdate(id, payload, { new: true });
-  if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Supplier not found');
-  return supplier;
+const updateSupplierInDB = async (id: any, name: string, phone: string, address: string, type: string, image: Express.Multer.File) => {
+
+  // const supplier = await SupplierModel.findByIdAndUpdate(id, payload, { new: true });
+  // if (!supplier) throw new AppError(httpStatus.NOT_FOUND, 'Supplier not found');
+  // return supplier;
+
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const updateData = { name, phone, type, address, imageurl: '' };
+
+    // New image থাকলে upload করে URL update হবে
+    if (image?.path) {
+      const fileName = `${name || 'broker'}`;
+
+      const imageResponse = await sendImageToImgbb(
+        image.path,
+        fileName
+      ) as any;
+
+      updateData.imageurl = imageResponse?.data?.url;
+    }
+    const result = await SupplierModel.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        session,
+        runValidators: true,
+      }
+    );
+
+    if (!result) {
+      throw new AppError(
+        httpStatus.NOT_FOUND,
+        'Supplier not found'
+      );
+    }
+
+    await session.commitTransaction();
+    session.endSession();
+
+    return result;
+  } catch (error: any) {
+    await session.abortTransaction();
+    session.endSession();
+
+    throw new AppError(
+      httpStatus.BAD_REQUEST,
+      error.message
+    );
+  }
 };
 
 // ✅ Delete Supplier

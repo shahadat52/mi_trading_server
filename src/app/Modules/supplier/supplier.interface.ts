@@ -8,6 +8,7 @@ export type TSupplier = {
   createdAt?: Date;
   lastTxnAt: Date;
   updatedAt?: Date;
+  imageurl: string
 };
 
 export interface TSupplierModel extends Model<TSupplier> {

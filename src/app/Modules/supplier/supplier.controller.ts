@@ -56,8 +56,10 @@ const getSupplier = catchAsync(async (req, res) => {
 
 // ✅ Update
 const updateSupplier = catchAsync(async (req, res) => {
+  const image = req.file as any;
   const { id } = req.params;
-  const result = await supplierServices.updateSupplierInDB(id, req.body);
+  const { name, phone, address, type } = req.body;
+  const result = await supplierServices.updateSupplierInDB(id, name, phone, address, type, image);
 
   sendResponse(res, {
     success: true,

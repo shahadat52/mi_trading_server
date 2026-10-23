@@ -132,6 +132,19 @@ const updateInvoice = catchAsync(async (req, res) => {
   });
 });
 
+const updateSalesComments = catchAsync(async (req, res) => {
+  const data = req.body;
+  const result = await bothSalesServices.updateSalesCommentsInDB(data)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+  return result;
+
+});
+
 const deleteBothSaleById = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await bothSalesServices.deleteBothSaleByIdFromDB(id);
@@ -140,6 +153,19 @@ const deleteBothSaleById = catchAsync(async (req, res) => {
     success: true,
     statusCode: httpStatus.OK,
     message: 'Deleted',
+    data: result,
+  });
+});
+
+
+const getAllChequeDueSales = catchAsync(async (req, res) => {
+
+  const result = await bothSalesServices.getAllChequeDueSalesFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
     data: result,
   });
 });
@@ -154,5 +180,7 @@ export const bothSalesControllers = {
   getBothSalesReport,
   getProductWiseSalesReportFromDB,
   updateInvoice,
-  deleteBothSaleById
+  updateSalesComments,
+  deleteBothSaleById,
+  getAllChequeDueSales
 };

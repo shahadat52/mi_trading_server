@@ -8,6 +8,7 @@ import AppError from '../../errors/appErrors';
 import { SupplierTxnModel } from '../supplierTxn/supplierTxn.model';
 import { sendImageToImgbb } from '../../utils/sendImageToCloudinary';
 import { endOfDay, startOfDay } from 'date-fns';
+import { BothSalesModel } from '../bothSales/bothSales.model';
 
 const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
   const { isCommissionPaid, isLabourPaid, isOthersPaid, ...payload } = data;
@@ -44,6 +45,7 @@ const createPurchaseInDB = async (data: TPurchase, user: any, image: any) => {
     const purchaseData = {
       ...payload,
       lot: `${supplier?.name}-${supplierProd?.length + 1}`,
+      purchaseBy: user._id,
       imageurl: imgUrl || ''
     }
 
@@ -298,24 +300,53 @@ const getCommissionPurchasesFromDB = async (options: TGetAllPurchasesOptions) =>
 const getPurchaseByIdFromDB = async (id: any) => {
   const result = await PurchaseModel.findById(id).populate([
     { path: 'product' },
-    { path: 'supplier' }
+    { path: 'supplier' },
+    { path: 'purchaseBy', select: 'name' }
   ]);
   return result;
 };
 
-const updatePurchaseDataInDB = async (id: any, payload: any) => {
-
-  const product = await PurchaseModel.findById(payload.product?._id);
-  if (product && payload.quantity) {
+const updatePurchaseDataInDB = async (id: any, formData: any, image: Express.Multer.File) => {
+  const product = await PurchaseModel.findById(formData.product?._id);
+  if (product && formData.quantity) {
     // Adjust quantity based on the difference in quantity
     const existingPurchase = await PurchaseModel.findById(id);
     if (existingPurchase) {
-      const quantityDifference = payload.quantity - existingPurchase.quantity;
+      const quantityDifference = formData.quantity - existingPurchase.quantity;
       product.quantity = Number(product.quantity) + quantityDifference;
       await product.save();
     }
+  };
+  if (image?.path) {
+    const fileName = `${formData.invoice}`;
+
+    const imageResponse = await sendImageToImgbb(
+      image.path,
+      fileName
+    ) as any;
+
+    formData.imageurl = imageResponse?.data?.url;
   }
-  const result = await PurchaseModel.findByIdAndUpdate(id, payload, { new: true });
+  const result = await PurchaseModel.findByIdAndUpdate(id, formData, { new: true });
+  return result;
+};
+
+const updatePurchaseNoteInDB = async ({ note, }: { note: string }) => {
+  const updateNote = note.slice(6);
+
+  const result = await PurchaseModel.updateMany(
+    {
+      note: {
+        $regex: note,
+        $options: "i",
+      },
+    },
+    {
+      $set: {
+        note: updateNote,
+      },
+    },
+  );
   return result;
 };
 
@@ -449,15 +480,73 @@ const getProfitFromNormalProductFromDB = async (
   return result;
 };
 
+const getAllPayableChequeFromDB = async () => {
+  return await PurchaseModel.aggregate([
+    {
+      $match: {
+        note: {
+          $regex: "check:",
+          $options: "i",
+        },
+      },
+    },
+    {
+      $lookup: {
+        from: "suppliers",
+        localField: "supplier",
+        foreignField: "_id",
+        as: "supplier",
+      },
+    },
+    {
+      $unwind: {
+        path: "$supplier",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $toLower: {
+            $trim: {
+              input: "$note",
+            },
+          },
+        },
+        supplier: { $first: "$supplier" },
+        invoice: { $first: "$invoice" },
+        createdAt: { $first: "$createdAt" },
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        note: "$_id",
+        "supplier.name": 1,
+        "supplier.address": 1,
+        invoice: 1,
+        createdAt: 1,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+  ]);
+};
+
 export const purchaseServices = {
   createPurchaseInDB,
   getAllPurchasesFromDB,
   getCommissionPurchasesFromDB,
   getPurchaseByIdFromDB,
   updatePurchaseDataInDB,
+  updatePurchaseNoteInDB,
   deletePurchaseDataInDB,
   getPurchaseReportFromDB,
   getPurchaseByInvoiceFromDB,
   addProfitForThisPurchaseInDB,
-  getProfitFromNormalProductFromDB
+  getProfitFromNormalProductFromDB,
+  getAllPayableChequeFromDB
 };

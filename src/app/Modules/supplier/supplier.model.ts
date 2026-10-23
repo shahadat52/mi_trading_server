@@ -12,6 +12,7 @@ const supplierSchema = new Schema<TSupplier>(
       type: Date,
       default: Date.now()
     },
+    imageurl: { type: String, default: '' },
   },
   {
     timestamps: true,

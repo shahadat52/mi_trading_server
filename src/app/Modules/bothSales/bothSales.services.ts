@@ -817,6 +817,24 @@ const updateInvoiceInDB = async ({ id, data }: any) => {
   return result
 };
 
+const updateSalesCommentsInDB = async ({ comments }: { comments: string }) => {
+  const updateComments = comments.slice(6);
+  const result = await BothSalesModel.updateMany(
+    {
+      comments: {
+        $regex: comments,
+        $options: "i",
+      },
+    },
+    {
+      $set: {
+        comments: updateComments,
+      },
+    },
+  );
+  return result;
+};
+
 
 const deleteBothSaleByIdFromDB = async (id: any) => {
   const session = await mongoose.startSession();
@@ -884,6 +902,68 @@ const deleteBothSaleByIdFromDB = async (id: any) => {
   }
 };
 
+const getAllChequeDueSalesFromDB = async () => {
+  return await BothSalesModel.aggregate([
+    {
+      $match: {
+        comments: {
+          $regex: "check:",
+          $options: "i",
+        },
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+    {
+      $group: {
+        _id: {
+          $toLower: {
+            $trim: {
+              input: "$comments",
+            },
+          },
+        },
+        comments: { $first: "$comments" },
+        customer: { $first: "$customer" },
+        invoice: { $first: "$invoice" },
+        createdAt: { $first: "$createdAt" },
+      },
+    },
+    {
+      $lookup: {
+        from: "customers",
+        localField: "customer",
+        foreignField: "_id",
+        as: "customer",
+      },
+    },
+    {
+      $unwind: {
+        path: "$customer",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        _id: 0,
+        comments: 1,
+        "customer.name": 1,
+        "customer.address": 1,
+        invoice: 1,
+        createdAt: 1,
+      },
+    },
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
+  ]);
+};
+
 export const bothSalesServices = {
   bothSalesEntryInDB,
   getAllBothSalesFromDB,
@@ -894,5 +974,7 @@ export const bothSalesServices = {
   getBothSalesReportFromDB,
   getProductWiseSalesReportFromDB,
   updateInvoiceInDB,
-  deleteBothSaleByIdFromDB
+  updateSalesCommentsInDB,
+  deleteBothSaleByIdFromDB,
+  getAllChequeDueSalesFromDB
 };

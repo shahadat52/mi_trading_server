@@ -1,6 +1,7 @@
 import express from 'express';
 import { bothSalesControllers } from './bothSales.controllers';
 import auth from '../../middlewares/auth';
+import { USER_ROLE } from '../User/user.constant';
 const router = express.Router();
 
 router.post(
@@ -56,10 +57,22 @@ router.patch(
   bothSalesControllers.updateInvoice
 );
 
+router.patch(
+  '/comments/update',
+  auth(USER_ROLE.admin, USER_ROLE.specialManager),
+  bothSalesControllers.updateSalesComments
+);
+
 router.delete(
   '/:id',
   auth('admin', 'specialManager',),
   bothSalesControllers.deleteBothSaleById
+);
+
+router.get(
+  '/cheque/due',
+  auth('admin', 'superAdmin', 'specialManager', 'manager'),
+  bothSalesControllers.getAllChequeDueSales
 )
 
 

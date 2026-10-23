@@ -214,11 +214,26 @@ const getKuliDataFromDb = async (startDate: any, toDate: any) => {
             }
         },
         {
+            $lookup: {
+                from: "customers",
+                localField: "customer",
+                foreignField: "_id",
+                as: "customer",
+            },
+        },
+        {
+            $unwind: {
+                path: "$customer",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
             $sort: { createdAt: -1 }
         },
         {
             $project: {
                 _id: 1,
+                "customer.name": 1,
                 invoice: 1,
                 labour: 1,
                 createdAt: 1
@@ -261,8 +276,23 @@ const getKuliDataFromDb = async (startDate: any, toDate: any) => {
             $sort: { createdAt: -1 }
         },
         {
+            $lookup: {
+                from: "suppliers",
+                localField: "supplier",
+                foreignField: "_id",
+                as: "supplier",
+            },
+        },
+        {
+            $unwind: {
+                path: "$supplier",
+                preserveNullAndEmptyArrays: true,
+            },
+        },
+        {
             $project: {
                 _id: 1,
+                "supplier.name": 1,
                 invoice: 1,
                 kuli: 1,
                 createdAt: 1

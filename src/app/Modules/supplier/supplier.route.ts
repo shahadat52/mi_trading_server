@@ -4,6 +4,7 @@ import { supplierValidations } from './supplier.validation';
 import { supplierControllers } from './supplier.controller';
 import auth from '../../middlewares/auth';
 import { USER_ROLE } from '../User/user.constant';
+import { upload } from '../../utils/sendImageToCloudinary';
 
 const router = express.Router();
 
@@ -34,6 +35,7 @@ router.get(
 
 router.patch(
   '/:id',
+  upload.single("image"),
   auth(USER_ROLE.admin, USER_ROLE.specialManager),
   supplierControllers.updateSupplier
 );

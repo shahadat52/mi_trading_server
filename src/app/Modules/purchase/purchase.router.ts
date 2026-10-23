@@ -51,9 +51,17 @@ router.get(
     purchaseControllers.getPurchaseById
 );
 
-router.patch('/update/:id',
+router.patch(
+    '/update/:id',
+    upload.single('image'),
     auth(USER_ROLE.admin, USER_ROLE.specialManager),
     purchaseControllers.updatePurchaseData
+);
+
+router.patch(
+    '/note',
+    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    purchaseControllers.updatePurchaseNote
 );
 router.patch('/addProfit/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),
@@ -63,5 +71,11 @@ router.delete('/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),
     purchaseControllers.deletePurchase
 );
+
+router.get(
+    '/cheque/due',
+    auth('admin', 'superAdmin', 'specialManager', 'manager'),
+    purchaseControllers.getAllPayableCheque
+)
 
 export const purchaseRouters = router;

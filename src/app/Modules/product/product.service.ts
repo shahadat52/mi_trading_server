@@ -98,7 +98,6 @@ const getProductsStockFromDB = async (options: any) => {
   // 1. BASE FILTER
   pipeline.push({
     $match: {
-      isSettelment: false,
     },
   });
 

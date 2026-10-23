@@ -121,7 +121,22 @@ const deleteProduct = catchAsync(async (req, res) => {
 
 const updatePurchaseData = catchAsync(async (req, res) => {
   const { id } = req.params
-  const result = await purchaseServices.updatePurchaseDataInDB(id, req.body,)
+  const image = req.file as any;
+  const forData = req.body;
+  const result = await purchaseServices.updatePurchaseDataInDB(id, req.body, image)
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+  return result;
+
+});
+
+const updatePurchaseNote = catchAsync(async (req, res) => {
+  const data = req.body;
+  const result = await purchaseServices.updatePurchaseNoteInDB(data)
   sendResponse(res, {
     success: true,
     statusCode: httpStatus.OK,
@@ -195,6 +210,18 @@ const getTotalProfitNormalProducts = catchAsync(async (req, res) => {
 
 });
 
+const getAllPayableCheque = catchAsync(async (req, res) => {
+
+  const result = await purchaseServices.getAllPayableChequeFromDB();
+
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: '',
+    data: result,
+  });
+});
+
 export const purchaseControllers = {
   createPurchase,
   getAllPurchases,
@@ -203,9 +230,11 @@ export const purchaseControllers = {
   getCommissionPurchase,
   deleteProduct,
   updatePurchaseData,
+  updatePurchaseNote,
   deletePurchase,
   getPurchaseReport,
   getPurchaseByInvoice,
   addProfit,
-  getTotalProfitNormalProducts
+  getTotalProfitNormalProducts,
+  getAllPayableCheque
 };

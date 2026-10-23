@@ -44,6 +44,7 @@ export interface TPurchase {
   paidAmount: number;
   note: string;
   imageurl: string
+  purchaseBy: Types.ObjectId;
   createdAt?: Date;
   updatedAt?: Date;
 }
