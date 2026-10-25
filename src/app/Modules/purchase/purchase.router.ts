@@ -60,8 +60,13 @@ router.patch(
 
 router.patch(
     '/note',
-    auth(USER_ROLE.admin, USER_ROLE.specialManager),
+    auth(USER_ROLE.admin),
     purchaseControllers.updatePurchaseNote
+);
+router.patch(
+    '/noteUpdate',
+    auth(USER_ROLE.admin, USER_ROLE.superAdmin, USER_ROLE.specialManager, USER_ROLE.manager),
+    purchaseControllers.updatePurchaseNoteByInvoice
 );
 router.patch('/addProfit/:id',
     auth(USER_ROLE.admin, USER_ROLE.specialManager),

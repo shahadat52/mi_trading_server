@@ -59,7 +59,7 @@ router.patch(
 
 router.patch(
   '/comments/update',
-  auth(USER_ROLE.admin, USER_ROLE.specialManager),
+  auth(USER_ROLE.admin),
   bothSalesControllers.updateSalesComments
 );
 

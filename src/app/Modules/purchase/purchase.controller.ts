@@ -147,6 +147,21 @@ const updatePurchaseNote = catchAsync(async (req, res) => {
 
 });
 
+const updatePurchaseNoteByInvoice = catchAsync(async (req, res) => {
+  const { invoice } = req.query;
+  const { updateNote } = req.body;
+
+  const result = await purchaseServices.updatePurchaseNoteByInvoiceInDB({ invoice, updateNote })
+  sendResponse(res, {
+    success: true,
+    statusCode: httpStatus.OK,
+    message: 'Updated',
+    data: result,
+  });
+  return result;
+
+});
+
 const deletePurchase = catchAsync(async (req, res) => {
   const { id } = req.params;
   const result = await purchaseServices.deletePurchaseDataInDB(id);
@@ -231,6 +246,7 @@ export const purchaseControllers = {
   deleteProduct,
   updatePurchaseData,
   updatePurchaseNote,
+  updatePurchaseNoteByInvoice,
   deletePurchase,
   getPurchaseReport,
   getPurchaseByInvoice,

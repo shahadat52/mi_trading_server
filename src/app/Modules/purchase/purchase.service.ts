@@ -350,6 +350,21 @@ const updatePurchaseNoteInDB = async ({ note, }: { note: string }) => {
   return result;
 };
 
+const updatePurchaseNoteByInvoiceInDB = async ({ invoice, updateNote }: { invoice: any, updateNote: string }) => {
+
+  const result = await PurchaseModel.updateMany(
+    {
+      invoice
+    },
+    {
+      $set: {
+        note: updateNote,
+      },
+    },
+  );
+  return result;
+};
+
 const deletePurchaseDataInDB = async (id: any) => {
   const purchase = await PurchaseModel.findById(id);
   const res = await PurchaseModel.findByIdAndDelete(id, { new: true });
@@ -543,6 +558,7 @@ export const purchaseServices = {
   getPurchaseByIdFromDB,
   updatePurchaseDataInDB,
   updatePurchaseNoteInDB,
+  updatePurchaseNoteByInvoiceInDB,
   deletePurchaseDataInDB,
   getPurchaseReportFromDB,
   getPurchaseByInvoiceFromDB,

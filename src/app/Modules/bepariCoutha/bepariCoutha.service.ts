@@ -100,7 +100,7 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
         const sales = await BothSalesModel.aggregate([
             {
                 $match: {
-                    updatedAt: {
+                    createdAt: {
                         $gte: startOfDay(new Date(startDate)),
                         $lte: endOfDay(new Date(toDate)),
                     },
