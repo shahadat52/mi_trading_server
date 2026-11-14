@@ -95,7 +95,6 @@ const getFieldsWiseDataFromDb = async (field: any, startDate: any, toDate: any) 
     }
 
 
-
     if (field === 'arot') {
         const sales = await BothSalesModel.aggregate([
             {

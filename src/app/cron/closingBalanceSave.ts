@@ -6,7 +6,7 @@ import { CashboxModel } from '../Modules/cashbox/cashbox.model';
 export const closingBalanceSaveCron = () => {
 
     cron.schedule(
-        '58 23 * * *',
+        '0 4 * * *',
         async () => {
 
             const closingBalance = await cashboxServices.closingBalSavedInDB()

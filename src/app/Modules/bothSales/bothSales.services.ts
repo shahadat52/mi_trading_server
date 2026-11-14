@@ -775,6 +775,7 @@ const getProductWiseSalesReportFromDB = async (product: any) => {
         _id: "$items.product",
         items: {
           $push: {
+            invoice: "$invoice",
             quantity: "$items.quantity",
             bosta: "$items.bosta",
             salePrice: "$items.salePrice",
