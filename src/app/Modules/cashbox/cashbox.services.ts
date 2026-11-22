@@ -1,8 +1,6 @@
-import AppError from "../../errors/appErrors";
 import { MfsTxnModel } from "../MFS/mfs.model";
 import { BankTxnModel } from "../bankTransaction/transaction.model";
 import { CustomerTxnModel } from "../customerTransaction/customerTxn.model";
-
 import { TxnModel } from "../incomeExpanseTxn/transaction.model";
 import { PurchaseModel } from "../purchase/purchase.model";
 import { SupplierTxnModel } from "../supplierTxn/supplierTxn.model";
@@ -32,9 +30,9 @@ const cashboxEntryInDB = async (payload: TCashbox) => {
 
 
 
-const getTodayOpeningBalFromDB = async () => {
-    const todayStart = startOfDay(new Date());
-    const result = await CashboxModel.findOne({ date: todayStart })
+const getTodayOpeningBalFromDB = async ({ date }: any) => {
+    const cashBoxBalDate = startOfDay(date)
+    const result = await CashboxModel.findOne({ date: cashBoxBalDate })
     return result;
 };
 
@@ -45,18 +43,20 @@ const getYesterdayClosingBalFromDB = async () => {
 };
 
 const closingBalSavedInDB = async () => {
-    const todayStart = startOfDay(new Date());
+    const startDate = startOfDay(new Date());
+    const endDate = endOfDay(new Date());
+
 
     // 1. Opening Balance
-    const opening = await CashboxModel.findOne({ date: todayStart });
+    const opening = await CashboxModel.findOne({ date: startDate });
     const openingBalance = opening?.openingBalance || 0;
 
     // 2. Cash In
-    const cashInData = await getTodayCashInFromDB();
+    const cashInData = await getTodayCashInFromDB({ startDate, endDate });
     const cashIn = cashInData.totalCashIn || 0;
 
     // 3. Cash Out
-    const cashOutData = await getTodayCashOutFromDB();
+    const cashOutData = await getTodayCashOutFromDB({ startDate, endDate });
     const cashOut = cashOutData.totalCashOut || 0;
 
     // 4. Final Balance Calculation
@@ -66,9 +66,9 @@ const closingBalSavedInDB = async () => {
 };
 
 // Cash In
-const getTodayCashInFromDB = async () => {
-    const startDate = startOfDay(new Date());
-    const endDate = endOfDay(new Date());
+const getTodayCashInFromDB = async ({ startDate, endDate }: any) => {
+    const fromDate = startOfDay(startDate) || startOfDay(new Date());
+    const toDate = endOfDay(endDate) || endOfDay(new Date());
 
     const result = await TxnModel.aggregate([
         // Income Transaction
@@ -78,8 +78,8 @@ const getTodayCashInFromDB = async () => {
                 type: "credit",
                 paymentMethod: "cash",
                 createdAt: {
-                    $gte: startDate,
-                    $lte: endDate,
+                    $gte: fromDate,
+                    $lte: toDate,
                 },
             },
         },
@@ -102,7 +102,7 @@ const getTodayCashInFromDB = async () => {
                         $match: {
                             type: "debit",
                             source: 'cash',
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
 
@@ -139,7 +139,7 @@ const getTodayCashInFromDB = async () => {
                         $match: {
                             type: "debit",
                             source: 'cash',
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
 
@@ -176,8 +176,8 @@ const getTodayCashInFromDB = async () => {
                             type: "credit",
                             paymentMethod: 'cash',
                             createdAt: {
-                                $gte: startDate,
-                                $lte: endDate,
+                                $gte: fromDate,
+                                $lte: toDate,
                             },
                         },
                     },
@@ -222,8 +222,8 @@ const getTodayCashInFromDB = async () => {
                             type: "credit",
                             paymentMethod: 'cash',
                             createdAt: {
-                                $gte: startDate,
-                                $lte: endDate,
+                                $gte: fromDate,
+                                $lte: toDate,
                             },
                         },
                     },
@@ -299,9 +299,9 @@ const getTodayCashInFromDB = async () => {
 };
 
 //  Cash Out
-const getTodayCashOutFromDB = async () => {
-    const startDate = startOfDay(new Date());
-    const endDate = endOfDay(new Date());
+const getTodayCashOutFromDB = async ({ startDate, endDate }: any) => {
+    const fromDate = startOfDay(startDate) || startOfDay(new Date());
+    const toDate = endOfDay(endDate) || endOfDay(new Date());
 
     const result = await TxnModel.aggregate([
 
@@ -311,7 +311,7 @@ const getTodayCashOutFromDB = async () => {
                 head: "expense",
                 paymentMethod: "cash",
                 type: "debit",
-                createdAt: { $gte: startDate, $lte: endDate },
+                createdAt: { $gte: fromDate, $lte: toDate },
             },
         },
         {
@@ -333,7 +333,7 @@ const getTodayCashOutFromDB = async () => {
                         $match: {
                             type: "debit",
                             paymentMethod: "cash",
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
                     {
@@ -367,7 +367,7 @@ const getTodayCashOutFromDB = async () => {
                         $match: {
                             type: "debit",
                             paymentMethod: "cash",
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
                     {
@@ -401,7 +401,7 @@ const getTodayCashOutFromDB = async () => {
                         $match: {
                             type: "debit",
                             paymentMethod: 'cash',
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
                     {
@@ -433,7 +433,7 @@ const getTodayCashOutFromDB = async () => {
                 pipeline: [
                     {
                         $match: {
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
                     {
@@ -478,7 +478,7 @@ const getTodayCashOutFromDB = async () => {
                         $match: {
                             type: "credit",
                             source: "cash",
-                            postingDate: { $gte: startDate, $lte: endDate },
+                            postingDate: { $gte: fromDate, $lte: toDate },
                         },
                     },
 
@@ -517,7 +517,7 @@ const getTodayCashOutFromDB = async () => {
                         $match: {
                             type: "credit",
                             source: "cash",
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
 
@@ -552,7 +552,7 @@ const getTodayCashOutFromDB = async () => {
                 pipeline: [
                     {
                         $match: {
-                            createdAt: { $gte: startDate, $lte: endDate },
+                            createdAt: { $gte: fromDate, $lte: toDate },
                         },
                     },
                     {
@@ -618,8 +618,10 @@ const getTodayCashOutFromDB = async () => {
 };
 
 const getCurrentCashboxBalanceFromDB = async () => {
-    const cashIn = (await getTodayCashInFromDB()).totalCashIn;
-    const cashOut = (await getTodayCashOutFromDB()).totalCashOut;
+    const startDate = startOfDay(new Date());
+    const endDate = endOfDay(new Date());
+    const cashIn = (await getTodayCashInFromDB({ startDate, endDate })).totalCashIn;
+    const cashOut = (await getTodayCashOutFromDB({ startDate, endDate })).totalCashOut;
     const cashboxBalance = cashIn - cashOut;
     return cashboxBalance
 

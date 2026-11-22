@@ -14,7 +14,8 @@ const cashboxEntry = catchAsync(async (req, res) => {
 });
 
 const getTodayOpeningBal = catchAsync(async (req, res) => {
-    const result = await cashboxServices.getTodayOpeningBalFromDB()
+    const { date } = req.query;
+    const result = await cashboxServices.getTodayOpeningBalFromDB({ date })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -34,7 +35,8 @@ const getYesterdayClosingBal = catchAsync(async (req, res) => {
 });
 
 const getTodayCashIn = catchAsync(async (req, res) => {
-    const result = await cashboxServices.getTodayCashInFromDB()
+    const { startDate, endDate } = req.query;
+    const result = await cashboxServices.getTodayCashInFromDB({ startDate, endDate })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
@@ -44,7 +46,8 @@ const getTodayCashIn = catchAsync(async (req, res) => {
 });
 
 const getTodayCashOut = catchAsync(async (req, res) => {
-    const result = await cashboxServices.getTodayCashOutFromDB()
+    const { startDate, endDate } = req.query;
+    const result = await cashboxServices.getTodayCashOutFromDB({ startDate, endDate })
     sendResponse(res, {
         success: true,
         statusCode: httpStatus.OK,
